@@ -72,6 +72,7 @@ RUN chown -R www-data:www-data /app/var/log \
   && composer install --no-dev --no-scripts \
   && rm composer.lock \
   && touch /app/.env \
-  && php bin/console cache:clear --env=prod
+  && php bin/console cache:clear --env=prod \
+  && printenv | grep "^VERSION"
 
 CMD dockerize -wait tcp://postgres:5432 -timeout 30s supervisord -c /etc/supervisor/supervisord.conf
