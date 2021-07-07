@@ -16,6 +16,7 @@ ARG APP_GET_RETRY_LIMIT=10
 ARG APP_DELETE_RETRY_LIMIT=10
 ARG APP_FIND_RETRY_LIMIT=3
 ARG APP_MACHINE_IS_ACTIVE_DISPATCH_DELAY=10000
+ARG VERSION=dockerfile_version
 
 ENV APP_ENV=$APP_ENV
 ENV DATABASE_URL=$DATABASE_URL
@@ -31,6 +32,7 @@ ENV GET_RETRY_LIMIT=$APP_GET_RETRY_LIMIT
 ENV DELETE_RETRY_LIMIT=$APP_DELETE_RETRY_LIMIT
 ENV FIND_RETRY_LIMIT=$APP_FIND_RETRY_LIMIT
 ENV MACHINE_IS_ACTIVE_DISPATCH_DELAY=$APP_MACHINE_IS_ACTIVE_DISPATCH_DELAY
+ENV VERSION=$VERSION
 
 ENV DOCKERIZE_VERSION="v2.1.0"
 
@@ -70,6 +72,7 @@ RUN chown -R www-data:www-data /app/var/log \
   && composer install --no-dev --no-scripts \
   && rm composer.lock \
   && touch /app/.env \
-  && php bin/console cache:clear --env=prod
+  && php bin/console cache:clear --env=prod \
+  && printenv | grep "^VERSION"
 
 CMD dockerize -wait tcp://postgres:5432 -timeout 30s supervisord -c /etc/supervisor/supervisord.conf

@@ -39,3 +39,5 @@ jobs:
         with:
           push: true
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.value }}
