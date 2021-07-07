@@ -37,5 +37,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          push: true
+          push: false
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.value }}
