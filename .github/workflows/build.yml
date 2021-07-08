@@ -18,11 +18,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Create automatic release?
+        id: create_automatic_release
+        env:
+          SHOULD_CREATE: ${{ github.event_name == 'repository_dispatch' && github.event.action == 'worker-deploy' }}
+        run: echo "::set-output name=value::$SHOULD_CREATE"
+
       - name: Set version
         id: version
         env:
+          AUTO_GENERATE: ${{ steps.create_automatic_release.outputs.value }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
+          if [ "true" == "$AUTO_GENERATE" ]; then
+            VERSION=$(./ci/generate-next-tag.sh)
+            echo "::set-output name=value::$VERSION"
+            exit 0
+          fi
+
           [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
       - name: Read source build config
