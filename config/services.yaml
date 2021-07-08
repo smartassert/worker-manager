@@ -5,10 +5,10 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     machine_name_prefix: '%env(MACHINE_NAME_PREFIX)%'
-    digitalocean_access_token: '%env(DIGITALOCEAN_ACCESS_TOKEN)%'
+    digitalocean_api_token: '%env(DIGITALOCEAN_API_TOKEN)%'
     digitalocean_droplet_region: '%env(DIGITALOCEAN_REGION)%'
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
-    digitalocean_droplet_image: '%env(DIGITALOCEAN_IMAGE)%'
+    worker_image: '%env(WORKER_IMAGE)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     create_retry_limit: '%env(CREATE_RETRY_LIMIT)%'
     update_machine_dispatch_delay: '%env(UPDATE_MACHINE_DISPATCH_DELAY)%'
@@ -68,7 +68,7 @@ services:
         arguments:
             $httpClient: '@GuzzleHttp\Client'
         calls:
-            - authenticate: ['%digitalocean_access_token%']
+            - authenticate: ['%digitalocean_api_token%']
 
     DigitalOceanV2\Api\Droplet:
         class: DigitalOceanV2\Api\Droplet
@@ -78,7 +78,7 @@ services:
         arguments:
             $region: '%digitalocean_droplet_region%'
             $size: '%digitalocean_droplet_size%'
-            $image: '%digitalocean_droplet_image%'
+            $image: '%worker_image%'
             $tags:
                 - '%digitalocean_droplet_tag%'
 
