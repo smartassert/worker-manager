@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     machine_name_prefix: '%env(MACHINE_NAME_PREFIX)%'
-    digitalocean_access_token: '%env(DIGITALOCEAN_ACCESS_TOKEN)%'
+    digitalocean_api_token: '%env(DIGITALOCEAN_API_TOKEN)%'
     digitalocean_droplet_region: '%env(DIGITALOCEAN_REGION)%'
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
@@ -68,7 +68,7 @@ services:
         arguments:
             $httpClient: '@GuzzleHttp\Client'
         calls:
-            - authenticate: ['%digitalocean_access_token%']
+            - authenticate: ['%digitalocean_api_token%']
 
     DigitalOceanV2\Api\Droplet:
         class: DigitalOceanV2\Api\Droplet
