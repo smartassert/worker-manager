@@ -17,12 +17,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set image tag name
+      - name: Set version
         id: version
         env:
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
+
+      - name: Read build config
+        id: build-config
+        env:
+          ENV_FILE_PATH: ./build.env
+        run: ./ci/read-env-file.sh
+
+      - name: Examine build config
+        run: |
+          echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
+          echo VERSION ${{ steps.build-config.outputs.VERSION }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -40,4 +51,5 @@ jobs:
           push: true
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
           build-args: |
-            VERSION=${{ steps.version.outputs.value }}
+            VERSION=${{ steps.build-config.outputs.VERSION }}
+            WORKER_IMAGE=${{ steps.build-config.outputs.WORKER_IMAGE }}
