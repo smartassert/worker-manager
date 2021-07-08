@@ -73,6 +73,7 @@ RUN chown -R www-data:www-data /app/var/log \
   && rm composer.lock \
   && touch /app/.env \
   && php bin/console cache:clear --env=prod \
+  && printenv | grep "^WORKER_IMAGE" \
   && printenv | grep "^VERSION"
 
 CMD dockerize -wait tcp://postgres:5432 -timeout 30s supervisord -c /etc/supervisor/supervisord.conf
