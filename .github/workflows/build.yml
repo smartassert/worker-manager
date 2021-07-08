@@ -73,6 +73,16 @@ jobs:
           echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
           echo VERSION ${{ steps.build-config.outputs.VERSION }}
 
+      - name: Create automatic release
+        if: ${{ steps.create_automatic_release.outputs.value == 'true' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          automatic_release_tag: ${{ steps.version.outputs.value }}
+          title: Automatic release ${{ steps.version.outputs.value }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
