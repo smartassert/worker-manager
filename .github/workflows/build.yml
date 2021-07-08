@@ -24,6 +24,21 @@ jobs:
         run: |
           [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
+      - name: Read source build config
+        id: source-build-config
+        env:
+          ENV_FILE_PATH: ./build.env
+        run: ./ci/read-env-file.sh
+
+      - name: Store build config
+        env:
+            WORKER_IMAGE: ${{ steps.source-build-config.outputs.WORKER_IMAGE }}
+            VERSION: ${{ steps.version.outputs.value  }}
+        run: |
+          rm -f build.env
+          echo "WORKER_IMAGE=$WORKER_IMAGE" >> build.env
+          echo "VERSION=$VERSION" >> build.env
+
       - name: Read build config
         id: build-config
         env:
