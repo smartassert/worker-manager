@@ -8,6 +8,8 @@ on:
   release:
     types:
       - published
+  repository_dispatch:
+    types: [worker-deploy]
 
 jobs:
   build:
