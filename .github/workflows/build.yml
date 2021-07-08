@@ -44,9 +44,18 @@ jobs:
           ENV_FILE_PATH: ./build.env
         run: ./ci/read-env-file.sh
 
+      - name: Set worker_image
+        id: worker_image
+        env:
+          SOURCE_IMAGE: ${{ steps.source-build-config.outputs.WORKER_IMAGE }}
+          DEPLOY_IMAGE: ${{ github.event.client_payload.worker_image }}
+        run: |
+          WORKER_IMAGE=$(./ci/create-worker-image-name.sh)
+          echo "::set-output name=value::$WORKER_IMAGE"
+
       - name: Store build config
         env:
-            WORKER_IMAGE: ${{ steps.source-build-config.outputs.WORKER_IMAGE }}
+            WORKER_IMAGE: ${{ steps.worker_image.outputs.value }}
             VERSION: ${{ steps.version.outputs.value  }}
         run: |
           rm -f build.env
