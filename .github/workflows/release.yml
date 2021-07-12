@@ -1,4 +1,4 @@
-name: Release
+name: Build Docker Image
 
 on:
   push:
@@ -7,58 +7,22 @@ on:
   release:
     types:
       - published
-  repository_dispatch:
-    types: [worker-deploy]
 
 jobs:
   build:
-    name: Release
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Create automatic release?
-        id: create_automatic_release
-        env:
-          SHOULD_CREATE: ${{ github.event_name == 'repository_dispatch' && github.event.action == 'worker-deploy' }}
-        run: |
-          echo "Create automatic release? $SHOULD_CREATE"
-          echo "::set-output name=value::$SHOULD_CREATE"
-
       - name: Set version
         id: version
         env:
-          AUTO_GENERATE: ${{ steps.create_automatic_release.outputs.value }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          VERSION=$(./ci/create-version-label.sh)
-          echo "::set-output name=value::$VERSION"
-
-      - name: Read source build config
-        id: source-build-config
-        env:
-          ENV_FILE_PATH: ./build.env
-        run: ./ci/read-env-file.sh
-
-      - name: Set worker_image
-        id: worker_image
-        env:
-          SOURCE_IMAGE: ${{ steps.source-build-config.outputs.WORKER_IMAGE }}
-          DEPLOY_IMAGE: ${{ github.event.client_payload.worker_image }}
-        run: |
-          WORKER_IMAGE=$(./ci/create-worker-image-name.sh)
-          echo "::set-output name=value::$WORKER_IMAGE"
-
-      - name: Store build config
-        env:
-            WORKER_IMAGE: ${{ steps.worker_image.outputs.value }}
-            VERSION: ${{ steps.version.outputs.value }}
-        run: |
-          rm -f build.env
-          echo "WORKER_IMAGE=$WORKER_IMAGE" >> build.env
-          echo "VERSION=$VERSION" >> build.env
+          [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
       - name: Read build config
         id: build-config
@@ -70,16 +34,6 @@ jobs:
         run: |
           echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
           echo VERSION ${{ steps.build-config.outputs.VERSION }}
-
-      - name: Create automatic release
-        if: ${{ steps.create_automatic_release.outputs.value == 'true' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          draft: false
-          prerelease: false
-          automatic_release_tag: ${{ steps.version.outputs.value }}
-          title: Automatic release ${{ steps.version.outputs.value }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
