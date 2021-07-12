@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Release
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build Docker Image
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
