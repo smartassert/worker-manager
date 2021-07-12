@@ -44,12 +44,20 @@ jobs:
         with:
           commit_message: "Automatic build.env for worker image ${{ github.event.client_payload.worker_image }}"
 
+      - name: Get latest commit hash
+        id: commit_hash
+        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "::set-output name=has_changes::$COMMIT_HASH"
+
       - name: Create release
         if: ${{ steps.update.outputs.has_changes == 'true' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.PAT_TOKEN_SELF }}
-          draft: false
-          prerelease: false
-          automatic_release_tag: ${{ steps.version.outputs.value }}
-          title: "Automatic release ${{ steps.version.outputs.value }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          TAG: ${{ steps.version.outputs.value }}
+          TARGET: ${{ steps.commit_hash.outputs.value }}
+          TITLE: "Automatic release ${{ steps.version.outputs.value }}"
+          NOTES: "Worker image ${{ github.event.client_payload.worker_image }}"
+        run: |
+          gh release create $TAG --target $TARGET --title $TITLE --notes $NOTES
