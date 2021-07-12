@@ -2,7 +2,7 @@ name: Store build config
 
 on:
   repository_dispatch:
-    types: [worker-release]
+    types: [worker-deploy]
 
 jobs:
   build:
