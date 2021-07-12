@@ -1,0 +1,48 @@
+name: Store build config
+
+on:
+  repository_dispatch:
+    types: [worker-release]
+
+jobs:
+  build:
+    name: Store build config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN_SELF }}
+
+      - name: Update build.env
+        id: update
+        env:
+          WORKER_IMAGE: ${{ github.event.client_payload.worker_image }}
+        run: |
+          cp build.env build.old
+          rm -f build.env
+          echo "WORKER_IMAGE=$WORKER_IMAGE" >> build.env
+
+          if cmp --quiet build.env build.old ; then
+            echo "::set-output name=has_changes::false"
+          else
+            echo "::set-output name=has_changes::true"
+          fi
+
+          rm build.old
+
+      - name: Commit changes
+        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automatic build.env for worker image ${{ github.event.client_payload.worker_image }}"
+
+      - name: Create release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.PAT_TOKEN_SELF }}
+          draft: false
+          prerelease: false
+          automatic_release_tag: ${{ github.event.client_payload.worker_version }}
+          title: "Automatic release ${{ steps.version.outputs.value }}"
