@@ -33,7 +33,7 @@ jobs:
       - name: Examine build config
         run: |
           echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
-          echo VERSION ${{ steps.build-config.outputs.VERSION }}
+          echo VERSION ${{ steps.version.outputs.value }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -51,5 +51,5 @@ jobs:
           push: true
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
           build-args: |
-            VERSION=${{ steps.build-config.outputs.VERSION }}
+            VERSION=${{ steps.version.outputs.value }}
             WORKER_IMAGE=${{ steps.build-config.outputs.WORKER_IMAGE }}
