@@ -53,3 +53,12 @@ jobs:
           build-args: |
             VERSION=${{ steps.version.outputs.value }}
             WORKER_IMAGE=${{ steps.build-config.outputs.WORKER_IMAGE }}
+
+      - name: Emit worker-manager-release repository dispatch event
+        if: ${{ github.event_name == 'release' }}
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.WORKER_MANAGER_DEPLOY_TOKEN }}
+          repository: smartassert/worker-manager-deploy
+          event-type: worker-manager-release
+          client-payload: '{"worker_manager_version": "${{ steps.version.outputs.value }}"}'
