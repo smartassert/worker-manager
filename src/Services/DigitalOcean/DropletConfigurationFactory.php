@@ -2,7 +2,7 @@
 
 namespace App\Services\DigitalOcean;
 
-use App\Model\DigitalOcean\FooDropletConfiguration;
+use App\Model\DigitalOcean\DropletConfiguration;
 
 class DropletConfigurationFactory
 {
@@ -27,9 +27,9 @@ class DropletConfigurationFactory
     ) {
     }
 
-    public function create(): FooDropletConfiguration
+    public function create(): DropletConfiguration
     {
-        return (new FooDropletConfiguration())
+        return (new DropletConfiguration())
             ->withNames($this->getStringValues(self::KEY_NAMES))
             ->withRegion($this->getStringValue(self::KEY_REGION))
             ->withSize($this->getStringValue(self::KEY_SIZE))

@@ -73,15 +73,6 @@ services:
     DigitalOceanV2\Api\Droplet:
         class: DigitalOceanV2\Api\Droplet
 
-    app.digitalocean.droplet_configuration.default:
-        class: App\Model\DigitalOcean\DropletConfiguration
-        arguments:
-            $region: '%digitalocean_droplet_region%'
-            $size: '%digitalocean_droplet_size%'
-            $image: '%worker_image%'
-            $tags:
-                - '%digitalocean_droplet_tag%'
-
     App\Services\MachineManagerStack:
         arguments:
             $machineManagers:

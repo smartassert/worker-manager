@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\DigitalOcean;
 
-use App\Model\DigitalOcean\FooDropletConfiguration;
+use App\Model\DigitalOcean\DropletConfiguration;
 use App\Services\DigitalOcean\DropletConfigurationFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 
@@ -25,7 +25,7 @@ class DropletConfigurationFactoryTest extends AbstractBaseFunctionalTest
     {
         $configuration = $this->factory->create();
 
-        self::assertInstanceOf(FooDropletConfiguration::class, $configuration);
+        self::assertInstanceOf(DropletConfiguration::class, $configuration);
 
         self::assertSame([], $configuration->getNames());
         self::assertSame('lon1', $configuration->getRegion());
