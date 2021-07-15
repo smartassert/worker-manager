@@ -61,8 +61,6 @@ class DropletConfigurationFactory
     }
 
     /**
-     * @param string $key
-     *
      * @return string[]
      */
     private function getStringValues(string $key): array
@@ -75,8 +73,6 @@ class DropletConfigurationFactory
     }
 
     /**
-     * @param string $key
-     *
      * @return int[]
      */
     private function getIntValues(string $key): array
@@ -89,8 +85,6 @@ class DropletConfigurationFactory
     }
 
     /**
-     * @param string $key
-     *
      * @return array<mixed>
      */
     private function getValues(string $key): array
