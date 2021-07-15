@@ -139,3 +139,12 @@ services:
                 database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
+
+    App\Services\DigitalOcean\DropletConfigurationFactory:
+        arguments:
+            $defaults:
+                region: '%digitalocean_droplet_region%'
+                size: '%digitalocean_droplet_size%'
+                image: '%worker_image%'
+                tags:
+                    - '%digitalocean_droplet_tag%'
