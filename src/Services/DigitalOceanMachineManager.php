@@ -3,12 +3,11 @@
 namespace App\Services;
 
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Model\DigitalOcean\DropletApiCreateCallArguments;
-use App\Model\DigitalOcean\DropletConfiguration;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
+use App\Services\DigitalOcean\DropletConfigurationFactory;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use DigitalOceanV2\Api\Droplet as DropletApi;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -19,7 +18,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     public function __construct(
         private DropletApi $dropletApi,
         private DigitalOceanExceptionFactory $exceptionFactory,
-        private DropletConfiguration $dropletConfiguration,
+        private DropletConfigurationFactory $dropletConfigurationFactory,
     ) {
     }
 
@@ -36,10 +35,32 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
-        $createArguments = new DropletApiCreateCallArguments($name, $this->dropletConfiguration);
+        $configuration = $this->dropletConfigurationFactory->create();
+        $configuration = $configuration->withNames([$name]);
 
         try {
-            $dropletEntity = $this->dropletApi->create(...$createArguments->asArray());
+            $namesValue = $configuration->getNames();
+            $namesSize = count($namesValue);
+            if (0 === $namesSize) {
+                $namesValue = '';
+            } elseif (1 === $namesSize) {
+                $namesValue = $namesValue[0];
+            }
+
+            $dropletEntity = $this->dropletApi->create(
+                $namesValue,
+                $configuration->getRegion(),
+                $configuration->getSize(),
+                $configuration->getImage(),
+                $configuration->getBackups(),
+                $configuration->getIpv6(),
+                $configuration->getVpcUuid(),
+                $configuration->getSshKeys(),
+                $configuration->getUserData(),
+                $configuration->getMonitoring(),
+                $configuration->getVolumes(),
+                $configuration->getTags()
+            );
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,

@@ -82,10 +82,6 @@ services:
             $tags:
                 - '%digitalocean_droplet_tag%'
 
-    App\Services\DigitalOceanMachineManager:
-        arguments:
-            $dropletConfiguration: '@app.digitalocean.droplet_configuration.default'
-
     App\Services\MachineManagerStack:
         arguments:
             $machineManagers:

@@ -26,13 +26,3 @@ services:
         factory: ['GuzzleHttp\HandlerStack', 'create']
         arguments:
             $handler: '@GuzzleHttp\Handler\MockHandler'
-
-    App\Services\DigitalOcean\DropletConfigurationFactory:
-        public: true
-        arguments:
-            $defaults:
-                region: '%digitalocean_droplet_region%'
-                size: '%digitalocean_droplet_size%'
-                image: '%worker_image%'
-                tags:
-                    - '%digitalocean_droplet_tag%'
