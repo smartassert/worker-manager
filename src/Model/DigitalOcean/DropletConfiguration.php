@@ -221,4 +221,15 @@ class DropletConfiguration
 
         return $new;
     }
+
+    /**
+     * @param string[] $tags
+     */
+    public function addTags(array $tags): self
+    {
+        $new = clone $this;
+        $tags = array_merge($this->tags, $tags);
+
+        return $new->withTags($tags);
+    }
 }

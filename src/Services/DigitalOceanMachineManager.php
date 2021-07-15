@@ -37,6 +37,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     {
         $configuration = $this->dropletConfigurationFactory->create();
         $configuration = $configuration->withNames([$name]);
+        $configuration = $configuration->addTags([$name]);
 
         try {
             $namesValue = $configuration->getNames();
