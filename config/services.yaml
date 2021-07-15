@@ -127,7 +127,7 @@ services:
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
 
-    App\Services\DigitalOcean\DropletConfigurationFactory:
+    SmartAssert\DigitalOceanDropletConfiguration\Factory:
         arguments:
             $defaults:
                 region: '%digitalocean_droplet_region%'

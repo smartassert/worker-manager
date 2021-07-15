@@ -7,18 +7,18 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
-use App\Services\DigitalOcean\DropletConfigurationFactory;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use DigitalOceanV2\Api\Droplet as DropletApi;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
+use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
 class DigitalOceanMachineManager implements ProviderMachineManagerInterface
 {
     public function __construct(
         private DropletApi $dropletApi,
         private DigitalOceanExceptionFactory $exceptionFactory,
-        private DropletConfigurationFactory $dropletConfigurationFactory,
+        private Factory $dropletConfigurationFactory,
     ) {
     }
 
