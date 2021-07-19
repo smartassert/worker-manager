@@ -2,11 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\MessageStateRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=MessageStateRepository::class)
+ * @ORM\Entity
  */
 class MessageState
 {

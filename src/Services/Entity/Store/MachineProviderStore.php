@@ -4,7 +4,7 @@ namespace App\Services\Entity\Store;
 
 use App\Entity\MachineProvider;
 
-class MachineProviderStore extends AbstractMachineEntityStore
+class MachineProviderStore extends AbstractEntityStore
 {
     public function find(string $machineId): ?MachineProvider
     {

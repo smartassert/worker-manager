@@ -4,7 +4,7 @@ namespace App\Services\Entity\Store;
 
 use App\Entity\CreateFailure;
 
-class CreateFailureStore extends AbstractMachineEntityStore
+class CreateFailureStore extends AbstractEntityStore
 {
     public function find(string $machineId): ?CreateFailure
     {
