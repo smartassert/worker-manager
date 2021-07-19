@@ -12,8 +12,10 @@ use App\Model\MachineActionInterface;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
+use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\SequentialRequestIdFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +28,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MachineRequestFactory $machineRequestFactory;
     private string $machineUrl;
+    private SequentialRequestIdFactory $requestIdFactory;
 
     protected function setUp(): void
     {
@@ -42,6 +45,10 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
+
+        $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
+        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
+        $this->requestIdFactory = $requestIdFactory;
 
         $this->machineUrl = str_replace(
             MachineController::PATH_COMPONENT_ID,
@@ -80,6 +87,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertQueueCount(1);
 
+        $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createFindThenCreate(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
@@ -136,6 +144,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertQueueCount(1);
 
+        $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createFindThenCheckIsActive(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
@@ -214,6 +223,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertQueueCount(1);
 
+        $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
@@ -228,6 +238,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         self::assertInstanceOf(Machine::class, $this->entityManager->find(Machine::class, self::MACHINE_ID));
         $this->messengerAsserter->assertQueueCount(1);
 
+        $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }

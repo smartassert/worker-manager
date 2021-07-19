@@ -3,6 +3,7 @@
 namespace App\Services\ServiceStatusInspector;
 
 use App\Message\CheckMachineIsActive;
+use App\Message\UniqueId;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class MessageQueueInspector implements ComponentInspectorInterface
@@ -16,6 +17,9 @@ class MessageQueueInspector implements ComponentInspectorInterface
 
     public function __invoke(): void
     {
-        $this->messageBus->dispatch(new CheckMachineIsActive(self::INVALID_MACHINE_ID));
+        $this->messageBus->dispatch(new CheckMachineIsActive(
+            UniqueId::create(),
+            self::INVALID_MACHINE_ID,
+        ));
     }
 }

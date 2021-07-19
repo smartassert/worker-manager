@@ -12,6 +12,11 @@ use App\Message\MachineRequestInterface;
 
 class MachineRequestFactory
 {
+    public function __construct(
+        private RequestIdFactoryInterface $requestIdFactory
+    ) {
+    }
+
     public function createFindThenCreate(string $machineId): FindMachine
     {
         return $this->createFind(
@@ -26,6 +31,7 @@ class MachineRequestFactory
     public function createCreate(string $machineId): CreateMachine
     {
         return new CreateMachine(
+            $this->requestIdFactory->create(),
             $machineId,
             [
                 $this->createCheckIsActive($machineId),
@@ -36,6 +42,7 @@ class MachineRequestFactory
     public function createCheckIsActive(string $machineId): CheckMachineIsActive
     {
         return new CheckMachineIsActive(
+            $this->requestIdFactory->create(),
             $machineId,
             [
                 $this->createGet($machineId),
@@ -45,7 +52,7 @@ class MachineRequestFactory
 
     public function createGet(string $machineId): GetMachine
     {
-        return new GetMachine($machineId);
+        return new GetMachine($this->requestIdFactory->create(), $machineId);
     }
 
     public function createDelete(string $machineId): DeleteMachine
@@ -57,6 +64,7 @@ class MachineRequestFactory
         ;
 
         return new DeleteMachine(
+            $this->requestIdFactory->create(),
             $machineId,
             [
                 $findRequest,
@@ -83,6 +91,11 @@ class MachineRequestFactory
         array $onSuccessCollection = [],
         array $onFailureCollection = []
     ): FindMachine {
-        return new FindMachine($machineId, $onSuccessCollection, $onFailureCollection);
+        return new FindMachine(
+            $this->requestIdFactory->create(),
+            $machineId,
+            $onSuccessCollection,
+            $onFailureCollection
+        );
     }
 }

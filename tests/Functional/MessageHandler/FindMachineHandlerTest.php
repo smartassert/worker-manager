@@ -21,6 +21,7 @@ use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
+use App\Tests\Services\SequentialRequestIdFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
@@ -104,7 +105,11 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             $this->machineProviderStore->store($machineProvider);
         }
 
-        $message = new FindMachine(self::MACHINE_ID, $messageOnSuccessCollection, $messageOnFailureCollection);
+        $message = $this->machineRequestFactory->createFind(
+            self::MACHINE_ID,
+            $messageOnSuccessCollection,
+            $messageOnFailureCollection
+        );
         $message = $message->withReDispatchOnSuccess($reDispatchOnSuccess);
 
         ($this->handler)($message);
@@ -249,7 +254,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
-                    (new FindMachine(self::MACHINE_ID))
+                    $this->getMachineRequestFactory()->createFind(self::MACHINE_ID)
                         ->withReDispatchOnSuccess(true)
                         ->incrementRetryCount(),
                 ],
@@ -267,7 +272,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ->getMock()
         );
 
-        ($this->handler)(new FindMachine($machineId));
+        ($this->handler)(new FindMachine('id0', $machineId));
 
         self::assertNull($this->machineStore->find($machineId));
         self::assertNull($this->machineProviderStore->find($machineId));
@@ -319,7 +324,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->mockHandler->append(new Response(503));
 
-        $message = new FindMachine(self::MACHINE_ID);
+        $message = new FindMachine('id0', self::MACHINE_ID);
         $message = $message->incrementRetryCount();
         $message = $message->incrementRetryCount();
         $message = $message->incrementRetryCount();
@@ -348,7 +353,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([]));
 
-        $message = new FindMachine(self::MACHINE_ID);
+        $message = new FindMachine('od', self::MACHINE_ID);
 
         ($this->handler)($message);
 
@@ -371,6 +376,8 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private function getMachineRequestFactory(): MachineRequestFactory
     {
-        return new MachineRequestFactory();
+        return new MachineRequestFactory(
+            new SequentialRequestIdFactory()
+        );
     }
 }

@@ -58,7 +58,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $machine->setState($state);
         $this->machineStore->store($machine);
 
-        ($this->handler)(new CheckMachineIsActive(self::MACHINE_ID));
+        ($this->handler)(new CheckMachineIsActive('id0', self::MACHINE_ID));
 
         $this->messengerAsserter->assertQueueIsEmpty();
     }
@@ -107,7 +107,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertMessageAtPositionEquals(
             0,
-            new GetMachine(self::MACHINE_ID),
+            new GetMachine('id1', self::MACHINE_ID),
         );
 
         $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
@@ -133,7 +133,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
     public function testHandleMachineDoesNotExist(): void
     {
-        $message = new CheckMachineIsActive('invalid machine id');
+        $message = new CheckMachineIsActive('id0', 'invalid machine id');
 
         ($this->handler)($message);
 

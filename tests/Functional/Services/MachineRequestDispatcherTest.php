@@ -53,12 +53,12 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
     {
         return [
             MachineActionInterface::ACTION_CREATE => [
-                'request' => new CreateMachine(self::MACHINE_ID),
-                'expectedDispatchedRequest' => (new CreateMachine(self::MACHINE_ID))->incrementRetryCount(),
+                'request' => new CreateMachine('id0', self::MACHINE_ID),
+                'expectedDispatchedRequest' => (new CreateMachine('id0', self::MACHINE_ID))->incrementRetryCount(),
             ],
             MachineActionInterface::ACTION_CHECK_IS_ACTIVE => [
-                'request' => new CheckMachineIsActive(self::MACHINE_ID),
-                'expectedDispatchedRequest' => new CheckMachineIsActive(self::MACHINE_ID),
+                'request' => new CheckMachineIsActive('id0', self::MACHINE_ID),
+                'expectedDispatchedRequest' => new CheckMachineIsActive('id0', self::MACHINE_ID),
             ],
         ];
     }

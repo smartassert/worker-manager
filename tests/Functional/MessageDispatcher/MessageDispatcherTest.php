@@ -77,15 +77,15 @@ class MessageDispatcherTest extends AbstractBaseFunctionalTest
     {
         return [
             'create' => [
-                'message' => new CreateMachine(self::MACHINE_ID),
+                'message' => new CreateMachine('id0', self::MACHINE_ID),
                 'expectedDelayStamp' => null,
             ],
             'get' => [
-                'message' => new GetMachine(self::MACHINE_ID),
+                'message' => new GetMachine('id0', self::MACHINE_ID),
                 'expectedDelayStamp' => null,
             ],
             'check machine is active' => [
-                'message' => new CheckMachineIsActive(self::MACHINE_ID),
+                'message' => new CheckMachineIsActive('id0', self::MACHINE_ID),
                 'expectedDelayStamp' => new DelayStamp(10000),
             ],
         ];

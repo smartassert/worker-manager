@@ -89,7 +89,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $expectedMachineProvider = clone $machineProvider;
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
@@ -206,7 +206,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedMachine = clone $machine;
         $expectedMachineProvider = clone $machineProvider;
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
@@ -232,7 +232,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'machine' => $machine,
                 'machineProvider' => $machineProvider,
                 'expectedDispatchedMessages' => [
-                    (new GetMachine(self::MACHINE_ID))->incrementRetryCount()
+                    (new GetMachine(
+                        'id0',
+                        self::MACHINE_ID
+                    ))->incrementRetryCount()
                 ],
             ],
         ];
@@ -248,7 +251,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
 
         $expectedLoggedException = new AuthenticationException(
             $machine->getId(),
@@ -284,7 +287,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ObjectReflector::setProperty($message, $message::class, 'retryCount', $retryCount);
 
         $expectedLoggedException = new HttpException(
@@ -338,7 +341,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->setExceptionLoggerOnHandler($exceptionLogger);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
@@ -354,7 +357,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ObjectReflector::setProperty($message, $message::class, 'retryCount', 11);
 
         ($this->handler)($message);
