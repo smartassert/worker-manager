@@ -18,9 +18,12 @@ class MessageStateStore extends AbstractEntityStore
         $this->doStore($entity);
     }
 
-    public function remove(MessageState $messageState): void
+    public function remove(string $messageId): void
     {
-        $this->entityManager->remove($messageState);
-        $this->entityManager->flush();
+        $entity = $this->find($messageId);
+        if ($entity instanceof MessageState) {
+            $this->entityManager->remove($entity);
+            $this->entityManager->flush();
+        }
     }
 }

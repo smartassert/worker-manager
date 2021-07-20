@@ -22,21 +22,21 @@ class MessageStateHandler implements EventSubscriberInterface
     {
         return [
             SendMessageToTransportsEvent::class => [
-                ['createMessageState', 100],
+                ['create', 100],
             ],
             WorkerMessageReceivedEvent::class => [
-                ['setMessageStateHandling', 100],
+                ['setHandling', 100],
             ],
             WorkerMessageFailedEvent::class => [
-                ['setMessageStateHandled', 100],
+                ['remove', 100],
             ],
             WorkerMessageHandledEvent::class => [
-                ['setMessageStateHandled', 100],
+                ['remove', 100],
             ],
         ];
     }
 
-    public function createMessageState(SendMessageToTransportsEvent $event): void
+    public function create(SendMessageToTransportsEvent $event): void
     {
         $envelope = $event->getEnvelope();
         $message = $envelope->getMessage();
@@ -51,23 +51,8 @@ class MessageStateHandler implements EventSubscriberInterface
         }
     }
 
-    public function setMessageStateHandling(WorkerMessageReceivedEvent $event): void
+    public function setHandling(WorkerMessageReceivedEvent $event): void
     {
-        $this->setMessageState($event, MessageState::STATE_HANDLING);
-    }
-
-    public function setMessageStateHandled(WorkerMessageFailedEvent | WorkerMessageHandledEvent $event): void
-    {
-        $this->setMessageState($event, MessageState::STATE_HANDLED);
-    }
-
-    /**
-     * @param MessageState::STATE_* $state
-     */
-    private function setMessageState(
-        WorkerMessageReceivedEvent | WorkerMessageFailedEvent | WorkerMessageHandledEvent $event,
-        string $state
-    ): void {
         $envelope = $event->getEnvelope();
         $message = $envelope->getMessage();
 
@@ -75,9 +60,19 @@ class MessageStateHandler implements EventSubscriberInterface
             $messageState = $this->messageStateStore->find($message->getUniqueId());
 
             if ($messageState instanceof MessageState) {
-                $messageState->setState($state);
+                $messageState->setState(MessageState::STATE_HANDLING);
                 $this->messageStateStore->store($messageState);
             }
+        }
+    }
+
+    public function remove(WorkerMessageFailedEvent | WorkerMessageHandledEvent $event): void
+    {
+        $envelope = $event->getEnvelope();
+        $message = $envelope->getMessage();
+
+        if ($message instanceof UniqueRequestInterface) {
+            $this->messageStateStore->remove($message->getUniqueId());
         }
     }
 }

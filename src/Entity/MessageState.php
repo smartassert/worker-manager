@@ -11,7 +11,6 @@ class MessageState
 {
     public const STATE_DISPATCHED = 'dispatched';
     public const STATE_HANDLING = 'handling';
-    public const STATE_HANDLED = 'handled';
 
     /**
      * @ORM\Id
