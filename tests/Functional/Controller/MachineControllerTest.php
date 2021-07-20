@@ -99,7 +99,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id4'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
     }
 
     /**

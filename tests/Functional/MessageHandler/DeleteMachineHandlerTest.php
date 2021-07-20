@@ -111,7 +111,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id2'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
     }
 
     public function testInvokeMachineEntityMissing(): void

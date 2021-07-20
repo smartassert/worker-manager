@@ -121,8 +121,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
 
         $this->messageStateEntityAsserter->assertCount(2);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id2'));
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
     }
 
     /**

@@ -142,7 +142,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
     }
 
     public function testHandleWithUnsupportedProviderException(): void
@@ -214,7 +214,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         self::assertNotSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
     }
 
     /**

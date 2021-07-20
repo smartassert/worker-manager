@@ -135,7 +135,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         }
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
     }
 
     /**
@@ -311,7 +311,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $message->incrementRetryCount());
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
 
         self::assertSame(Machine::STATE_FIND_FINDING, $machine->getState());
         self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
