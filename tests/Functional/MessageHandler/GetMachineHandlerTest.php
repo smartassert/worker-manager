@@ -226,7 +226,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         }
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState($message->getUniqueId()));
     }
 
     /**

@@ -128,12 +128,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->requestIdFactory->reset(1);
 
+        $expectedRequest = $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
         $expectedRemoteMachine = new RemoteMachine($expectedDropletEntity);
         $this->messengerAsserter->assertQueueCount(1);
-        $this->messengerAsserter->assertMessageAtPositionEquals(
-            0,
-            $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID)
-        );
+        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedRequest);
 
         self::assertSame($expectedRemoteMachine->getState(), $this->machine->getState());
         self::assertSame(
@@ -142,7 +140,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState($expectedRequest->getUniqueId()));
     }
 
     public function testHandleWithUnsupportedProviderException(): void
@@ -214,7 +212,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         self::assertNotSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
 
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState($expectedMessage->getUniqueId()));
     }
 
     /**

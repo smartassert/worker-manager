@@ -52,7 +52,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedDispatchedRequest);
         $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState($request->getUniqueId()));
     }
 
     /**

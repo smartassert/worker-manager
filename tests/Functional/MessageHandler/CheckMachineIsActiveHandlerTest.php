@@ -12,9 +12,11 @@ use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
+use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\SequentialRequestIdFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
 class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
@@ -28,6 +30,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     private MachineStore $machineStore;
     private MachineRequestFactory $machineRequestFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
+    private SequentialRequestIdFactory $requestIdFactory;
 
     protected function setUp(): void
     {
@@ -52,6 +55,10 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
+
+        $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
+        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
+        $this->requestIdFactory = $requestIdFactory;
     }
 
     /**
@@ -120,9 +127,17 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
 
-        $this->messageStateEntityAsserter->assertCount(2);
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
-        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
+        $this->requestIdFactory->reset();
+
+        $expectedMessageStates = [
+            new MessageState($this->requestIdFactory->create()),
+            new MessageState($this->requestIdFactory->create()),
+        ];
+
+        $this->messageStateEntityAsserter->assertCount(count($expectedMessageStates));
+        foreach ($expectedMessageStates as $expectedMessageState) {
+            $this->messageStateEntityAsserter->assertHas($expectedMessageState);
+        }
     }
 
     /**
