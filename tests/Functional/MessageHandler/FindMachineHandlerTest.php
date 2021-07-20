@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Entity\MessageState;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
@@ -19,6 +20,7 @@ use App\Services\ExceptionLogger;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Mock\Services\MockExceptionLogger;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
@@ -42,6 +44,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
     private MachineRequestFactory $machineRequestFactory;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -70,6 +73,10 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -126,6 +133,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 $expectedMessage
             );
         }
+
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
     }
 
     /**
@@ -300,6 +310,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertQueueCount(1);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $message->incrementRetryCount());
 
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id1'));
+
         self::assertSame(Machine::STATE_FIND_FINDING, $machine->getState());
         self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
         self::assertEquals($machine, $this->machineStore->find(self::MACHINE_ID));
@@ -332,6 +345,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
 
         self::assertSame(Machine::STATE_FIND_NOT_FINDABLE, $machine->getState());
         self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
@@ -358,6 +372,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
 
         self::assertSame(Machine::STATE_FIND_NOT_FOUND, $machine->getState());
         self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));

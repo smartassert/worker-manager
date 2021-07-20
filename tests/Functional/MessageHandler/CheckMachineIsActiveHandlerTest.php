@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
+use App\Entity\MessageState;
 use App\Message\CheckMachineIsActive;
 use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
@@ -12,6 +13,7 @@ use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
@@ -25,6 +27,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MachineStore $machineStore;
     private MachineRequestFactory $machineRequestFactory;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -45,6 +48,10 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -61,6 +68,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)(new CheckMachineIsActive('id0', self::MACHINE_ID));
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
@@ -111,6 +119,10 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
+
+        $this->messageStateEntityAsserter->assertCount(2);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id2'));
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
     }
 
     /**
@@ -138,5 +150,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 }

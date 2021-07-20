@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Controller;
 use App\Controller\MachineController;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Entity\MessageState;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
 use App\Services\Entity\Factory\CreateFailureFactory;
@@ -14,6 +15,7 @@ use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +31,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     private MachineRequestFactory $machineRequestFactory;
     private string $machineUrl;
     private SequentialRequestIdFactory $requestIdFactory;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -49,6 +52,10 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
 
         $this->machineUrl = str_replace(
             MachineController::PATH_COMPONENT_ID,
@@ -90,6 +97,9 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createFindThenCreate(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
+
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id4'));
     }
 
     /**

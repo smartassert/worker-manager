@@ -29,3 +29,6 @@ services:
 
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
+
+    App\Tests\Services\Asserter\MessageStateEntityAsserter:
+        public: true

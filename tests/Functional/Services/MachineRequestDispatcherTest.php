@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services;
 
+use App\Entity\MessageState;
 use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\MachineRequestInterface;
 use App\Model\MachineActionInterface;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 
 class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
@@ -18,6 +20,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
 
     private MachineRequestDispatcher $dispatcher;
     private MessengerAsserter $messengerAsserter;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -30,6 +33,10 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
         $messengerAsserter = self::$container->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -44,6 +51,8 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
         $this->dispatcher->reDispatch($request);
 
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedDispatchedRequest);
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id0'));
     }
 
     /**

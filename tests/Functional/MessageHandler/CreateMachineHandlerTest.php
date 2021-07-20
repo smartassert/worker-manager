@@ -7,6 +7,7 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Entity\MessageState;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
@@ -25,6 +26,7 @@ use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Mock\Services\MockMachineManager;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
@@ -51,6 +53,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private EntityManagerInterface $entityManager;
     private MachineRequestFactory $machineRequestFactory;
     private SequentialRequestIdFactory $requestIdFactory;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -89,6 +92,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     public function testInvokeSuccess(): void
@@ -133,6 +140,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             $expectedRemoteMachine->getIpAddresses(),
             ObjectReflector::getProperty($this->machine, 'ip_addresses')
         );
+
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
     }
 
     public function testHandleWithUnsupportedProviderException(): void
@@ -156,6 +166,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
+
         self::assertSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
         self::assertSame(0, $message->getRetryCount());
 
@@ -200,6 +212,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
 
         self::assertNotSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
+
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState('id3'));
     }
 
     /**
@@ -249,6 +264,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
+
         self::assertSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
 
         $createFailure = $this->entityManager->find(CreateFailure::class, $this->machine->getId());
