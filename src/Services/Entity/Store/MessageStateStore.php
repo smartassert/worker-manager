@@ -26,4 +26,11 @@ class MessageStateStore extends AbstractEntityStore
             $this->entityManager->flush();
         }
     }
+
+    public function count(): int
+    {
+        $repository = $this->entityManager->getRepository(MessageState::class);
+
+        return count($repository->findAll());
+    }
 }
