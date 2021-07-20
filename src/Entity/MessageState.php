@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MessageState
 {
-    public const STATE_CREATED = 'created';
     public const STATE_DISPATCHED = 'dispatched';
     public const STATE_HANDLING = 'handling';
     public const STATE_HANDLED = 'handled';
@@ -32,7 +31,7 @@ class MessageState
      */
     public function __construct(
         string $id,
-        string $state = self::STATE_CREATED
+        string $state = self::STATE_DISPATCHED
     ) {
         $this->id = $id;
         $this->state = $state;
