@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Entity\MessageState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\UnsupportedProviderException;
@@ -18,6 +19,7 @@ use App\Services\Entity\Store\MachineStore;
 use App\Services\ExceptionLogger;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Mock\Services\MockExceptionLogger;
+use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -40,6 +42,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
+    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -64,6 +67,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::$container->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
+
+        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
+        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -89,13 +96,14 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $expectedMachineProvider = clone $machineProvider;
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
         self::assertEquals($expectedMachineProvider, $machineProvider);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
@@ -206,7 +214,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedMachine = clone $machine;
         $expectedMachineProvider = clone $machineProvider;
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
@@ -216,6 +224,9 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         foreach ($expectedDispatchedMessages as $index => $expectedMessage) {
             $this->messengerAsserter->assertMessageAtPositionEquals($index, $expectedMessage);
         }
+
+        $this->messageStateEntityAsserter->assertCount(1);
+        $this->messageStateEntityAsserter->assertHas(new MessageState($message->getUniqueId()));
     }
 
     /**
@@ -232,7 +243,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'machine' => $machine,
                 'machineProvider' => $machineProvider,
                 'expectedDispatchedMessages' => [
-                    (new GetMachine(self::MACHINE_ID))->incrementRetryCount()
+                    (new GetMachine(
+                        'id0',
+                        self::MACHINE_ID
+                    ))->incrementRetryCount()
                 ],
             ],
         ];
@@ -248,7 +262,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
 
         $expectedLoggedException = new AuthenticationException(
             $machine->getId(),
@@ -266,6 +280,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
@@ -284,7 +299,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ObjectReflector::setProperty($message, $message::class, 'retryCount', $retryCount);
 
         $expectedLoggedException = new HttpException(
@@ -303,6 +318,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
@@ -338,10 +354,11 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->setExceptionLoggerOnHandler($exceptionLogger);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
+        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     public function testHandleThrowsUnknownRemoteMachineException(): void
@@ -354,7 +371,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $message = new GetMachine($machine->getId());
+        $message = new GetMachine('id0', $machine->getId());
         ObjectReflector::setProperty($message, $message::class, 'retryCount', 11);
 
         ($this->handler)($message);

@@ -48,13 +48,13 @@ class RemoteRequestRetryDeciderTest extends AbstractBaseFunctionalTest
         return [
             'digitalocean ' . ApiLimitExceededException::class => [
                 'provider' => ProviderInterface::NAME_DIGITALOCEAN,
-                'request' => new GetMachine('id'),
+                'request' => new GetMachine('id0', 'id'),
                 'exception' => new ApiLimitExceededException(),
                 'expectedDecision' => false,
             ],
             'digitalocean ' . InvalidArgumentException::class => [
                 'provider' => ProviderInterface::NAME_DIGITALOCEAN,
-                'request' => new GetMachine('id'),
+                'request' => new GetMachine('id0', 'id'),
                 'exception' => new InvalidArgumentException(),
                 'expectedDecision' => true,
             ],

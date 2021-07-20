@@ -23,11 +23,12 @@ abstract class AbstractRemoteMachineRequest extends AbstractMachineRequest imple
      * @param MachineRequestInterface[] $onFailureCollection
      */
     public function __construct(
+        string $uniqueId,
         string $machineId,
         array $onSuccessCollection = [],
         array $onFailureCollection = []
     ) {
-        parent::__construct($machineId);
+        parent::__construct($uniqueId, $machineId);
 
         $this->onSuccessCollection = array_filter($onSuccessCollection, function ($value) {
             return $value instanceof MachineRequestInterface;

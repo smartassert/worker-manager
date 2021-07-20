@@ -27,16 +27,24 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     public function testCreateRemoteMachine(): void
     {
+        $this->assertMessageQueueIsEmpty();
+
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
+
+        $this->assertMessageQueueNotEmpty();
 
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
+
+        $this->assertMessageQueueIsEmpty();
     }
 
     public function testStatusForMissingLocalMachine(): void
     {
+        $this->assertMessageQueueIsEmpty();
+
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
 
@@ -46,6 +54,8 @@ class MachineCreationTest extends AbstractIntegrationTest
 
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
+
+        $this->assertMessageQueueNotEmpty();
 
         $expectedStates = [
             MachineEntity::STATE_FIND_RECEIVED,
@@ -62,6 +72,8 @@ class MachineCreationTest extends AbstractIntegrationTest
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
+
+        $this->assertMessageQueueIsEmpty();
     }
 
     /**
@@ -114,5 +126,23 @@ class MachineCreationTest extends AbstractIntegrationTest
         }
 
         self::assertSame($state, $this->getMachine()->getState());
+    }
+
+    private function assertMessageQueueIsEmpty(): void
+    {
+        self::assertSame(0, $this->getMessageQueueSize());
+    }
+
+    private function assertMessageQueueNotEmpty(): void
+    {
+        self::assertGreaterThan(0, $this->getMessageQueueSize());
+    }
+
+    private function getMessageQueueSize(): int
+    {
+        $response = $this->httpClient->get('/message-queue-size');
+        self::assertSame(200, $response->getStatusCode());
+
+        return (int) $response->getBody()->getContents();
     }
 }

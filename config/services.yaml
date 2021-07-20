@@ -135,3 +135,6 @@ services:
                 image: '%worker_image%'
                 tags:
                     - '%digitalocean_droplet_tag%'
+
+    App\Services\RequestIdFactoryInterface:
+        class: App\Services\RequestIdFactory
