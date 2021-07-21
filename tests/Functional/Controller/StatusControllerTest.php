@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Controller;
 
-use App\Controller\MessageQueueSizeController;
+use App\Controller\StatusController;
 use App\Entity\MessageState;
 use App\Services\Entity\Store\MessageStateStore;
 use App\Tests\AbstractBaseFunctionalTest;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
-class MessageQueueSizeControllerTest extends AbstractBaseFunctionalTest
+class StatusControllerTest extends AbstractBaseFunctionalTest
 {
     private MessageStateStore $messageStateStore;
 
@@ -25,21 +26,34 @@ class MessageQueueSizeControllerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider getDataProvider
      *
-     * @param MessageState[] $messageStateEntities     */
-    public function testGet(array $messageStateEntities, int $expectedMessageQueueSize): void
+     * @param MessageState[]                                      $messageStateEntities
+     * @param array{'version': string, 'message-queue-size': int} $expectedResponseData
+     */
+    public function testGet(array $messageStateEntities, array $expectedResponseData): void
     {
         foreach ($messageStateEntities as $messageStateEntity) {
             $this->messageStateStore->store($messageStateEntity);
         }
 
-        $this->client->request('GET', MessageQueueSizeController::ROUTE);
+        $this->client->request('GET', StatusController::ROUTE);
 
         $response = $this->client->getResponse();
 
         self::assertSame(200, $response->getStatusCode());
+        self::assertInstanceOf(JsonResponse::class, $response);
+
+        $versionParameter = self::$container->getParameter('version');
+        $versionParameter = is_string($versionParameter) ? $versionParameter : 'unknown';
+
+        $expectedResponseData['version'] = str_replace(
+            '{{ version }}',
+            $versionParameter,
+            $expectedResponseData['version']
+        );
+
         self::assertSame(
-            (string) $expectedMessageQueueSize,
-            $response->getContent()
+            $expectedResponseData,
+            json_decode((string) $response->getContent(), true)
         );
     }
 
@@ -51,13 +65,19 @@ class MessageQueueSizeControllerTest extends AbstractBaseFunctionalTest
         return [
             'none' => [
                 'messageStateEntities' => [],
-                'expectedMessageQueueSize' => 0,
+                'expectedResponseData' => [
+                    'version' => '{{ version }}',
+                    'message-queue-size' => 0,
+                ],
             ],
             'one' => [
                 'messageStateEntities' => [
                     new MessageState('id0'),
                 ],
-                'expectedMessageQueueSize' => 1,
+                'expectedResponseData' => [
+                    'version' => '{{ version }}',
+                    'message-queue-size' => 1,
+                ],
             ],
             'many' => [
                 'messageStateEntities' => [
@@ -65,7 +85,10 @@ class MessageQueueSizeControllerTest extends AbstractBaseFunctionalTest
                     new MessageState('id1'),
                     new MessageState('id2'),
                 ],
-                'expectedMessageQueueSize' => 3,
+                'expectedResponseData' => [
+                    'version' => '{{ version }}',
+                    'message-queue-size' => 3,
+                ],
             ],
         ];
     }
