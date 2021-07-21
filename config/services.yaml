@@ -44,6 +44,11 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Controller\StatusController:
+        tags: ['controller.service_arguments']
+        arguments:
+            $version: '%version%'
+
     App\Controller\VersionController:
         tags: ['controller.service_arguments']
         arguments:
