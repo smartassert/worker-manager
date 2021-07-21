@@ -49,11 +49,6 @@ services:
         arguments:
             $version: '%version%'
 
-    App\Controller\VersionController:
-        tags: ['controller.service_arguments']
-        arguments:
-            $version: '%version%'
-
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

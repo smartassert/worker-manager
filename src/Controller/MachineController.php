@@ -28,7 +28,7 @@ class MachineController
     ) {
     }
 
-    #[Route(self::PATH_MACHINE, name: 'create', methods: ['POST'])]
+    #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
     public function create(string $id, MachineProviderStore $machineProviderStore): Response
     {
         $machine = $this->machineStore->find($id);
@@ -50,7 +50,7 @@ class MachineController
         return new Response('', 202);
     }
 
-    #[Route(self::PATH_MACHINE, name: 'status', methods: ['GET', 'HEAD'])]
+    #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
     public function status(string $id, CreateFailureStore $createFailureStore): Response
     {
         $machine = $this->machineStore->find($id);
@@ -73,7 +73,7 @@ class MachineController
         return new JsonResponse($responseData);
     }
 
-    #[Route(self::PATH_MACHINE, name: 'delete', methods: ['DELETE'])]
+    #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
     public function delete(string $id): Response
     {
         $machine = $this->machineStore->find($id);

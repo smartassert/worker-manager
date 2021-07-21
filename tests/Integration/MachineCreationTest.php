@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Controller\MachineController;
+use App\Controller\StatusController;
 use App\Entity\Machine as MachineEntity;
 use App\Tests\Model\Machine;
 
@@ -140,9 +141,14 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     private function getMessageQueueSize(): int
     {
-        $response = $this->httpClient->get('/message-queue-size');
-        self::assertSame(200, $response->getStatusCode());
+        $response = $this->httpClient->get(StatusController::ROUTE);
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
 
-        return (int) $response->getBody()->getContents();
+        $responseData = json_decode((string) $response->getBody()->getContents(), true);
+        self::assertIsArray($responseData);
+
+        $messageQueueSize = $responseData['message-queue-size'] ?? -1;
+
+        return is_int($messageQueueSize) ? $messageQueueSize : -1;
     }
 }
