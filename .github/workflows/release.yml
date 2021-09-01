@@ -24,11 +24,18 @@ jobs:
         run: |
           [[ -n "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
+
       - name: Read build config
-        id: build-config
+        id: image-versions
         env:
           ENV_FILE_PATH: ./build.env
-        run: ./ci/read-env-file.sh
+        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
       - name: Examine build config
         run: |
