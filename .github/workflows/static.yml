@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run
-        run: docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./ci/*.sh
+        run: docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./ci/scripts/*.sh
 
   actionlint:
     name: Actionlint
