@@ -17,47 +17,31 @@ jobs:
 
       - name: Set version
         id: version
-        run: |
-          VERSION=$(./ci/scripts/create-version-label.sh)
-          echo "::set-output name=value::$VERSION"
+        run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Update build.env
         id: update
         env:
           WORKER_IMAGE: ${{ github.event.client_payload.worker_image }}
-        run: |
-          cp build.env build.old
-          rm -f build.env
-          echo "WORKER_IMAGE=$WORKER_IMAGE" >> build.env
-
-          if cmp --quiet build.env build.old ; then
-            echo "::set-output name=has_changes::false"
-          else
-            echo "::set-output name=has_changes::true"
-          fi
-
-          rm build.old
+        run: echo "WORKER_IMAGE=$WORKER_IMAGE" > build.env
 
       - name: Commit changes
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Automatic build.env for worker image ${{ github.event.client_payload.worker_image }}"
 
       - name: Get latest commit hash
         id: commit_hash
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
-        run: |
-          COMMIT_HASH=$(git rev-parse HEAD)
-          echo "::set-output name=value::$COMMIT_HASH"
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
+        run: echo "::set-output name=value::$(git rev-parse HEAD)"
 
       - name: Create release
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           TAG: ${{ steps.version.outputs.value }}
           TARGET: ${{ steps.commit_hash.outputs.value }}
           TITLE: "Automatic release ${{ steps.version.outputs.value }}"
           NOTES: "Worker image ${{ github.event.client_payload.worker_image }}"
-        run: |
-          gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
+        run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
