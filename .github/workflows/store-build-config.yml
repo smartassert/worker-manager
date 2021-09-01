@@ -17,9 +17,7 @@ jobs:
 
       - name: Set version
         id: version
-        run: |
-          VERSION=$(./ci/scripts/create-version-label.sh)
-          echo "::set-output name=value::$VERSION"
+        run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Update build.env
         id: update
