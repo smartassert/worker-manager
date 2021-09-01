@@ -32,7 +32,7 @@ jobs:
           ref: main
 
       - name: Read build config
-        id: image-versions
+        id: build-config
         env:
           ENV_FILE_PATH: ./build.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
