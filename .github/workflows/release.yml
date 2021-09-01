@@ -22,7 +22,7 @@ jobs:
         env:
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
+          [[ -n "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
       - name: Read build config
         id: build-config
