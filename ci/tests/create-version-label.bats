@@ -25,7 +25,7 @@ create_git_mock() {
 }
 
 @test "$script_name: minor version is incremented" {
-  export current_tag="0.1"
+  current_tag="0.1"
   expected_version_label="0.2"
 
   create_git_mock "$current_tag"
@@ -37,7 +37,7 @@ create_git_mock() {
 }
 
 @test "$script_name: major version is not incremented when minor version reaches roll-over boundary" {
-  export current_tag="1.9"
+  current_tag="1.9"
   expected_version_label="1.10"
 
   create_git_mock "$current_tag"
