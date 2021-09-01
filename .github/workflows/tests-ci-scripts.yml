@@ -1,0 +1,22 @@
+name: CI Script Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  bats:
+    name: Bats unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install bats
+        run: npm --prefix ./ci/tests/ install
+
+      - name: Run
+        run: ./ci/tests/node_modules/.bin/bats ./ci/tests/*.bats
