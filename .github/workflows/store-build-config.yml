@@ -34,9 +34,7 @@ jobs:
       - name: Get latest commit hash
         id: commit_hash
         if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
-        run: |
-          COMMIT_HASH=$(git rev-parse HEAD)
-          echo "::set-output name=value::$COMMIT_HASH"
+        run: echo "::set-output name=value::$(git rev-parse HEAD)"
 
       - name: Create release
         if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
