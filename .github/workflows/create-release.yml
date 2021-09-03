@@ -1,0 +1,84 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit-hash:
+        description: Commit hash to release from
+        required: true
+      should-release:
+        description: Create release?
+        required: true
+        default: "true"
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      commit-hash: ${{ github.event.inputs.commit-hash }}
+      should-release: ${{ github.event.inputs.should-release }}
+      release-tag: ${{ steps.release-tag.outputs.value }}
+      worker-image: ${{ steps.worker-image.outputs.WORKER_IMAGE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.commit-hash }}
+
+      - name: Set release tag
+        id: release-tag
+        run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
+
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
+
+      - name: Read worker image
+        id: worker-image
+        env:
+          ENV_FILE_PATH: ./build.env
+        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+
+  verify-setup:
+    name: Verify setup
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Commit hash
+        run: echo ${{ needs.setup.outputs.commit-hash }}
+
+      - name: Should release?
+        run: echo ${{ needs.setup.outputs.should-release }}
+
+      - name: Release tag
+        run: echo ${{ needs.setup.outputs.release-tag }}
+
+      - name: Worker image
+        run: echo ${{ needs.setup.outputs.worker-image }}
+
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.should-release == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.setup.outputs.commit-hash }}
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          TAG: ${{ needs.setup.outputs.release-tag }}
+          TARGET: ${{ needs.setup.outputs.commit-hash }}
+          TITLE: "Automatic release ${{ needs.setup.outputs.release-tag }}"
+          NOTES: "Worker image ${{ needs.setup.outputs.worker-image }}"
+        run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
