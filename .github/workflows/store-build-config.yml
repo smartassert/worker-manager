@@ -3,6 +3,15 @@ name: Store build config
 on:
   repository_dispatch:
     types: [worker-deploy]
+  workflow_dispatch:
+    inputs:
+      worker_image:
+        description: Worker image ID
+        required: true
+      should-release:
+        description: Create release?
+        required: true
+        default: "false"
 
 jobs:
   build:
@@ -22,8 +31,11 @@ jobs:
       - name: Update build.env
         id: update
         env:
-          WORKER_IMAGE: ${{ github.event.client_payload.worker_image }}
-        run: echo "WORKER_IMAGE=$WORKER_IMAGE" > build.env
+          REPOSITORY_DISPATCH_WORKER_IMAGE: ${{ github.event.client_payload.worker_image }}
+          WORKFLOW_DISPATCH_WORKER_IMAGE: ${{ github.event.inputs.worker-image }}
+        run: |
+          WORKER_IMAGE=$(./ci/scripts/select-worker-image-input.sh)
+          echo "WORKER_IMAGE=$WORKER_IMAGE" > build.env
 
       - name: Commit changes
         id: auto-commit-action
