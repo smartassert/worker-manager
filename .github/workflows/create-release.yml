@@ -18,7 +18,7 @@ jobs:
     outputs:
       commit-hash: ${{ github.event.inputs.commit-hash }}
       should-release: ${{ github.event.inputs.should-release }}
-      release-tag: ${{ steps.version.outputs.value }}
+      release-tag: ${{ steps.release-tag.outputs.value }}
       worker-image: ${{ steps.worker-image.outputs.WORKER_IMAGE }}
 
     steps:
@@ -27,8 +27,8 @@ jobs:
         with:
           ref: ${{ github.event.inputs.commit-hash }}
 
-      - name: Set version
-        id: version
+      - name: Set release tag
+        id: release-tag
         run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Checkout bash-read-env-file
