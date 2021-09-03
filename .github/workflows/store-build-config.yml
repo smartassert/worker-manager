@@ -14,7 +14,6 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.value }}
       worker-image: ${{ steps.worker-image.outputs.value }}
 
     steps:
@@ -22,10 +21,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
-
-      - name: Set version
-        id: version
-        run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Set worker image version
         id: worker-image
@@ -42,18 +37,7 @@ jobs:
     needs: setup
 
     steps:
-      - name: Verify version
-        env:
-          VALUE: ${{ needs.setup.outputs.version }}
-        run: |
-          if [ -z "$VALUE" ]; then
-            echo "Version has not been set"
-            exit 1
-          fi
-
-          echo "$VALUE"
-
-      - name: Verify worker image version
+      - name: Verify worker image
         env:
           VALUE: ${{ needs.setup.outputs.worker-image }}
         run: |
@@ -88,8 +72,8 @@ jobs:
         with:
           commit_message: "Automatic build.env for worker image ${{ needs.setup.outputs.worker-image }}"
 
-  create-release:
-    name: Create release
+  trigger-create-release:
+    name: Trigger create release workflow
     runs-on: ubuntu-latest
     needs: [setup, update-build-configuration]
     if: ${{ needs.update-build-configuration.outputs.create-release == 'true' }}
@@ -101,14 +85,16 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
       - name: Get latest commit hash
-        id: commit_hash
+        id: commit-hash
         run: echo "::set-output name=value::$(git rev-parse HEAD)"
 
-      - name: Create release
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ needs.setup.outputs.version }}
-          TARGET: ${{ steps.commit_hash.outputs.value }}
-          TITLE: "Automatic release ${{ needs.setup.outputs.version }}"
-          NOTES: "Worker image ${{ needs.setup.outputs.worker-image }}"
-        run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
+      - name: Trigger workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Create release
+          token: ${{ secrets.PAT_TOKEN_SELF }}
+          inputs: |
+            {
+              "commit-hash": "${{ steps.commit-hash.outputs.value }}",
+              "should-release": "${{ steps.commit-hash.outputs.value }}"
+            }
