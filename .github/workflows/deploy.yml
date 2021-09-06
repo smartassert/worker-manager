@@ -1,0 +1,24 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      worker_manager_version:
+        description: Worker manager version
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dispatch worker-manager-release event to smartassert/worker-manager-deploy
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.WORKER_MANAGER_DEPLOY_TOKEN }}
+          repository: smartassert/worker-manager-deploy
+          event-type: worker-manager-release
+          client-payload: |
+            {
+              "worker_manager_version": "${{ github.event.inputs.worker_manager_version }}"
+            }
