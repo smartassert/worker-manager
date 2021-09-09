@@ -25,11 +25,9 @@ jobs:
       - name: Set worker image version
         id: worker-image
         env:
-          REPOSITORY_DISPATCH_WORKER_IMAGE: ${{ github.event.client_payload.worker_image }}
-          WORKFLOW_DISPATCH_WORKER_IMAGE: ${{ github.event.inputs.worker_image }}
-        run: |
-          WORKER_IMAGE=$(./ci/scripts/select-worker-image-input.sh)
-          echo "::set-output name=value::$WORKER_IMAGE"
+          VALUE1: ${{ github.event.client_payload.worker_image }}
+          VALUE2: ${{ github.event.inputs.worker_image }}
+        run: echo "::set-output name=value::$(./ci/scripts/select-exclusive-value-from-two-values.sh)"
 
   verify-setup:
     name: Verify setup
@@ -41,12 +39,7 @@ jobs:
         env:
           VALUE: ${{ needs.setup.outputs.worker-image }}
         run: |
-          if [ -z "$VALUE" ]; then
-            echo "Worker image has not been set"
-            exit 1
-          fi
-
-          echo "$VALUE"
+          [ "" != "$VALUE" ] && echo "$VALUE"
 
   update-build-configuration:
     name: Update build configuration
