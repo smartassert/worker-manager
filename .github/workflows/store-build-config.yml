@@ -22,12 +22,19 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
       - name: Set worker image version
         id: worker-image
         env:
           VALUE1: ${{ github.event.client_payload.worker_image }}
           VALUE2: ${{ github.event.inputs.worker_image }}
-        run: echo "::set-output name=value::$(./ci/scripts/select-exclusive-value-from-two-values.sh)"
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
 
   verify-setup:
     name: Verify setup
