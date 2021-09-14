@@ -42,11 +42,19 @@ jobs:
     needs: setup
 
     steps:
-      - name: Verify worker image
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
+      - name: Output
         env:
-          VALUE: ${{ needs.setup.outputs.worker-image }}
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
         run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
+          echo "$OUTPUTS"
+          ./vendor/smartassert/bash-ga-ci-tools/src/json-contains-no-empty-values.sh
 
   update-build-configuration:
     name: Update build configuration

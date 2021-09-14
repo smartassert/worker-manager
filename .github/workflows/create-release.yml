@@ -50,22 +50,24 @@ jobs:
     needs: setup
 
     steps:
-      - name: Commit hash
-        run: echo ${{ needs.setup.outputs.commit-hash }}
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
 
-      - name: Should release?
-        run: echo ${{ needs.setup.outputs.should-release }}
-
-      - name: Release tag
-        run: echo ${{ needs.setup.outputs.release-tag }}
-
-      - name: Worker image
-        run: echo ${{ needs.setup.outputs.worker-image }}
+      - name: Output
+        env:
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
+        run: |
+          echo "$OUTPUTS"
+          ./vendor/smartassert/bash-ga-ci-tools/src/json-contains-no-empty-values.sh
 
   create-release:
     name: Create release
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [setup, verify-setup]
     if: ${{ needs.setup.outputs.should-release == 'true' }}
 
     steps:
