@@ -96,5 +96,5 @@ jobs:
           inputs: |
             {
               "commit-hash": "${{ steps.commit-hash.outputs.value }}",
-              "should-release": "${{ steps.commit-hash.outputs.value }}"
+              "should-release": "true"
             }
