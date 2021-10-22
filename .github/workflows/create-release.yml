@@ -3,10 +3,10 @@ name: Create release
 on:
   workflow_dispatch:
     inputs:
-      commit-hash:
+      commit_hash:
         description: Commit hash to release from
         required: true
-      should-release:
+      should_release:
         description: Create release?
         required: true
         default: "true"
@@ -16,8 +16,8 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      commit-hash: ${{ github.event.inputs.commit-hash }}
-      should-release: ${{ github.event.inputs.should-release }}
+      commit-hash: ${{ github.event.inputs.commit_hash }}
+      should-release: ${{ github.event.inputs.should_release }}
       release-tag: ${{ steps.release-tag.outputs.value }}
       worker-image: ${{ steps.worker-image.outputs.WORKER_IMAGE }}
 
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.inputs.commit-hash }}
+          ref: ${{ github.event.inputs.commit_hash }}
 
       - name: Set release tag
         id: release-tag
