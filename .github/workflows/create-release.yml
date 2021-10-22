@@ -12,8 +12,8 @@ on:
         default: "true"
 
 jobs:
-  setup:
-    name: Setup
+  create-release:
+    name: Create release
     runs-on: ubuntu-latest
 
     steps:
