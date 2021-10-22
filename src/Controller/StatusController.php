@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Model\Status;
 use App\Services\Entity\Store\MessageStateStore;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,9 +19,9 @@ class StatusController
     #[Route(self::ROUTE, name: 'status', methods: ['GET'])]
     public function get(): JsonResponse
     {
-        return new JsonResponse(new Status(
-            $this->version,
-            $this->messageStateStore->count(),
-        ));
+        return new JsonResponse([
+            'version' => $this->version,
+            'idle' => 0 === $this->messageStateStore->count(),
+        ]);
     }
 }

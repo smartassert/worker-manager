@@ -26,8 +26,8 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider getDataProvider
      *
-     * @param MessageState[]                                      $messageStateEntities
-     * @param array{'version': string, 'message-queue-size': int} $expectedResponseData
+     * @param MessageState[]                            $messageStateEntities
+     * @param array{"version": string, "idle": boolean} $expectedResponseData
      */
     public function testGet(array $messageStateEntities, array $expectedResponseData): void
     {
@@ -63,23 +63,23 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
     public function getDataProvider(): array
     {
         return [
-            'none' => [
+            'no message state entities' => [
                 'messageStateEntities' => [],
                 'expectedResponseData' => [
                     'version' => '{{ version }}',
-                    'message-queue-size' => 0,
+                    'idle' => true,
                 ],
             ],
-            'one' => [
+            'one message state entity' => [
                 'messageStateEntities' => [
                     new MessageState('id0'),
                 ],
                 'expectedResponseData' => [
                     'version' => '{{ version }}',
-                    'message-queue-size' => 1,
+                    'idle' => false,
                 ],
             ],
-            'many' => [
+            'many message state entities' => [
                 'messageStateEntities' => [
                     new MessageState('id0'),
                     new MessageState('id1'),
@@ -87,7 +87,7 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
                 ],
                 'expectedResponseData' => [
                     'version' => '{{ version }}',
-                    'message-queue-size' => 3,
+                    'idle' => false,
                 ],
             ],
         ];
