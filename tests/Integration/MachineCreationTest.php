@@ -28,23 +28,23 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     public function testCreateRemoteMachine(): void
     {
-        $this->assertMessageQueueIsEmpty();
+        $this->assertIsIdle();
 
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
 
-        $this->assertMessageQueueNotEmpty();
+        $this->assertNotIsIdle();
 
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
 
-        $this->assertMessageQueueIsEmpty();
+        $this->assertIsIdle();
     }
 
     public function testStatusForMissingLocalMachine(): void
     {
-        $this->assertMessageQueueIsEmpty();
+        $this->assertIsIdle();
 
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
@@ -56,7 +56,7 @@ class MachineCreationTest extends AbstractIntegrationTest
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
 
-        $this->assertMessageQueueNotEmpty();
+        $this->assertNotIsIdle();
 
         $expectedStates = [
             MachineEntity::STATE_FIND_RECEIVED,
@@ -74,7 +74,7 @@ class MachineCreationTest extends AbstractIntegrationTest
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
 
-        $this->assertMessageQueueIsEmpty();
+        $this->assertIsIdle();
     }
 
     /**
@@ -129,26 +129,26 @@ class MachineCreationTest extends AbstractIntegrationTest
         self::assertSame($state, $this->getMachine()->getState());
     }
 
-    private function assertMessageQueueIsEmpty(): void
+    private function assertIsIdle(): void
     {
-        self::assertSame(0, $this->getMessageQueueSize());
+        self::assertTrue($this->getIsIdle());
     }
 
-    private function assertMessageQueueNotEmpty(): void
+    private function assertNotIsIdle(): void
     {
-        self::assertGreaterThan(0, $this->getMessageQueueSize());
+        self::assertFalse($this->getIsIdle());
     }
 
-    private function getMessageQueueSize(): int
+    private function getIsIdle(): bool
     {
         $response = $this->httpClient->get(StatusController::ROUTE);
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
 
-        $responseData = json_decode((string) $response->getBody()->getContents(), true);
+        $responseData = json_decode($response->getBody()->getContents(), true);
         self::assertIsArray($responseData);
 
-        $messageQueueSize = $responseData['message-queue-size'] ?? -1;
+        $isIdle = $responseData['idle'] ?? false;
 
-        return is_int($messageQueueSize) ? $messageQueueSize : -1;
+        return is_bool($isIdle) ? $isIdle : false;
     }
 }
