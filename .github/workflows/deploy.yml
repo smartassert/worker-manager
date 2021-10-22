@@ -12,13 +12,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Dispatch worker-manager-release event to smartassert/worker-manager-deploy
+      - name: Dispatch service-configure event to image builder
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.WORKER_MANAGER_DEPLOY_TOKEN }}
-          repository: smartassert/worker-manager-deploy
-          event-type: worker-manager-release
+          token: ${{ secrets.IMAGE_BUILDER_TOKEN }}
+          repository: smartassert/image-builder
+          event-type: service-configure
           client-payload: |
             {
-              "worker_manager_version": "${{ github.event.inputs.worker_manager_version }}"
+              "service_id": "worker-manager",
+              "version": "${{ github.event.inputs.worker_manager_version }}"
+            }
+
+      - name: Dispatch service-configure event to instance manager
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
+          repository: smartassert/instance-manager
+          event-type: service-configure
+          client-payload: |
+            {
+              "service_id": "worker-manager",
+              "state_url": "/",
+              "health_check_url": "/health-check"
             }
