@@ -71,7 +71,7 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
       - name: Update
-        run: (echo "$(cat)") <<< "${{ needs.setup.outputs.worker-image }}" > ./worker_image
+        run: echo -n "$WORKER_IMAGE" > ./worker_image
 
       - name: Commit
         id: auto-commit-action
