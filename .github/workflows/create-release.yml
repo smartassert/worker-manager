@@ -35,7 +35,17 @@ jobs:
 
       - name: Set release tag
         id: release_tag
-        run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
+        run: |
+          RELEASE_TAG=$(./ci/scripts/create-version-label.sh)
+          TAG_EXISTENCE_COUNT=$(git tag | grep "$RELEASE_TAG" -c)
+
+          if [ "0" != "$TAG_EXISTENCE_COUNT" ]; then
+            echo "Generated release tag \"$RELEASE_TAG\" already exists"
+            git tag
+            exit 1
+          fi
+
+          echo "::set-output name=value::$RELEASE_TAG"
 
       - name: Read worker image
         id: worker_image
