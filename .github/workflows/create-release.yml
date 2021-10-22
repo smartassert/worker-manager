@@ -18,8 +18,8 @@ jobs:
     outputs:
       commit-hash: ${{ github.event.inputs.commit_hash }}
       should-release: ${{ github.event.inputs.should_release }}
-      release-tag: ${{ steps.release-tag.outputs.value }}
-      worker-image: ${{ steps.worker-image.outputs.value }}
+      release-tag: ${{ steps.release_tag.outputs.value }}
+      worker-image: ${{ steps.worker_image.outputs.value }}
 
     steps:
       - name: Checkout
@@ -28,11 +28,11 @@ jobs:
           ref: ${{ github.event.inputs.commit_hash }}
 
       - name: Set release tag
-        id: release-tag
+        id: release_tag
         run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Read worker image
-        id: worker-image
+        id: worker_image
         run: echo "::set-output name=value::$(cat ./worker_image)"
 
   verify-setup:

@@ -25,12 +25,12 @@ jobs:
           [[ -n "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
       - name: Read worker image
-        id: build-config
+        id: build_config
         run: echo "::set-output name=value::$(cat ./worker_image)"
 
       - name: Examine build config
         run: |
-          echo WORKER_IMAGE ${{ steps.build-config.outputs.value }}
+          echo WORKER_IMAGE ${{ steps.build_config.outputs.value }}
           echo VERSION ${{ steps.version.outputs.value }}
 
       - name: Set up Docker Buildx
@@ -50,7 +50,7 @@ jobs:
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
           build-args: |
             VERSION=${{ steps.version.outputs.value }}
-            WORKER_IMAGE=${{ steps.build-config.outputs.value }}
+            WORKER_IMAGE=${{ steps.build_config.outputs.value }}
 
       - name: Trigger deploy workflow
         if: ${{ github.event_name == 'release' }}
