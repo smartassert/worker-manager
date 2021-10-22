@@ -26,18 +26,14 @@ jobs:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.worker_image }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.worker_image }}
         run: |
-          VALUE="${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
-          if [ "" = "$VALUE" ]; then
+          WORKER_IMAGE="${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
+          if [ "" = "$WORKER_IMAGE" ]; then
             echo "worker_image not set"
             exit 1
           fi
 
-          echo "::set-output name=value::$VALUE"
-
-      - name: Update
-        env:
-          WORKER_IMAGE: ${{ steps.worker_image.outputs.value }}
-        run: echo -n "$WORKER_IMAGE" > ./worker_image
+          echo -n "$WORKER_IMAGE" > ./worker_image
+          echo "::set-output name=value::$WORKER_IMAGE"
 
       - name: Commit
         id: commit
