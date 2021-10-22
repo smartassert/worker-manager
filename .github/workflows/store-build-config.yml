@@ -94,12 +94,10 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
       - name: Trigger workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Create release
-          token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: |
-            {
-              "commit_hash": "${{ needs.update-build-configuration.outputs.commit-hash }}",
-              "should_release": "true"
-            }
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+        run:
+          gh workflow run create-release.yml \
+          -f commit_hash="${{ needs.update-build-configuration.outputs.commit-hash }}" \
+          -f should_release="true"
