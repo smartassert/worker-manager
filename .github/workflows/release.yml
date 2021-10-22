@@ -63,11 +63,7 @@ jobs:
 
       - name: Trigger deploy workflow
         if: ${{ github.event_name == 'release' }}
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Deploy
-          token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: |
-            {
-              "worker_manager_version": "${{ steps.version.outputs.value }}"
-            }
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+        run:
+          gh workflow run deploy.yml -f worker_manager_version="${{ steps.version.outputs.value }}"
