@@ -14,7 +14,7 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      worker-image: ${{ steps.worker_image.outputs.value }}
+      worker_image: ${{ steps.worker_image.outputs.value }}
 
     steps:
       - name: Checkout
@@ -72,14 +72,14 @@ jobs:
 
       - name: Update
         env:
-          WORKER_IMAGE: ${{ needs.setup.outputs.worker-image }}
+          WORKER_IMAGE: ${{ needs.setup.outputs.worker_image }}
         run: echo "WORKER_IMAGE=$WORKER_IMAGE" > build.env
 
       - name: Commit
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic build.env for worker image ${{ needs.setup.outputs.worker-image }}"
+          commit_message: "Automatic build.env for worker image ${{ needs.setup.outputs.worker_image }}"
 
   trigger-create-release:
     name: Trigger create release workflow

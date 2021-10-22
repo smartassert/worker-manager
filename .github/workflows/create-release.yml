@@ -16,10 +16,10 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      commit-hash: ${{ github.event.inputs.commit_hash }}
-      should-release: ${{ github.event.inputs.should_release }}
-      release-tag: ${{ steps.release_tag.outputs.value }}
-      worker-image: ${{ steps.worker_image.outputs.WORKER_IMAGE }}
+      commit_hash: ${{ github.event.inputs.commit_hash }}
+      should_release: ${{ github.event.inputs.should_release }}
+      release_tag: ${{ steps.release_tag.outputs.value }}
+      worker_image: ${{ steps.worker_image.outputs.WORKER_IMAGE }}
 
     steps:
       - name: Checkout
@@ -68,19 +68,19 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     needs: [setup, verify-setup]
-    if: ${{ needs.setup.outputs.should-release == 'true' }}
+    if: ${{ needs.setup.outputs.should_release == 'true' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ needs.setup.outputs.commit-hash }}
+          ref: ${{ needs.setup.outputs.commit_hash }}
 
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ needs.setup.outputs.release-tag }}
-          TARGET: ${{ needs.setup.outputs.commit-hash }}
-          TITLE: "Automatic release ${{ needs.setup.outputs.release-tag }}"
-          NOTES: "Worker image ${{ needs.setup.outputs.worker-image }}"
+          TAG: ${{ needs.setup.outputs.release_tag }}
+          TARGET: ${{ needs.setup.outputs.commit_hash }}
+          TITLE: "Automatic release ${{ needs.setup.outputs.release_tag }}"
+          NOTES: "Worker image ${{ needs.setup.outputs.worker_image }}"
         run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
