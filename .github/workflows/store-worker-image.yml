@@ -1,4 +1,4 @@
-name: Store build config
+name: store-worker-image
 
 on:
   repository_dispatch:
