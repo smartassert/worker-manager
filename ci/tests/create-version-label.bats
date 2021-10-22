@@ -47,3 +47,34 @@ create_git_mock() {
   assert_success
   assert_output "$expected_version_label"
 }
+
+@test "$script_name: latest tag is selected from many current pre-sorted tags" {
+  current_tag="0.1
+0.2
+0.3
+0.4"
+  expected_version_label="0.5"
+
+  create_git_mock "$current_tag"
+
+  run main
+
+  assert_success
+  assert_output "$expected_version_label"
+}
+
+@test "$script_name: latest tag is selected from many current un-sorted tags" {
+  current_tag="0.1
+0.10
+0.2
+0.3
+0.4"
+  expected_version_label="0.11"
+
+  create_git_mock "$current_tag"
+
+  run main
+
+  assert_success
+  assert_output "$expected_version_label"
+}
