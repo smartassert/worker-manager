@@ -98,6 +98,6 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_SELF }}
           inputs: |
             {
-              "commit-hash": "${{ needs.update-build-configuration.outputs.commit-hash }}",
-              "should-release": "true"
+              "commit_hash": "${{ needs.update-build-configuration.outputs.commit-hash }}",
+              "should_release": "true"
             }
