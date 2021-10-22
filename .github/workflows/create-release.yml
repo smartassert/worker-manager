@@ -18,8 +18,8 @@ jobs:
     outputs:
       commit-hash: ${{ github.event.inputs.commit_hash }}
       should-release: ${{ github.event.inputs.should_release }}
-      release-tag: ${{ steps.release-tag.outputs.value }}
-      worker-image: ${{ steps.worker-image.outputs.WORKER_IMAGE }}
+      release-tag: ${{ steps.release_tag.outputs.value }}
+      worker-image: ${{ steps.worker_image.outputs.WORKER_IMAGE }}
 
     steps:
       - name: Checkout
@@ -28,7 +28,7 @@ jobs:
           ref: ${{ github.event.inputs.commit_hash }}
 
       - name: Set release tag
-        id: release-tag
+        id: release_tag
         run: echo "::set-output name=value::$(./ci/scripts/create-version-label.sh)"
 
       - name: Checkout bash-read-env-file
@@ -39,7 +39,7 @@ jobs:
           ref: main
 
       - name: Read worker image
-        id: worker-image
+        id: worker_image
         env:
           ENV_FILE_PATH: ./build.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh

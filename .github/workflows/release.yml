@@ -32,14 +32,14 @@ jobs:
           ref: main
 
       - name: Read build config
-        id: build-config
+        id: build_config
         env:
           ENV_FILE_PATH: ./build.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
       - name: Examine build config
         run: |
-          echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
+          echo WORKER_IMAGE ${{ steps.build_config.outputs.WORKER_IMAGE }}
           echo VERSION ${{ steps.version.outputs.value }}
 
       - name: Set up Docker Buildx
@@ -59,7 +59,7 @@ jobs:
           tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
           build-args: |
             VERSION=${{ steps.version.outputs.value }}
-            WORKER_IMAGE=${{ steps.build-config.outputs.WORKER_IMAGE }}
+            WORKER_IMAGE=${{ steps.build_config.outputs.WORKER_IMAGE }}
 
       - name: Trigger deploy workflow
         if: ${{ github.event_name == 'release' }}
