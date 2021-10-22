@@ -82,5 +82,5 @@ jobs:
           TAG: ${{ needs.setup.outputs.release_tag }}
           TARGET: ${{ needs.setup.outputs.commit_hash }}
           TITLE: "Automatic release ${{ needs.setup.outputs.release_tag }}"
-          NOTES: "Worker image ${{ needs.setup.outputs.worker-image }}"
+          NOTES: "Worker image ${{ needs.setup.outputs.worker_image }}"
         run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
