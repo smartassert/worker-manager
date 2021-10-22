@@ -71,15 +71,13 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
       - name: Update
-        env:
-          WORKER_IMAGE: ${{ needs.setup.outputs.worker-image }}
-        run: echo "WORKER_IMAGE=$WORKER_IMAGE" > build.env
+        run: (echo "$(cat)") <<< "${{ needs.setup.outputs.worker-image }}" > ./worker_image
 
       - name: Commit
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic build.env for worker image ${{ needs.setup.outputs.worker-image }}"
+          commit_message: "Automatic worker image update: ${{ needs.setup.outputs.worker-image }}"
 
   trigger-create-release:
     name: Trigger create release workflow
