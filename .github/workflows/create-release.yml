@@ -19,7 +19,7 @@ jobs:
       commit-hash: ${{ github.event.inputs.commit_hash }}
       should-release: ${{ github.event.inputs.should_release }}
       release-tag: ${{ steps.release_tag.outputs.value }}
-      worker-image: ${{ .steps.worker_image.outputs.WORKER_IMAGE }}
+      worker-image: ${{ steps.worker_image.outputs.WORKER_IMAGE }}
 
     steps:
       - name: Checkout

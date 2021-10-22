@@ -39,7 +39,7 @@ jobs:
 
       - name: Examine build config
         run: |
-          echo WORKER_IMAGE ${{ steps.build-config.outputs.WORKER_IMAGE }}
+          echo WORKER_IMAGE ${{ steps.build_config.outputs.WORKER_IMAGE }}
           echo VERSION ${{ steps.version.outputs.value }}
 
       - name: Set up Docker Buildx
