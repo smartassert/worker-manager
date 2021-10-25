@@ -10,40 +10,14 @@ class HealthCheckController
 {
     public const ROUTE = '/health-check';
 
-    public const AVAILABILITY_AVAILABLE = 'available';
-    public const AVAILABILITY_UNAVAILABLE = 'unavailable';
-
-    private const AVAILABILITIES = [
-        true => self::AVAILABILITY_AVAILABLE,
-        false => self::AVAILABILITY_UNAVAILABLE,
-    ];
-
     #[Route(self::ROUTE, name: 'health-check', methods: ['GET'])]
     public function get(ServiceStatusInspector $serviceStatusInspector): JsonResponse
     {
         $serviceStatusInspector->reset();
 
         return new JsonResponse(
-            $this->decorateComponentAvailabilities(
-                $serviceStatusInspector->get()
-            ),
+            $serviceStatusInspector->get(),
             $serviceStatusInspector->isAvailable() ? 200 : 503
         );
-    }
-
-    /**
-     * @param array<string, bool> $componentAvailabilities
-     *
-     * @return array<string, string>
-     */
-    private function decorateComponentAvailabilities(array $componentAvailabilities): array
-    {
-        $decoratedAvailabilities = [];
-
-        foreach ($componentAvailabilities as $name => $availability) {
-            $decoratedAvailabilities[$name] = self::AVAILABILITIES[$availability];
-        }
-
-        return $decoratedAvailabilities;
     }
 }
