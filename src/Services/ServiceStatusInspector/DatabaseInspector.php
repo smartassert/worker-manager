@@ -4,7 +4,6 @@ namespace App\Services\ServiceStatusInspector;
 
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
-use App\Entity\MachineIdInterface;
 use App\Entity\MachineProvider;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -16,8 +15,6 @@ class DatabaseInspector implements ComponentInspectorInterface
         MachineProvider::class,
     ];
 
-    private const MACHINE_ID_PREFIX = 'di-';
-
     public function __construct(
         private EntityManagerInterface $entityManager,
     ) {
@@ -25,18 +22,8 @@ class DatabaseInspector implements ComponentInspectorInterface
 
     public function __invoke(): void
     {
-        $machineId = $this->generateMachineId();
-
         foreach (self::ENTITY_CLASS_NAMES as $entityClassName) {
-            $this->entityManager->find($entityClassName, $machineId);
+            $this->entityManager->getRepository($entityClassName);
         }
-    }
-
-    private function generateMachineId(): string
-    {
-        $suffixLength = MachineIdInterface::LENGTH - strlen(self::MACHINE_ID_PREFIX);
-        $suffix = substr(md5((string) rand()), 0, $suffixLength);
-
-        return self::MACHINE_ID_PREFIX . $suffix;
     }
 }
