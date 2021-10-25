@@ -26,9 +26,9 @@ class HealthCheckControllerTest extends AbstractBaseFunctionalTest
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(
             [
-                'database' => 'available',
-                'message_queue' => 'available',
-                'machine_provider_digital_ocean' => 'available'
+                'database' => true,
+                'message_queue' => true,
+                'machine_provider_digital_ocean' => true,
             ],
             json_decode((string) $response->getContent(), true)
         );

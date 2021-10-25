@@ -12,9 +12,9 @@ class HealthCheckTest extends AbstractIntegrationTest
 
         self::assertSame(
             [
-                'database' => 'available',
-                'message_queue' => 'available',
-                'machine_provider_digital_ocean' => 'available',
+                'database' => true,
+                'message_queue' => true,
+                'machine_provider_digital_ocean' => true,
             ],
             json_decode($response->getBody()->getContents(), true)
         );
