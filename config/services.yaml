@@ -120,6 +120,13 @@ services:
             $factories:
                 - '@App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory'
 
+    App\Services\ServiceStatusInspector\DatabaseInspector:
+        arguments:
+            $entityClassNames:
+                - 'App\Entity\CreateFailure'
+                - 'App\Entity\Machine'
+                - 'App\Entity\MachineProvider'
+
     App\Services\ServiceStatusInspector\ServiceStatusInspector:
         arguments:
             $componentInspectors:
