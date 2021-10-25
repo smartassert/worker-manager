@@ -6,12 +6,10 @@ use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineIdInterface;
 use App\Entity\MachineProvider;
-use App\Model\ProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 class DatabaseInspector implements ComponentInspectorInterface
 {
-    public const INVALID_MACHINE_ID = 'intentionally invalid';
     public const ENTITY_CLASS_NAMES = [
         CreateFailure::class,
         Machine::class,
@@ -30,37 +28,8 @@ class DatabaseInspector implements ComponentInspectorInterface
         $machineId = $this->generateMachineId();
 
         foreach (self::ENTITY_CLASS_NAMES as $entityClassName) {
-            $entity = $this->entityManager->find($entityClassName, $machineId);
-            if (null !== $entity) {
-                $this->removeEntity($entity);
-            }
+            $this->entityManager->find($entityClassName, $machineId);
         }
-
-        $this->persistAndRemoveEntity(new Machine($machineId));
-        $this->persistAndRemoveEntity(new MachineProvider($machineId, ProviderInterface::NAME_DIGITALOCEAN));
-        $this->persistAndRemoveEntity(new CreateFailure(
-            $machineId,
-            CreateFailure::CODE_UNKNOWN,
-            CreateFailure::REASON_UNKNOWN
-        ));
-    }
-
-    private function persistAndRemoveEntity(object $entity): void
-    {
-        $this->persistEntity($entity);
-        $this->removeEntity($entity);
-    }
-
-    private function persistEntity(object $entity): void
-    {
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
-    }
-
-    private function removeEntity(object $entity): void
-    {
-        $this->entityManager->remove($entity);
-        $this->entityManager->flush();
     }
 
     private function generateMachineId(): string
