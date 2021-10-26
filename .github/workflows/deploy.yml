@@ -21,7 +21,7 @@ jobs:
           client-payload: |
             {
               "service_id": "worker-manager",
-              "version": "${{ github.event.inputs.worker_manager_version }}"
+              "build_configuration": "{\"version\": \"${{ github.event.inputs.worker_manager_version }}\"}"
             }
 
       - name: Dispatch service-configure event to instance manager
