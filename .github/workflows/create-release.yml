@@ -42,7 +42,7 @@ jobs:
         id: release_tag
         run: |
           RELEASE_TAG=$(./ci/scripts/create-version-label.sh)
-          TAG_EXISTENCE_COUNT=$(git tag | grep "$RELEASE_TAG" -c)
+          TAG_EXISTENCE_COUNT=$(git tag | grep "$RELEASE_TAG" -c | cat)
 
           if [ "0" != "$TAG_EXISTENCE_COUNT" ]; then
             echo "Generated release tag \"$RELEASE_TAG\" already exists"
