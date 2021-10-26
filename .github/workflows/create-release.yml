@@ -17,6 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Output inputs
+        env:
+          INPUTS: ${{ toJson(github.event.inputs) }}
+        run: jq '.' <<< "$INPUTS"
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
