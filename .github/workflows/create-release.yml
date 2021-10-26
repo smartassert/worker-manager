@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Output inputs
         env:
-          INPUTS: ${{ toJson(github.events.input) }}
+          INPUTS: ${{ toJson(github.event.input) }}
         run: jq '.' <<< "$INPUTS"
 
       - name: Checkout
