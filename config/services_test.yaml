@@ -32,3 +32,11 @@ services:
 
     App\Tests\Services\Asserter\MessageStateEntityAsserter:
         public: true
+
+    App\Services\ServiceStatusInspector\ServiceStatusInspector:
+        public: true
+        arguments:
+            $componentInspectors:
+                database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
+                message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
+                machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
