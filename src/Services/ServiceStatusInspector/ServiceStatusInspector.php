@@ -2,15 +2,12 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use App\Exception\LoggableException;
-use Psr\Log\LoggerInterface;
-
-class ServiceStatusInspector
+class ServiceStatusInspector implements ServiceStatusInspectorInterface
 {
     /**
      * @var ComponentInspectorInterface[]
      */
-    private array $componentInspectors;
+    private array $componentInspectors = [];
 
     /**
      * @var array<string, bool>
@@ -18,15 +15,27 @@ class ServiceStatusInspector
     private array $componentAvailabilities = [];
 
     /**
+     * @var callable[]
+     */
+    private array $exceptionHandlers = [];
+
+    /**
      * @param ComponentInspectorInterface[] $componentInspectors
+     * @param callable[]                    $exceptionHandlers
      */
     public function __construct(
         array $componentInspectors,
-        private LoggerInterface $healthCheckLogger
+        array $exceptionHandlers = [],
     ) {
         foreach ($componentInspectors as $name => $componentInspector) {
             if ($componentInspector instanceof ComponentInspectorInterface) {
                 $this->componentInspectors[$name] = $componentInspector;
+            }
+        }
+
+        foreach ($exceptionHandlers as $exceptionHandler) {
+            if (is_callable($exceptionHandler)) {
+                $this->exceptionHandlers[] = $exceptionHandler;
             }
         }
     }
@@ -56,11 +65,6 @@ class ServiceStatusInspector
         return $this->componentAvailabilities;
     }
 
-    public function reset(): void
-    {
-        $this->componentAvailabilities = [];
-    }
-
     /**
      * @return array<string, bool>
      */
@@ -75,7 +79,10 @@ class ServiceStatusInspector
                 ($componentInspector)();
             } catch (\Throwable $exception) {
                 $isAvailable = false;
-                $this->healthCheckLogger->error((string) (new LoggableException($exception)));
+
+                foreach ($this->exceptionHandlers as $exceptionHandler) {
+                    ($exceptionHandler)($exception);
+                }
             }
 
             $availabilities[(string) $name] = $isAvailable;

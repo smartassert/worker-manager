@@ -125,7 +125,11 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
 
     private function setComponentInspector(string $name, ComponentInspectorInterface $componentInspector): void
     {
-        $componentInspectors = ObjectReflector::getProperty($this->serviceStatusInspector, 'componentInspectors');
+        $componentInspectors = ObjectReflector::getProperty(
+            $this->serviceStatusInspector,
+            'componentInspectors',
+            ServiceStatusInspector::class
+        );
 
         if (array_key_exists($name, $componentInspectors)) {
             $componentInspectors[$name] = $componentInspector;

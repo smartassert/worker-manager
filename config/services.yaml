@@ -127,12 +127,15 @@ services:
                 - 'App\Entity\Machine'
                 - 'App\Entity\MachineProvider'
 
-    App\Services\ServiceStatusInspector\ServiceStatusInspector:
+    App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface:
+        class: App\Services\ServiceStatusInspector\ServiceStatusInspector
         arguments:
             $componentInspectors:
                 database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
+            $exceptionHandlers:
+                - '@App\Services\ServiceStatusInspector\LoggingExceptionHandler'
 
     SmartAssert\DigitalOceanDropletConfiguration\Factory:
         arguments:
