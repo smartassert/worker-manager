@@ -2,7 +2,6 @@ framework:
     messenger:
         transports:
             async: 'in-memory://'
-            serializer: 'webignition\JsonMessageSerializerBundle\Services\Serializer'
 
         routing:
             '*': async
