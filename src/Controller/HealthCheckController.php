@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Services\ServiceStatusInspector\ServiceStatusInspector;
+use App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -11,10 +11,8 @@ class HealthCheckController
     public const ROUTE = '/health-check';
 
     #[Route(self::ROUTE, name: 'health-check', methods: ['GET'])]
-    public function get(ServiceStatusInspector $serviceStatusInspector): JsonResponse
+    public function get(ServiceStatusInspectorInterface $serviceStatusInspector): JsonResponse
     {
-        $serviceStatusInspector->reset();
-
         return new JsonResponse(
             $serviceStatusInspector->get(),
             $serviceStatusInspector->isAvailable() ? 200 : 503
