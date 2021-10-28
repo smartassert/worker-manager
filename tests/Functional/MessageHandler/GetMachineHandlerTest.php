@@ -16,7 +16,6 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
@@ -28,6 +27,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Psr\Http\Message\ResponseInterface;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use webignition\ObjectReflector\ObjectReflector;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTest

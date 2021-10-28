@@ -19,7 +19,6 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Services\MachineManager;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
@@ -37,6 +36,7 @@ use DigitalOceanV2\Exception\RuntimeException;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Handler\MockHandler;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTest

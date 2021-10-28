@@ -136,7 +136,7 @@ services:
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
             $exceptionHandlers:
-                - '@App\Services\ServiceStatusInspector\LoggingExceptionHandler'
+                - '@SmartAssert\InvokableLogger\ExceptionLogger'
 
     SmartAssert\DigitalOceanDropletConfiguration\Factory:
         arguments:
@@ -149,3 +149,5 @@ services:
 
     App\Services\RequestIdFactoryInterface:
         class: App\Services\RequestIdFactory
+
+    SmartAssert\InvokableLogger\ExceptionLogger:

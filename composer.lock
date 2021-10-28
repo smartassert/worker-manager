@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f59cbfca0b26644ba774dec1378b775",
+    "content-hash": "e9fb99f89a5dd721c63b3dd469989924",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2771,6 +2771,57 @@
                 "source": "https://github.com/smartassert/digitialocean-droplet-configuration/tree/0.1"
             },
             "time": "2021-07-15T14:19:03+00:00"
+        },
+        {
+            "name": "smartassert/invokable-exception-logger",
+            "version": "0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smartassert/invokable-exception-logger.git",
+                "reference": "e41a1510f735774e8e914bb5a910a5e6c800145f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smartassert/invokable-exception-logger/zipball/e41a1510f735774e8e914bb5a910a5e6c800145f",
+                "reference": "e41a1510f735774e8e914bb5a910a5e6c800145f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8",
+                "psr/log": "~1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "mockery/mockery": "^1.4",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^0.12.99",
+                "phpstan/phpstan-mockery": "^0.12.14",
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SmartAssert\\InvokableLogger\\": "src/",
+                    "SmartAssert\\Tests\\InvokableLogger\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jon Cram",
+                    "email": "webignition@gmail.com"
+                }
+            ],
+            "homepage": "https://github.com/smartassert/invokable-exception-logger",
+            "support": {
+                "issues": "https://github.com/smartassert/invokable-exception-logger/issues",
+                "source": "https://github.com/smartassert/invokable-exception-logger/tree/0.1"
+            },
+            "time": "2021-10-28T17:36:46+00:00"
         },
         {
             "name": "smartassert/service-status-inspector",

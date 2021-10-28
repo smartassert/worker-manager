@@ -11,10 +11,10 @@ use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Services\RemoteMachineFinder;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 

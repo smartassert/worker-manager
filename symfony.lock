@@ -292,6 +292,9 @@
     "smartassert/digitalocean-droplet-configuration": {
         "version": "0.1"
     },
+    "smartassert/invokable-exception-logger": {
+        "version": "0.1"
+    },
     "smartassert/service-status-inspector": {
         "version": "0.1"
     },
