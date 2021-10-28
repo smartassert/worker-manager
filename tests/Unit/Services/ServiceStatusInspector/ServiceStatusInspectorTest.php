@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Services\ServiceStatusInspector;
 
 use App\Services\ServiceStatusInspector\ComponentInspectorInterface;
-use App\Services\ServiceStatusInspector\GenericServiceStatusInspector;
+use App\Services\ServiceStatusInspector\ServiceStatusInspector;
 use PHPUnit\Framework\TestCase;
 
-class GenericServiceStatusInspectorTest extends TestCase
+class ServiceStatusInspectorTest extends TestCase
 {
     /**
      * @dataProvider isAvailableDataProvider
      */
-    public function testIsAvailable(GenericServiceStatusInspector $inspector, bool $expected): void
+    public function testIsAvailable(ServiceStatusInspector $inspector, bool $expected): void
     {
         self::assertSame($expected, $inspector->isAvailable());
     }
@@ -25,23 +25,23 @@ class GenericServiceStatusInspectorTest extends TestCase
     {
         return [
             'no components' => [
-                'inspector' => new GenericServiceStatusInspector([]),
+                'inspector' => new ServiceStatusInspector([]),
                 'expected' => true,
             ],
             'single component, component is available' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                 ]),
                 'expected' => true,
             ],
             'single component, component is unavailable by means of throwing an exception' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(new \Exception()),
                 ]),
                 'expected' => false,
             ],
             'multiple component, components are all available' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                     'service2' => $this->createComponentInspector(),
                     'service3' => $this->createComponentInspector(),
@@ -49,7 +49,7 @@ class GenericServiceStatusInspectorTest extends TestCase
                 'expected' => true,
             ],
             'multiple component, one component is unavailable by means of throwing an exception' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                     'service2' => $this->createComponentInspector(new \Exception()),
                     'service3' => $this->createComponentInspector(),
@@ -64,7 +64,7 @@ class GenericServiceStatusInspectorTest extends TestCase
      *
      * @param array<string, bool> $expected
      */
-    public function testGet(GenericServiceStatusInspector $inspector, array $expected): void
+    public function testGet(ServiceStatusInspector $inspector, array $expected): void
     {
         self::assertSame($expected, $inspector->get());
     }
@@ -76,11 +76,11 @@ class GenericServiceStatusInspectorTest extends TestCase
     {
         return [
             'no components' => [
-                'inspector' => new GenericServiceStatusInspector([]),
+                'inspector' => new ServiceStatusInspector([]),
                 'expected' => [],
             ],
             'single component, component is available' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                 ]),
                 'expected' => [
@@ -88,7 +88,7 @@ class GenericServiceStatusInspectorTest extends TestCase
                 ],
             ],
             'single component, component is unavailable by means of throwing an exception' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(new \Exception()),
                 ]),
                 'expected' => [
@@ -96,7 +96,7 @@ class GenericServiceStatusInspectorTest extends TestCase
                 ],
             ],
             'multiple component, components are all available' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                     'service2' => $this->createComponentInspector(),
                     'service3' => $this->createComponentInspector(),
@@ -108,7 +108,7 @@ class GenericServiceStatusInspectorTest extends TestCase
                 ],
             ],
             'multiple component, one component is unavailable by means of throwing an exception' => [
-                'inspector' => new GenericServiceStatusInspector([
+                'inspector' => new ServiceStatusInspector([
                     'service1' => $this->createComponentInspector(),
                     'service2' => $this->createComponentInspector(new \Exception()),
                     'service3' => $this->createComponentInspector(),
