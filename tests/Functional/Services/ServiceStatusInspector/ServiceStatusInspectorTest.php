@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\ServiceStatusInspector;
 
 use App\Services\ServiceStatusInspector\ComponentInspectorInterface;
+use App\Services\ServiceStatusInspector\GenericServiceStatusInspector;
 use App\Services\ServiceStatusInspector\ServiceStatusInspector;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\HttpResponseFactory;
@@ -125,7 +126,11 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
 
     private function setComponentInspector(string $name, ComponentInspectorInterface $componentInspector): void
     {
-        $componentInspectors = ObjectReflector::getProperty($this->serviceStatusInspector, 'componentInspectors');
+        $componentInspectors = ObjectReflector::getProperty(
+            $this->serviceStatusInspector,
+            'componentInspectors',
+            GenericServiceStatusInspector::class
+        );
 
         if (array_key_exists($name, $componentInspectors)) {
             $componentInspectors[$name] = $componentInspector;
@@ -133,7 +138,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
 
         ObjectReflector::setProperty(
             $this->serviceStatusInspector,
-            ServiceStatusInspector::class,
+            GenericServiceStatusInspector::class,
             'componentInspectors',
             $componentInspectors
         );
