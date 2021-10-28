@@ -14,6 +14,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^0.1.0",
+        "smartassert/invokable-exception-logger": "^0.1.0",
         "smartassert/service-status-inspector": "^0.1.0",
         "symfony/console": "5.2.*",
         "symfony/doctrine-messenger": "5.2.*",
