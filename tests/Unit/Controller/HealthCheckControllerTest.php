@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Controller;
 
 use App\Controller\HealthCheckController;
-use App\Services\ServiceStatusInspector\ServiceStatusInspector;
 use PHPUnit\Framework\TestCase;
+use SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface;
 
 class HealthCheckControllerTest extends TestCase
 {
     public function testGetUnavailable(): void
     {
-        $serviceStatusInspector = \Mockery::mock(ServiceStatusInspector::class);
+        $serviceStatusInspector = \Mockery::mock(ServiceStatusInspectorInterface::class);
         $serviceStatusInspector
             ->shouldReceive('reset')
         ;

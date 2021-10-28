@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\ServiceStatusInspector;
 
-use App\Services\ServiceStatusInspector\ServiceStatusInspector;
-use App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
+use SmartAssert\ServiceStatusInspector\ServiceStatusInspector;
+use SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
 class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest

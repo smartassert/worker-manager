@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "94692f9317fae2c83833b07f617f2d5f",
+    "content-hash": "5f59cbfca0b26644ba774dec1378b775",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2771,6 +2771,53 @@
                 "source": "https://github.com/smartassert/digitialocean-droplet-configuration/tree/0.1"
             },
             "time": "2021-07-15T14:19:03+00:00"
+        },
+        {
+            "name": "smartassert/service-status-inspector",
+            "version": "0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smartassert/service-status-inspector.git",
+                "reference": "e6ccc95fa9cf38283c7ea55f0df0a5862e6c14c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smartassert/service-status-inspector/zipball/e6ccc95fa9cf38283c7ea55f0df0a5862e6c14c5",
+                "reference": "e6ccc95fa9cf38283c7ea55f0df0a5862e6c14c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "phpstan/phpstan": "^0.12.99",
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SmartAssert\\ServiceStatusInspector\\": "src/",
+                    "SmartAssert\\Tests\\ServiceStatusInspector\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jon Cram",
+                    "email": "webignition@gmail.com"
+                }
+            ],
+            "homepage": "https://github.com/smartassert/service-status-inspector",
+            "support": {
+                "issues": "https://github.com/smartassert/service-status-inspector/issues",
+                "source": "https://github.com/smartassert/service-status-inspector/tree/0.1"
+            },
+            "time": "2021-10-28T16:17:26+00:00"
         },
         {
             "name": "symfony/amqp-messenger",
