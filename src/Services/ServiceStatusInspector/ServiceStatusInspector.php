@@ -16,9 +16,11 @@ class ServiceStatusInspector extends GenericServiceStatusInspector
     ) {
         parent::__construct(
             $componentInspectors,
-            function (\Throwable $exception) use ($logger) {
-                $logger->error((string) (new LoggableException($exception)));
-            },
+            [
+                function (\Throwable $exception) use ($logger) {
+                    $logger->error((string) (new LoggableException($exception)));
+                },
+            ],
         );
     }
 }

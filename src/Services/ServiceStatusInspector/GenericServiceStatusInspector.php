@@ -15,15 +15,27 @@ class GenericServiceStatusInspector implements ServiceStatusInspectorInterface
     private array $componentAvailabilities = [];
 
     /**
+     * @var callable[]
+     */
+    private array $exceptionHandlers = [];
+
+    /**
      * @param ComponentInspectorInterface[] $componentInspectors
+     * @param callable[]                    $exceptionHandlers
      */
     public function __construct(
         array $componentInspectors,
-        private \Closure $exceptionHandler,
+        array $exceptionHandlers,
     ) {
         foreach ($componentInspectors as $name => $componentInspector) {
             if ($componentInspector instanceof ComponentInspectorInterface) {
                 $this->componentInspectors[$name] = $componentInspector;
+            }
+        }
+
+        foreach ($exceptionHandlers as $exceptionHandler) {
+            if (is_callable($exceptionHandler)) {
+                $this->exceptionHandlers[] = $exceptionHandler;
             }
         }
     }
@@ -72,7 +84,10 @@ class GenericServiceStatusInspector implements ServiceStatusInspectorInterface
                 ($componentInspector)();
             } catch (\Throwable $exception) {
                 $isAvailable = false;
-                ($this->exceptionHandler)($exception);
+
+                foreach ($this->exceptionHandlers as $exceptionHandler) {
+                    ($exceptionHandler)($exception);
+                }
             }
 
             $availabilities[(string) $name] = $isAvailable;
