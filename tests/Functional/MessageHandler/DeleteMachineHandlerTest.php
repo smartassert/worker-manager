@@ -12,7 +12,6 @@ use App\Message\FindMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Model\MachineActionInterface;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -24,6 +23,7 @@ use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use webignition\ObjectReflector\ObjectReflector;
 
 class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest

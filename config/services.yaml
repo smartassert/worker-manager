@@ -149,3 +149,5 @@ services:
 
     App\Services\RequestIdFactoryInterface:
         class: App\Services\RequestIdFactory
+
+    SmartAssert\InvokableLogger\ExceptionLogger:

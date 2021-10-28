@@ -8,9 +8,9 @@ use App\Entity\Machine;
 use App\Exception\MachineNotRemovableException;
 use App\Message\DeleteMachine;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 

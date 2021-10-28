@@ -12,11 +12,11 @@ use App\Message\CreateMachine;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\ExceptionLogger;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Services\RemoteRequestRetryDecider;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Mock\Services;
 
-use App\Services\ExceptionLogger;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
+use SmartAssert\InvokableLogger\ExceptionLogger;
 
 class MockExceptionLogger
 {
