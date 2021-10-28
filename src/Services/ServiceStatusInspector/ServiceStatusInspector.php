@@ -2,9 +2,6 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use App\Exception\LoggableException;
-use Psr\Log\LoggerInterface;
-
 class ServiceStatusInspector extends GenericServiceStatusInspector
 {
     /**
@@ -12,14 +9,12 @@ class ServiceStatusInspector extends GenericServiceStatusInspector
      */
     public function __construct(
         array $componentInspectors,
-        LoggerInterface $logger
+        LoggingExceptionHandler $exceptionHandler,
     ) {
         parent::__construct(
             $componentInspectors,
             [
-                function (\Throwable $exception) use ($logger) {
-                    $logger->error((string) (new LoggableException($exception)));
-                },
+                $exceptionHandler,
             ],
         );
     }
