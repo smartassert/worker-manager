@@ -5,7 +5,7 @@ namespace App\Services\ServiceStatusInspector;
 use DigitalOceanV2\Api\Droplet;
 use DigitalOceanV2\Exception\RuntimeException;
 
-class DigitalOceanMachineProviderInspector implements ComponentInspectorInterface
+class DigitalOceanMachineProviderInspector
 {
     public function __construct(
         private Droplet $dropletApi

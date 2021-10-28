@@ -12,7 +12,8 @@ class HealthCheckTest extends AbstractIntegrationTest
 
         self::assertSame(
             [
-                'database' => true,
+                'database_connection' => true,
+                'database_entities' => true,
                 'message_queue' => true,
                 'machine_provider_digital_ocean' => true,
             ],

@@ -6,7 +6,7 @@ use App\Message\CheckMachineIsActive;
 use App\Message\UniqueId;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-class MessageQueueInspector implements ComponentInspectorInterface
+class MessageQueueInspector
 {
     public const INVALID_MACHINE_ID = 'intentionally invalid';
 
