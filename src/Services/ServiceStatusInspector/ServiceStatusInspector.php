@@ -5,7 +5,7 @@ namespace App\Services\ServiceStatusInspector;
 class ServiceStatusInspector implements ServiceStatusInspectorInterface
 {
     /**
-     * @var ComponentInspectorInterface[]
+     * @var array<int|string, callable>
      */
     private array $componentInspectors = [];
 
@@ -20,15 +20,15 @@ class ServiceStatusInspector implements ServiceStatusInspectorInterface
     private array $exceptionHandlers = [];
 
     /**
-     * @param ComponentInspectorInterface[] $componentInspectors
-     * @param callable[]                    $exceptionHandlers
+     * @param callable[] $componentInspectors
+     * @param callable[] $exceptionHandlers
      */
     public function __construct(
         array $componentInspectors,
         array $exceptionHandlers = [],
     ) {
         foreach ($componentInspectors as $name => $componentInspector) {
-            if ($componentInspector instanceof ComponentInspectorInterface) {
+            if (is_callable($componentInspector)) {
                 $this->componentInspectors[$name] = $componentInspector;
             }
         }
