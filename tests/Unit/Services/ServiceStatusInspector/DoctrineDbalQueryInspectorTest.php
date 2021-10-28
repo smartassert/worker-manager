@@ -23,8 +23,8 @@ class DoctrineDbalQueryInspectorTest extends TestCase
         $command = \Mockery::mock(RunSqlCommand::class);
         $command
             ->shouldReceive('run')
-            ->withArgs(function (InputInterface $foo) use ($expectedCommandInput) {
-                self::assertEquals($expectedCommandInput, $foo);
+            ->withArgs(function (InputInterface $input) use ($expectedCommandInput) {
+                self::assertEquals($expectedCommandInput, $input);
 
                 return true;
             })
