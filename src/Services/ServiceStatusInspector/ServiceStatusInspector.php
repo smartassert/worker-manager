@@ -5,7 +5,7 @@ namespace App\Services\ServiceStatusInspector;
 use App\Exception\LoggableException;
 use Psr\Log\LoggerInterface;
 
-class ServiceStatusInspector
+class ServiceStatusInspector implements ServiceStatusInspectorInterface
 {
     /**
      * @var ComponentInspectorInterface[]
