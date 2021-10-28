@@ -120,7 +120,7 @@ services:
             $factories:
                 - '@App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory'
 
-    App\Services\ServiceStatusInspector\DatabaseInspector:
+    App\Services\ServiceStatusInspector\DoctrineEntityMappingInspector:
         arguments:
             $entityClassNames:
                 - 'App\Entity\CreateFailure'
@@ -131,7 +131,8 @@ services:
         class: App\Services\ServiceStatusInspector\ServiceStatusInspector
         arguments:
             $componentInspectors:
-                database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
+                database_connection: '@App\Services\ServiceStatusInspector\DoctrineDbalQueryInspector'
+                database_entities: '@App\Services\ServiceStatusInspector\DoctrineEntityMappingInspector'
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
             $exceptionHandlers:

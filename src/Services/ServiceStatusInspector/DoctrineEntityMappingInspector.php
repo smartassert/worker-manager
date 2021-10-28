@@ -4,7 +4,7 @@ namespace App\Services\ServiceStatusInspector;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-class DatabaseInspector
+class DoctrineEntityMappingInspector
 {
     /**
      * @param array<class-string> $entityClassNames

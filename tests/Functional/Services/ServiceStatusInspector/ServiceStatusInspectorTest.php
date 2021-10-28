@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\ServiceStatusInspector;
 
 use App\Services\ServiceStatusInspector\ServiceStatusInspector;
+use App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -21,7 +22,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $serviceStatusInspector = self::$container->get(ServiceStatusInspector::class);
+        $serviceStatusInspector = self::$container->get(ServiceStatusInspectorInterface::class);
         \assert($serviceStatusInspector instanceof ServiceStatusInspector);
         $this->serviceStatusInspector = $serviceStatusInspector;
     }
@@ -62,7 +63,8 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
                 'modifiedComponentInspectors' => [],
                 'expectedServiceStatus' => [
-                    'database' => true,
+                    'database_connection' => true,
+                    'database_entities' => true,
                     'message_queue' => true,
                     'machine_provider_digital_ocean' => true,
                 ],
@@ -72,10 +74,11 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                     $this->createDigitalOceanDropletResponse(),
                 ],
                 'modifiedComponentInspectors' => [
-                    'database' => $this->createComponentInspectorThrowingException(),
+                    'database_connection' => $this->createComponentInspectorThrowingException(),
                 ],
                 'expectedServiceStatus' => [
-                    'database' => false,
+                    'database_connection' => false,
+                    'database_entities' => true,
                     'message_queue' => true,
                     'machine_provider_digital_ocean' => true,
                 ],
@@ -88,7 +91,8 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                     'message_queue' => $this->createComponentInspectorThrowingException(),
                 ],
                 'expectedServiceStatus' => [
-                    'database' => true,
+                    'database_connection' => true,
+                    'database_entities' => true,
                     'message_queue' => false,
                     'machine_provider_digital_ocean' => true,
                 ],
@@ -99,7 +103,8 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
                 'modifiedComponentInspectors' => [],
                 'expectedServiceStatus' => [
-                    'database' => true,
+                    'database_connection' => true,
+                    'database_entities' => true,
                     'message_queue' => true,
                     'machine_provider_digital_ocean' => false,
                 ],
@@ -109,11 +114,12 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                     new Response(401),
                 ],
                 'modifiedComponentInspectors' => [
-                    'database' => $this->createComponentInspectorThrowingException(),
+                    'database_connection' => $this->createComponentInspectorThrowingException(),
                     'message_queue' => $this->createComponentInspectorThrowingException(),
                 ],
                 'expectedServiceStatus' => [
-                    'database' => false,
+                    'database_connection' => false,
+                    'database_entities' => true,
                     'message_queue' => false,
                     'machine_provider_digital_ocean' => false,
                 ],
