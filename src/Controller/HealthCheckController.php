@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface;
+use SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 

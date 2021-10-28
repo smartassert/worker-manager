@@ -127,8 +127,8 @@ services:
                 - 'App\Entity\Machine'
                 - 'App\Entity\MachineProvider'
 
-    App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface:
-        class: App\Services\ServiceStatusInspector\ServiceStatusInspector
+    SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface:
+        class: SmartAssert\ServiceStatusInspector\ServiceStatusInspector
         arguments:
             $componentInspectors:
                 database_connection: '@App\Services\ServiceStatusInspector\DoctrineDbalQueryInspector'
