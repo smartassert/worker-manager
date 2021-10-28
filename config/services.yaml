@@ -127,12 +127,19 @@ services:
                 - 'App\Entity\Machine'
                 - 'App\Entity\MachineProvider'
 
+    App\Services\ServiceStatusInspector\DoctrineEntityMappingInspector:
+        arguments:
+            $entityClassNames:
+                - 'App\Entity\CreateFailure'
+                - 'App\Entity\Machine'
+                - 'App\Entity\MachineProvider'
+
     App\Services\ServiceStatusInspector\ServiceStatusInspectorInterface:
         class: App\Services\ServiceStatusInspector\ServiceStatusInspector
         arguments:
             $componentInspectors:
                 database_connection: '@App\Services\ServiceStatusInspector\DoctrineDbalQueryInspector'
-                database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
+                database_entities: '@App\Services\ServiceStatusInspector\DoctrineEntityMappingInspector'
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
             $exceptionHandlers:

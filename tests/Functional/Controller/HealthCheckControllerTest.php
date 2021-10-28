@@ -27,7 +27,7 @@ class HealthCheckControllerTest extends AbstractBaseFunctionalTest
         self::assertSame(
             [
                 'database_connection' => true,
-                'database' => true,
+                'database_entities' => true,
                 'message_queue' => true,
                 'machine_provider_digital_ocean' => true,
             ],
