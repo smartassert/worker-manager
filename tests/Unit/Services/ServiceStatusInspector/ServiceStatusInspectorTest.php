@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Services\ServiceStatusInspector;
 
-use App\Services\ServiceStatusInspector\ComponentInspectorInterface;
 use App\Services\ServiceStatusInspector\ServiceStatusInspector;
 use PHPUnit\Framework\TestCase;
 
@@ -122,22 +121,15 @@ class ServiceStatusInspectorTest extends TestCase
         ];
     }
 
-    private function createComponentInspector(?\Exception $exception = null): ComponentInspectorInterface
+    private function createComponentInspector(?\Exception $exception = null): callable
     {
-        $componentInspector = \Mockery::mock(ComponentInspectorInterface::class);
-
         if ($exception instanceof \Exception) {
-            $componentInspector
-                ->shouldReceive('__invoke')
-                ->andThrow($exception)
-            ;
-        } else {
-            $componentInspector
-                ->shouldReceive('__invoke')
-                ->andReturn(true)
-            ;
+            return function () use ($exception) {
+                throw $exception;
+            };
         }
 
-        return $componentInspector;
+        return function () {
+        };
     }
 }

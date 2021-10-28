@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\ServiceStatusInspector;
 
-use App\Services\ServiceStatusInspector\ComponentInspectorInterface;
 use App\Services\ServiceStatusInspector\ServiceStatusInspector;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
-use Mockery\MockInterface;
 use Psr\Http\Message\ResponseInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
@@ -31,9 +29,9 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider getDataProvider
      *
-     * @param ResponseInterface[]           $httpFixtures
-     * @param ComponentInspectorInterface[] $modifiedComponentInspectors
-     * @param array<string, bool>           $expectedServiceStatus
+     * @param ResponseInterface[] $httpFixtures
+     * @param callable[]          $modifiedComponentInspectors
+     * @param array<string, bool> $expectedServiceStatus
      */
     public function testGet(
         array $httpFixtures,
@@ -123,7 +121,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
         ];
     }
 
-    private function setComponentInspector(string $name, ComponentInspectorInterface $componentInspector): void
+    private function setComponentInspector(string $name, callable $componentInspector): void
     {
         $componentInspectors = ObjectReflector::getProperty(
             $this->serviceStatusInspector,
@@ -143,22 +141,11 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
         );
     }
 
-    private function createComponentInspectorThrowingException(): ComponentInspectorInterface
+    private function createComponentInspectorThrowingException(): callable
     {
-        $componentInspector = $this->createComponentInspector();
-        if ($componentInspector instanceof MockInterface) {
-            $componentInspector
-                ->shouldReceive('__invoke')
-                ->andThrow(new \Exception())
-            ;
-        }
-
-        return $componentInspector;
-    }
-
-    private function createComponentInspector(): ComponentInspectorInterface
-    {
-        return \Mockery::mock(ComponentInspectorInterface::class);
+        return function () {
+            throw new \Exception();
+        };
     }
 
     private function createDigitalOceanDropletResponse(): ResponseInterface
