@@ -2,8 +2,8 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use App\Exception\LoggableException;
 use Psr\Log\LoggerInterface;
+use SmartAssert\InvokableLogger\LoggableException;
 
 class LoggingExceptionHandler
 {

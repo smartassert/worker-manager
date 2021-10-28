@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Exception\LoggableException;
 use Psr\Log\LoggerInterface;
+use SmartAssert\InvokableLogger\LoggableException;
 
 class ExceptionLogger
 {
