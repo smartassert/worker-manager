@@ -7,7 +7,7 @@ class GenericServiceStatusInspector implements ServiceStatusInspectorInterface
     /**
      * @var ComponentInspectorInterface[]
      */
-    private array $componentInspectors;
+    private array $componentInspectors = [];
 
     /**
      * @var array<string, bool>
@@ -25,7 +25,7 @@ class GenericServiceStatusInspector implements ServiceStatusInspectorInterface
      */
     public function __construct(
         array $componentInspectors,
-        array $exceptionHandlers,
+        array $exceptionHandlers = [],
     ) {
         foreach ($componentInspectors as $name => $componentInspector) {
             if ($componentInspector instanceof ComponentInspectorInterface) {
@@ -63,11 +63,6 @@ class GenericServiceStatusInspector implements ServiceStatusInspectorInterface
         }
 
         return $this->componentAvailabilities;
-    }
-
-    public function reset(): void
-    {
-        $this->componentAvailabilities = [];
     }
 
     /**
