@@ -131,6 +131,7 @@ services:
         class: App\Services\ServiceStatusInspector\ServiceStatusInspector
         arguments:
             $componentInspectors:
+                database_connection: '@App\Services\ServiceStatusInspector\DoctrineDbalQueryInspector'
                 database: '@App\Services\ServiceStatusInspector\DatabaseInspector'
                 message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
                 machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
