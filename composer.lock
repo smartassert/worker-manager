@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e9fb99f89a5dd721c63b3dd469989924",
+    "content-hash": "d13eeb38ce8de117296274c785723621",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2771,6 +2771,58 @@
                 "source": "https://github.com/smartassert/digitialocean-droplet-configuration/tree/0.1"
             },
             "time": "2021-07-15T14:19:03+00:00"
+        },
+        {
+            "name": "smartassert/doctrine-inspectors",
+            "version": "0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smartassert/doctrine-inspectors.git",
+                "reference": "8f3e10a1e20c6ed2a40a8e316ec898e1e0c52f8f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smartassert/doctrine-inspectors/zipball/8f3e10a1e20c6ed2a40a8e316ec898e1e0c52f8f",
+                "reference": "8f3e10a1e20c6ed2a40a8e316ec898e1e0c52f8f",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "*",
+                "doctrine/orm": "*",
+                "php": ">=8"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "mockery/mockery": "^1.4",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^0.12.99",
+                "phpstan/phpstan-mockery": "^0.12.14",
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SmartAssert\\DoctrineInspectors\\": "src/",
+                    "SmartAssert\\Tests\\DoctrineInspectors\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jon Cram",
+                    "email": "webignition@gmail.com"
+                }
+            ],
+            "homepage": "https://github.com/smartassert/doctrine-inspectors",
+            "support": {
+                "issues": "https://github.com/smartassert/doctrine-inspectors/issues",
+                "source": "https://github.com/smartassert/doctrine-inspectors/tree/0.1"
+            },
+            "time": "2021-10-29T10:27:39+00:00"
         },
         {
             "name": "smartassert/invokable-exception-logger",
