@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Services\ServiceStatusInspector;
 
 use App\Services\ServiceStatusInspector\DoctrineDbalQueryInspector;
-use Doctrine\DBAL\Tools\Console\Command\RunSqlCommand;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Statement;
+use Doctrine\ORM\EntityManagerInterface;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputInterface;
 
 class DoctrineDbalQueryInspectorTest extends TestCase
 {
@@ -17,20 +17,31 @@ class DoctrineDbalQueryInspectorTest extends TestCase
 
     /**
      * @dataProvider invokeDataProvider
+     *
+     * @param array<string, scalar> $queryParameters
      */
-    public function testInvoke(string $query, ?string $connection, InputInterface $expectedCommandInput): void
+    public function testInvoke(string $query, array $queryParameters): void
     {
-        $command = \Mockery::mock(RunSqlCommand::class);
-        $command
-            ->shouldReceive('run')
-            ->withArgs(function (InputInterface $input) use ($expectedCommandInput) {
-                self::assertEquals($expectedCommandInput, $input);
-
-                return true;
-            })
+        $statement = \Mockery::mock(Statement::class);
+        $statement
+            ->shouldReceive('execute')
+            ->with($queryParameters)
         ;
 
-        $inspector = new DoctrineDbalQueryInspector($command, $query, $connection);
+        $connection = \Mockery::mock(Connection::class);
+        $connection
+            ->shouldReceive('prepare')
+            ->with($query)
+            ->andReturn($statement)
+        ;
+
+        $entityManager = \Mockery::mock(EntityManagerInterface::class);
+        $entityManager
+            ->shouldReceive('getConnection')
+            ->andReturn($connection)
+        ;
+
+        $inspector = new DoctrineDbalQueryInspector($entityManager, $query, $queryParameters);
 
         ($inspector)();
     }
@@ -41,20 +52,15 @@ class DoctrineDbalQueryInspectorTest extends TestCase
     public function invokeDataProvider(): array
     {
         return [
-            'no connection specified' => [
+            'query, no parameters' => [
                 'query' => 'SELECT 1',
-                'connection' => null,
-                'expectedCommandInput' => new ArrayInput([
-                    'sql' => 'SELECT 1',
-                ]),
+                'queryParameters' => [],
             ],
-            'connection specified' => [
-                'query' => 'SELECT 2',
-                'connection' => 'connection_name',
-                'expectedCommandInput' => new ArrayInput([
-                    'sql' => 'SELECT 2',
-                    '--connection' => 'connection_name',
-                ]),
+            'query, has parameters' => [
+                'query' => 'SELECT name FROM Entity WHERE id = :id',
+                'queryParameters' => [
+                    'id' => 123,
+                ],
             ],
         ];
     }

@@ -2,29 +2,31 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use Doctrine\DBAL\Tools\Console\Command\RunSqlCommand;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
+use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\ORM\EntityManagerInterface;
 
 class DoctrineDbalQueryInspector
 {
+    /**
+     * @param array<string, scalar> $queryParameters
+     */
     public function __construct(
-        private RunSqlCommand $command,
+        private EntityManagerInterface $entityManager,
         private string $query = 'SELECT 1',
-        private ?string $connection = null,
+        private array $queryParameters = []
     ) {
     }
 
+    /**
+     * @throws DbalDriverException
+     * @throws DbalException
+     */
     public function __invoke(): void
     {
-        $input = [
-            'sql' => $this->query,
-        ];
+        $connection = $this->entityManager->getConnection();
 
-        if (null !== $this->connection) {
-            $input['--connection'] = $this->connection;
-        }
-
-        $this->command->run(new ArrayInput($input), new NullOutput());
+        $statement = $connection->prepare($this->query);
+        $statement->execute($this->queryParameters);
     }
 }
