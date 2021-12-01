@@ -32,7 +32,7 @@ jobs:
           event-type: service-configure
           client-payload: |
             {
-              "service_id": "worker-manager",
+              "service_id": "worker_manager",
               "state_url": "/",
               "health_check_url": "/health-check"
             }
