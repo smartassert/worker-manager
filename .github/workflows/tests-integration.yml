@@ -57,4 +57,4 @@ jobs:
 
       - name: "Debug: output messenger log ..."
         if: ${{ always() }}
-        run: docker-compose -f tests/docker/docker-compose.yml -T app cat /app/var/log/messenger.prod.log
+        run: docker-compose -f tests/docker/docker-compose.yml exec -T app cat /app/var/log/messenger.prod.log
