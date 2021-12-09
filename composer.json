@@ -79,11 +79,11 @@
             "@auto-scripts"
         ],
         "db-setup": [
-            "php bin/console doctrine:database:create --if-not-exists --quiet",
-            "php bin/console doctrine:schema:update --force --quiet"
+            "php bin/console doctrine:database:create",
+            "php bin/console doctrine:schema:update --force"
         ],
         "db-destroy": [
-            "php bin/console doctrine:database:drop --if-exists --force --quiet"
+            "php bin/console doctrine:database:drop --force"
         ],
         "cs-fixer-dry-run": "./vendor/bin/php-cs-fixer fix --dry-run --verbose --show-progress none",
         "cs-fixer-fix": "./vendor/bin/php-cs-fixer fix --diff",
@@ -113,23 +113,18 @@
             "@test-unit",
             "@test-functional"
         ],
-        "functional-up": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml up -d postgres",
         "functional-setup": [
-            "@functional-up",
-            "sleep 2",
             "@db-setup"
         ],
-        "integration-pull": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml pull",
-        "integration-build": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml build app",
-        "integration-up": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml up -d",
-        "integration-status": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml ps",
-        "integration-stop": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml stop",
-        "integration-destroy": "docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml down",
+        "integration-pull": "docker-compose -f tests/docker/docker-compose.yml pull",
+        "integration-build": "docker-compose -f tests/docker/docker-compose.yml build app",
+        "integration-up": "docker-compose -f tests/docker/docker-compose.yml up -d",
+        "integration-status": "docker-compose -f tests/docker/docker-compose.yml ps",
+        "integration-stop": "docker-compose -f tests/docker/docker-compose.yml stop",
+        "integration-destroy": "docker-compose -f tests/docker/docker-compose.yml down",
         "integration-setup": [
             "@integration-build",
-            "@integration-up",
-            "sleep 2",
-            "@db-setup"
+            "@integration-up"
         ],
         "messenger-listen": "php bin/console messenger:consume async -vv",
         "ci": [

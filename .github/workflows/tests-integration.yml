@@ -43,20 +43,18 @@ jobs:
       - name: Setup integration environment
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-          DATABASE_URL: postgres://postgres:password!@127.0.0.1:5432/basil-worker-manager-db?charset=UTF-8
           VERSION: gh-action-version
         run: |
           VERSION=$VERSION composer integration-setup
-          docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml exec -T app touch /app/var/log/messenger.prod.log
+          docker-compose -f tests/docker/docker-compose.yml exec -T app touch /app/var/log/messenger.prod.log
           sleep 10
 
       - name: Test status, machine creation, health check
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-          DATABASE_URL: postgres://postgres:password!@127.0.0.1:5432/basil-worker-manager-db?charset=UTF-8
           EXPECTED_VERSION: gh-action-version
         run: composer test-integration
 
       - name: "Debug: output messenger log ..."
         if: ${{ always() }}
-        run: docker-compose -f tests/docker/services-compose.yml -f tests/docker/self-compose.yml exec -T app cat /app/var/log/messenger.prod.log
+        run: docker-compose -f tests/docker/docker-compose.yml exec -T app cat /app/var/log/messenger.prod.log
