@@ -3,8 +3,6 @@ FROM php:8.0-fpm-buster
 WORKDIR /app
 
 ARG APP_ENV=prod
-ARG DATABASE_URL=postgresql://database_user:database_password@0.0.0.0:5432/database_name?serverVersion=12&charset=utf8
-ARG MESSENGER_TRANSPORT_DSN=doctrine://default
 ARG MACHINE_NAME_PREFIX=dev
 ARG DIGITALOCEAN_API_TOKEN=digitalocean_api_token
 ARG DIGITALOCEAN_REGION=lon1
@@ -19,8 +17,8 @@ ARG MACHINE_IS_ACTIVE_DISPATCH_DELAY=10000
 ARG VERSION=dockerfile_version
 
 ENV APP_ENV=$APP_ENV
-ENV DATABASE_URL=$DATABASE_URL
-ENV MESSENGER_TRANSPORT_DSN=$MESSENGER_TRANSPORT_DSN
+ENV DATABASE_URL="sqlite:///%kernel.project_dir%/var/sqlite/data.db"
+ENV MESSENGER_TRANSPORT_DSN=doctrine://default
 ENV MACHINE_NAME_PREFIX=$MACHINE_NAME_PREFIX
 ENV DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN
 ENV DIGITALOCEAN_REGION=$DIGITALOCEAN_REGION
@@ -34,27 +32,18 @@ ENV FIND_RETRY_LIMIT=$FIND_RETRY_LIMIT
 ENV MACHINE_IS_ACTIVE_DISPATCH_DELAY=$MACHINE_IS_ACTIVE_DISPATCH_DELAY
 ENV VERSION=$VERSION
 
-ENV DOCKERIZE_VERSION="v2.1.0"
-
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 RUN apt-get -qq update && apt-get -qq -y install  \
-  libpq-dev \
   libzip-dev \
   supervisor \
   zip \
   && docker-php-ext-install \
-  pdo_pgsql \
   zip \
   && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN curl -L --output dockerize.tar.gz \
-     https://github.com/presslabs/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-  && tar -C /usr/local/bin -xzvf dockerize.tar.gz \
-  && rm dockerize.tar.gz \
-  && mkdir -p var/log/supervisor
-
+RUN mkdir -p var/log/supervisor
 COPY build/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY build/supervisor/conf.d/app.conf /etc/supervisor/conf.d/supervisord.conf
 
@@ -73,7 +62,11 @@ RUN chown -R www-data:www-data /app/var/log \
   && rm composer.lock \
   && touch /app/.env \
   && php bin/console cache:clear --env=prod \
+  && mkdir -p /app/var/sqlite \
+  && php bin/console doctrine:database:create \
+  && php bin/console doctrine:schema:update --force \
+  && chmod -R 0777 /app/var/sqlite \
   && printenv | grep "^WORKER_IMAGE" \
   && printenv | grep "^VERSION"
 
-CMD dockerize -wait tcp://postgres:5432 -timeout 30s supervisord -c /etc/supervisor/supervisord.conf
+CMD supervisord -c /etc/supervisor/supervisord.conf

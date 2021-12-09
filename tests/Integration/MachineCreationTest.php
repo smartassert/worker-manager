@@ -22,8 +22,6 @@ class MachineCreationTest extends AbstractIntegrationTest
 
         $machineId = md5((string) rand());
         $this->machineUrl = str_replace('{id}', $machineId, MachineController::PATH_MACHINE);
-
-        shell_exec('php bin/console --env=test app:test:clear-database');
     }
 
     public function testCreateRemoteMachine(): void
@@ -51,7 +49,10 @@ class MachineCreationTest extends AbstractIntegrationTest
 
         sleep(3);
 
-        shell_exec('php bin/console --env=test app:test:clear-database');
+        shell_exec(sprintf(
+            'docker-compose -f tests/docker/docker-compose.yml exec -T app php bin/console doctrine:query:sql "%s"',
+            'DELETE From machine;'
+        ));
 
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
@@ -103,7 +104,7 @@ class MachineCreationTest extends AbstractIntegrationTest
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
 
-        return new Machine(json_decode((string) $response->getBody()->getContents(), true));
+        return new Machine(json_decode($response->getBody()->getContents(), true));
     }
 
     private function deleteMachine(): void

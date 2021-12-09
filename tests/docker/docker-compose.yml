@@ -15,10 +15,7 @@ services:
     build:
       context: ../..
       args:
-        DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/basil-worker-manager-db?serverVersion=12&charset=utf8
         MESSENGER_TRANSPORT_DSN: doctrine://default
         DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
     container_name: test-basil-worker-manager
-    depends_on:
-      - postgres
