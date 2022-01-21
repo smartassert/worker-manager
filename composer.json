@@ -32,7 +32,6 @@
     },
     "require-dev": {
         "dama/doctrine-test-bundle": "^6.5",
-        "friendsofphp/php-cs-fixer": "^3.0",
         "mockery/mockery": "^1.4",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.4",
@@ -90,8 +89,8 @@
         "db-destroy": [
             "php bin/console doctrine:database:drop --force"
         ],
-        "cs-fixer-dry-run": "./vendor/bin/php-cs-fixer fix --dry-run --verbose --show-progress none",
-        "cs-fixer-fix": "./vendor/bin/php-cs-fixer fix --diff",
+        "cs-fixer-dry-run": "docker run --rm $(if [ ! -z \"${NO_TTY}\" ]; then echo \"\"; else echo \"-t\"; fi) -w=/app -v ${PWD}:/app oskarstark/php-cs-fixer-ga:latest --allow-risky=yes --dry-run --verbose --show-progress none",
+        "cs-fixer-fix": "docker run --rm $(if [ ! -z \"${NO_TTY}\" ]; then echo \"\"; else echo \"-t\"; fi) -w=/app -v ${PWD}:/app oskarstark/php-cs-fixer-ga:latest --allow-risky=yes --diff",
         "cs-phpcs": "./vendor/bin/phpcs",
         "cs": [
             "@cs-fixer-dry-run",
