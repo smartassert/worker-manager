@@ -49,8 +49,6 @@ class CreateFailureFactory
     }
 
     /**
-     * @param ExceptionInterface|UnsupportedProviderException $exception
-     *
      * @return CreateFailure::CODE_*
      */
     private function findCode(ExceptionInterface | UnsupportedProviderException $exception): int
