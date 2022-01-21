@@ -2,6 +2,26 @@ framework:
     messenger:
         reset_on_message: true
         transports:
+            create_machine:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: '%env(int:CREATE_RETRY_LIMIT)%'
+
+            get_machine:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: '%env(int:GET_RETRY_LIMIT)%'
+
+            find_machine:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: '%env(int:FIND_RETRY_LIMIT)%'
+
+            delete_machine:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: '%env(int:DELETE_RETRY_LIMIT)%'
+
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
 
