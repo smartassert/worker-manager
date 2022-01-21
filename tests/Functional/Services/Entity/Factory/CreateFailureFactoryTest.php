@@ -34,7 +34,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
     {
         parent::setUp();
 
-        $factory = self::$container->get(CreateFailureFactory::class);
+        $factory = self::getContainer()->get(CreateFailureFactory::class);
         \assert($factory instanceof CreateFailureFactory);
         $this->factory = $factory;
     }

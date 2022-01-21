@@ -30,15 +30,15 @@ class MessageDispatcherTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $dispatcher = self::$container->get(MessageDispatcher::class);
+        $dispatcher = self::getContainer()->get(MessageDispatcher::class);
         \assert($dispatcher instanceof MessageDispatcher);
         $this->dispatcher = $dispatcher;
 
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(md5('id content'), Machine::STATE_UNKNOWN));
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
     }

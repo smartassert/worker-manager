@@ -22,7 +22,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $serviceStatusInspector = self::$container->get(ServiceStatusInspectorInterface::class);
+        $serviceStatusInspector = self::getContainer()->get(ServiceStatusInspectorInterface::class);
         \assert($serviceStatusInspector instanceof ServiceStatusInspector);
         $this->serviceStatusInspector = $serviceStatusInspector;
     }
@@ -39,7 +39,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
         array $modifiedComponentInspectors,
         array $expectedServiceStatus
     ): void {
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         if ($mockHandler instanceof MockHandler) {
             $mockHandler->append(...$httpFixtures);
         }

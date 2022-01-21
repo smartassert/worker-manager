@@ -23,7 +23,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $factory = self::$container->get(GuzzleExceptionFactory::class);
+        $factory = self::getContainer()->get(GuzzleExceptionFactory::class);
         if ($factory instanceof GuzzleExceptionFactory) {
             $this->factory = $factory;
         }

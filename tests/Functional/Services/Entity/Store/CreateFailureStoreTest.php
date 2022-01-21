@@ -16,7 +16,7 @@ class CreateFailureStoreTest extends AbstractEntityTest
     {
         parent::setUp();
 
-        $store = self::$container->get(CreateFailureStore::class);
+        $store = self::getContainer()->get(CreateFailureStore::class);
         \assert($store instanceof CreateFailureStore);
         $this->store = $store;
     }

@@ -16,7 +16,7 @@ class MachineStoreTest extends AbstractEntityTest
     {
         parent::setUp();
 
-        $store = self::$container->get(MachineStore::class);
+        $store = self::getContainer()->get(MachineStore::class);
         \assert($store instanceof MachineStore);
         $this->store = $store;
     }

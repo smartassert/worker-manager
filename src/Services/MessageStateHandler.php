@@ -18,7 +18,10 @@ class MessageStateHandler implements EventSubscriberInterface
     ) {
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return array<class-string, array<array<int, int|string>>>
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             SendMessageToTransportsEvent::class => [

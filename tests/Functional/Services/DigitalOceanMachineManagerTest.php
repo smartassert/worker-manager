@@ -37,20 +37,20 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $machineManager = self::$container->get(DigitalOceanMachineManager::class);
+        $machineManager = self::getContainer()->get(DigitalOceanMachineManager::class);
         \assert($machineManager instanceof DigitalOceanMachineManager);
         $this->machineManager = $machineManager;
 
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machine = new Machine(self::MACHINE_ID);
         $machineStore->store($this->machine);
 
-        $machineNameFactory = self::$container->get(MachineNameFactory::class);
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
 
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
     }
@@ -227,7 +227,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
                 'apiResponse' => new Response(
                     429,
                     [
-                        'RateLimit-Reset' => 123,
+                        'RateLimit-Reset' => '123',
                     ]
                 ),
                 'expectedExceptionClass' => ApiLimitExceededException::class,

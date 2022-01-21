@@ -15,7 +15,7 @@ class MachineNameFactoryTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $factory = self::$container->get(MachineNameFactory::class);
+        $factory = self::getContainer()->get(MachineNameFactory::class);
         \assert($factory instanceof MachineNameFactory);
         $this->factory = $factory;
     }

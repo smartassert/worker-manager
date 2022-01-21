@@ -59,41 +59,41 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $handler = self::$container->get(CreateMachineHandler::class);
+        $handler = self::getContainer()->get(CreateMachineHandler::class);
         \assert($handler instanceof CreateMachineHandler);
         $this->handler = $handler;
 
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machine = new Machine(self::MACHINE_ID);
         $machineStore->store($this->machine);
 
-        $machineProviderStore = self::$container->get(MachineProviderStore::class);
+        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderStore->store($this->machineProvider);
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
 
-        $entityManager = self::$container->get(EntityManagerInterface::class);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         \assert($entityManager instanceof EntityManagerInterface);
         $this->entityManager = $entityManager;
 
-        $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
+        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
 
-        $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
+        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }

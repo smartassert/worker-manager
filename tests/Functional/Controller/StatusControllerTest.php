@@ -18,7 +18,7 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $messageStateStore = self::$container->get(MessageStateStore::class);
+        $messageStateStore = self::getContainer()->get(MessageStateStore::class);
         \assert($messageStateStore instanceof MessageStateStore);
         $this->messageStateStore = $messageStateStore;
     }
@@ -42,7 +42,7 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
         self::assertSame(200, $response->getStatusCode());
         self::assertInstanceOf(JsonResponse::class, $response);
 
-        $versionParameter = self::$container->getParameter('version');
+        $versionParameter = self::getContainer()->getParameter('version');
         $versionParameter = is_string($versionParameter) ? $versionParameter : 'unknown';
 
         $expectedResponseData['version'] = str_replace(

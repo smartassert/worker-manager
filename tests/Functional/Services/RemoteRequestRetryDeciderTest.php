@@ -20,7 +20,7 @@ class RemoteRequestRetryDeciderTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $decider = self::$container->get(RemoteRequestRetryDecider::class);
+        $decider = self::getContainer()->get(RemoteRequestRetryDecider::class);
         if ($decider instanceof RemoteRequestRetryDecider) {
             $this->decider = $decider;
         }
