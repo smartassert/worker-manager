@@ -26,15 +26,15 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $dispatcher = self::$container->get(MachineRequestDispatcher::class);
+        $dispatcher = self::getContainer()->get(MachineRequestDispatcher::class);
         \assert($dispatcher instanceof MachineRequestDispatcher);
         $this->dispatcher = $dispatcher;
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }

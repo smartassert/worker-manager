@@ -14,7 +14,7 @@ class HealthCheckControllerTest extends AbstractBaseFunctionalTest
 {
     public function testGet(): void
     {
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         if ($mockHandler instanceof MockHandler) {
             $mockHandler->append(HttpResponseFactory::fromDropletEntity(new Droplet()));
         }

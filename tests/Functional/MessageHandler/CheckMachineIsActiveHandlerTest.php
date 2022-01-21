@@ -35,27 +35,27 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $handler = self::$container->get(CheckMachineIsActiveHandler::class);
+        $handler = self::getContainer()->get(CheckMachineIsActiveHandler::class);
         \assert($handler instanceof CheckMachineIsActiveHandler);
         $this->handler = $handler;
 
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machineStore = $machineStore;
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
+        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
 
-        $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
+        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
     }

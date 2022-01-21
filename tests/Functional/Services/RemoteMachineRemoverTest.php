@@ -25,11 +25,11 @@ class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $machineManager = self::$container->get(RemoteMachineRemover::class);
+        $machineManager = self::getContainer()->get(RemoteMachineRemover::class);
         \assert($machineManager instanceof RemoteMachineRemover);
         $this->remover = $machineManager;
 
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         if ($mockHandler instanceof MockHandler) {
             $this->mockHandler = $mockHandler;
         }

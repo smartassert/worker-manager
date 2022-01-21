@@ -22,11 +22,11 @@ class MessageStateHandlerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $messageStateHandler = self::$container->get(MessageStateHandler::class);
+        $messageStateHandler = self::getContainer()->get(MessageStateHandler::class);
         \assert($messageStateHandler instanceof MessageStateHandler);
         $this->messageStateHandler = $messageStateHandler;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }

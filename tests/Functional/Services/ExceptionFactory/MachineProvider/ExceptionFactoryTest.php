@@ -23,7 +23,7 @@ class ExceptionFactoryTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $factory = self::$container->get(ExceptionFactory::class);
+        $factory = self::getContainer()->get(ExceptionFactory::class);
         \assert($factory instanceof ExceptionFactory);
         $this->factory = $factory;
     }

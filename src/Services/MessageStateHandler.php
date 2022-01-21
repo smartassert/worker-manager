@@ -19,7 +19,7 @@ class MessageStateHandler implements EventSubscriberInterface
     }
 
     /**
-     * @return array<class-string, array<array<int, string|int>>>
+     * @return array<class-string, array<array<int, int|string>>>
      */
     public static function getSubscribedEvents(): array
     {

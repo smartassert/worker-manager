@@ -36,11 +36,11 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $machineManager = self::$container->get(MachineManager::class);
+        $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
         $this->machineManager = $machineManager;
 
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         if ($mockHandler instanceof MockHandler) {
             $this->mockHandler = $mockHandler;
         }
@@ -265,7 +265,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
 
     private function createMachineProvider(): MachineProvider
     {
-        $machineProviderStore = self::$container->get(MachineProviderStore::class);
+        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderStore->store($machineProvider);

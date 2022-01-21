@@ -32,7 +32,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $factory = self::$container->get(DigitalOceanExceptionFactory::class);
+        $factory = self::getContainer()->get(DigitalOceanExceptionFactory::class);
         if ($factory instanceof DigitalOceanExceptionFactory) {
             $this->factory = $factory;
         }

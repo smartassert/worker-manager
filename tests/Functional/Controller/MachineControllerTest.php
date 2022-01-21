@@ -37,23 +37,23 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $entityManager = self::$container->get(EntityManagerInterface::class);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         \assert($entityManager instanceof EntityManagerInterface);
         $this->entityManager = $entityManager;
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $machineRequestFactory = self::$container->get(MachineRequestFactory::class);
+        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
 
-        $requestIdFactory = self::$container->get(RequestIdFactoryInterface::class);
+        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
 
@@ -69,7 +69,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
      */
     public function testCreateSuccess(?Machine $existingMachine): void
     {
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         if ($existingMachine instanceof Machine) {
             $machineStore->store($existingMachine);
@@ -122,7 +122,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     public function testCreateIdTaken(): void
     {
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
@@ -161,7 +161,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     public function testStatusWithoutCreateFailure(): void
     {
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
@@ -182,13 +182,13 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     public function testStatusWithCreateFailure(): void
     {
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED);
 
         $machineStore->store($machine);
 
-        $createFailureFactory = self::$container->get(CreateFailureFactory::class);
+        $createFailureFactory = self::getContainer()->get(CreateFailureFactory::class);
         \assert($createFailureFactory instanceof CreateFailureFactory);
         $createFailureFactory->create(
             self::MACHINE_ID,
@@ -224,7 +224,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     public function testDeleteLocalMachineExists(): void
     {
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 

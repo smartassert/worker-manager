@@ -48,27 +48,27 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $handler = self::$container->get(GetMachineHandler::class);
+        $handler = self::getContainer()->get(GetMachineHandler::class);
         \assert($handler instanceof GetMachineHandler);
         $this->handler = $handler;
 
-        $mockHandler = self::$container->get(MockHandler::class);
+        $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
 
-        $messengerAsserter = self::$container->get(MessengerAsserter::class);
+        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $machineStore = self::$container->get(MachineStore::class);
+        $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machineStore = $machineStore;
 
-        $machineProviderStore = self::$container->get(MachineProviderStore::class);
+        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
 
-        $messageStateEntityAsserter = self::$container->get(MessageStateEntityAsserter::class);
+        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
