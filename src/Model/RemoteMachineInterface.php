@@ -19,7 +19,7 @@ interface RemoteMachineInterface
     public function getIpAddresses(): array;
 
     /**
-     * @return Machine::STATE_UP_STARTED|Machine::STATE_UP_ACTIVE|null
+     * @return null|Machine::STATE_UP_ACTIVE|Machine::STATE_UP_STARTED
      */
     public function getState(): ?string;
 }

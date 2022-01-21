@@ -41,7 +41,7 @@ class RemoteRequestRetryDeciderTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function decideDataProvider(): array
     {

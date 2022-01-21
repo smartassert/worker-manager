@@ -212,7 +212,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function remoteRequestThrowsExceptionDataProvider(): array
     {

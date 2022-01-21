@@ -104,7 +104,10 @@ class MachineCreationTest extends AbstractIntegrationTest
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
 
-        return new Machine(json_decode($response->getBody()->getContents(), true));
+        $data = json_decode($response->getBody()->getContents(), true);
+        self::assertIsArray($data);
+
+        return new Machine($data);
     }
 
     private function deleteMachine(): void

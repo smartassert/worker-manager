@@ -12,11 +12,12 @@ return (new PhpCsFixer\Config())
         'concat_space' => [
             'spacing' => 'one',
         ],
+        'class_definition' => false,
         'trailing_comma_in_multiline' => false,
         'php_unit_internal_class' => false,
         'php_unit_test_class_requires_covers' => false,
-        'class_definition' => [
-            'multi_line_extends_each_single_line' => true,
+        'types_spaces' => [
+            'space' => 'single',
         ],
     ])
     ->setFinder($finder)

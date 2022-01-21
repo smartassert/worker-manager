@@ -15,16 +15,19 @@ interface ProviderMachineManagerInterface
 
     /**
      * @throws ExceptionInterface
+     * @throws \Throwable
      */
     public function create(string $machineId, string $name): RemoteMachineInterface;
 
     /**
      * @throws ExceptionInterface
+     * @throws \Throwable
      */
     public function remove(string $machineId, string $name): void;
 
     /**
      * @throws ExceptionInterface
+     * @throws \Throwable
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface;
 }

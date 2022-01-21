@@ -56,7 +56,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function createDataProvider(): array
     {

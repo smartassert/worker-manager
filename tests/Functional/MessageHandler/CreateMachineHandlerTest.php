@@ -216,7 +216,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeWithExceptionWithRetryDataProvider(): array
     {
@@ -271,7 +271,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function handleWithExceptionWithoutRetryDataProvider(): array
     {

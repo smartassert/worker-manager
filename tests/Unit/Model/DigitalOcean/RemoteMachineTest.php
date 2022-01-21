@@ -25,7 +25,7 @@ class RemoteMachineTest extends TestCase
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function getIpAddressesDataProvider(): array
     {
