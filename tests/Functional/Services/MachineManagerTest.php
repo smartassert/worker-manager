@@ -221,7 +221,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
                 'apiResponse' => new Response(
                     429,
                     [
-                        'RateLimit-Reset' => 123,
+                        'RateLimit-Reset' => '123',
                     ]
                 ),
                 'expectedExceptionClass' => ApiLimitExceededException::class,
