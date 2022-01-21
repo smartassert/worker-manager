@@ -31,7 +31,7 @@ class RemoteRequestRetryDeciderTest extends TestCase
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function decideDataProvider(): array
     {

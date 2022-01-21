@@ -107,7 +107,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeSuccessDataProvider(): array
     {
@@ -230,7 +230,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeRetryingDataProvider(): array
     {
@@ -322,7 +322,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeThrowsHttpExceptionWithoutRetryDataProvider(): array
     {

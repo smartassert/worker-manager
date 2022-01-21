@@ -11,6 +11,9 @@ class FindMachine extends AbstractRemoteMachineRequest
 {
     use RetryableRequestTrait;
 
+    /**
+     * @var Machine::STATE_*
+     */
     private string $onNotFoundState = Machine::STATE_FIND_NOT_FOUND;
     private bool $reDispatchOnSuccess = false;
 

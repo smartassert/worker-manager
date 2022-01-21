@@ -56,7 +56,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function reDispatchDataProvider(): array
     {

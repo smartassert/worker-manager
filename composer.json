@@ -35,10 +35,10 @@
         "friendsofphp/php-cs-fixer": "^3.0",
         "mockery/mockery": "^1.4",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "^0.12.84",
-        "phpstan/phpstan-mockery": "^0.12.13",
-        "phpstan/phpstan-phpunit": "^0.12.18",
-        "phpstan/phpstan-symfony": "^0.12.26",
+        "phpstan/phpstan": "^1.4",
+        "phpstan/phpstan-mockery": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpstan/phpstan-symfony": "^1.1",
         "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "dev-master",
         "symfony/browser-kit": "5.2.*",
@@ -50,7 +50,12 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "phpstan/extension-installer": true,
+            "symfony/flex": true
+        }
     },
     "autoload": {
         "psr-4": {

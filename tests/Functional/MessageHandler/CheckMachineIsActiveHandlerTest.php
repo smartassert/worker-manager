@@ -9,7 +9,6 @@ use App\Entity\MessageState;
 use App\Message\CheckMachineIsActive;
 use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
-use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
@@ -68,8 +67,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeMachineIsActiveOrEnded(string $state): void
     {
-        $machine = new Machine(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $machine->setState($state);
+        $machine = new Machine(self::MACHINE_ID, $state);
         $this->machineStore->store($machine);
 
         ($this->handler)(new CheckMachineIsActive('id0', self::MACHINE_ID));
@@ -79,7 +77,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeMachineIsActiveOrEndedDataProvider(): array
     {
@@ -112,8 +110,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testHandleMachineIsPreActive(string $state): void
     {
-        $machine = new Machine(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $machine->setState($state);
+        $machine = new Machine(self::MACHINE_ID, $state);
         $this->machineStore->store($machine);
 
         $request = $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
@@ -141,7 +138,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function handleMachineIsPreActiveDataProvider(): array
     {

@@ -50,7 +50,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function createDataProvider(): array
     {

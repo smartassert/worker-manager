@@ -23,6 +23,7 @@ class MachineManager extends AbstractMachineManager
     /**
      * @throws ExceptionInterface
      * @throws UnsupportedProviderException
+     * @throws \Throwable
      */
     public function create(MachineProvider $machineProvider): RemoteMachineInterface
     {
@@ -36,10 +37,10 @@ class MachineManager extends AbstractMachineManager
 
         try {
             return $provider->create($machineId, $machineName);
-        } catch (ExceptionInterface $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            throw $this->exceptionFactory->create($machineId, Action::ACTION_CREATE, $exception);
+        } catch (\Throwable $exception) {
+            throw $exception instanceof ExceptionInterface
+                ? $exception
+                : $this->exceptionFactory->create($machineId, Action::ACTION_CREATE, $exception);
         }
     }
 
@@ -47,6 +48,7 @@ class MachineManager extends AbstractMachineManager
      * @throws ExceptionInterface
      * @throws UnsupportedProviderException
      * @throws ProviderMachineNotFoundException
+     * @throws \Throwable
      */
     public function get(MachineProvider $machineProvider): RemoteMachineInterface
     {
@@ -63,10 +65,10 @@ class MachineManager extends AbstractMachineManager
             if ($machine instanceof RemoteMachineInterface) {
                 return $machine;
             }
-        } catch (ExceptionInterface $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            throw $this->exceptionFactory->create($machineId, Action::ACTION_GET, $exception);
+        } catch (\Throwable $exception) {
+            throw $exception instanceof ExceptionInterface
+                ? $exception
+                : $this->exceptionFactory->create($machineId, Action::ACTION_GET, $exception);
         }
 
         throw new ProviderMachineNotFoundException($machineProvider->getId(), $machineProvider->getName());
@@ -75,6 +77,7 @@ class MachineManager extends AbstractMachineManager
     /**
      * @throws ExceptionInterface
      * @throws UnsupportedProviderException
+     * @throws \Throwable
      */
     public function delete(MachineProvider $machineProvider): void
     {
@@ -88,10 +91,10 @@ class MachineManager extends AbstractMachineManager
 
         try {
             $provider->remove($machineId, $machineName);
-        } catch (ExceptionInterface $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            throw $this->exceptionFactory->create($machineId, Action::ACTION_DELETE, $exception);
+        } catch (\Throwable $exception) {
+            throw $exception instanceof ExceptionInterface
+                ? $exception
+                : $this->exceptionFactory->create($machineId, Action::ACTION_DELETE, $exception);
         }
     }
 }

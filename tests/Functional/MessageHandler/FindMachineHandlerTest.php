@@ -139,7 +139,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function invokeSuccessDataProvider(): array
     {

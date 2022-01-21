@@ -9,7 +9,6 @@ use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
-use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineStore;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
@@ -37,7 +36,7 @@ class MessageDispatcherTest extends AbstractBaseFunctionalTest
 
         $machineStore = self::$container->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
-        $machineStore->store(new Machine(md5('id content'), ProviderInterface::NAME_DIGITALOCEAN));
+        $machineStore->store(new Machine(md5('id content'), Machine::STATE_UNKNOWN));
 
         $messengerAsserter = self::$container->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -71,7 +70,7 @@ class MessageDispatcherTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function dispatchDataProvider(): array
     {

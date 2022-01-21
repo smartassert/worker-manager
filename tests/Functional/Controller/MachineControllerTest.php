@@ -103,7 +103,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array[]
+     * @return array<mixed>
      */
     public function createSuccessDataProvider(): array
     {
