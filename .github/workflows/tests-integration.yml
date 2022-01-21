@@ -10,11 +10,11 @@ on:
 
 jobs:
   integration:
-    name: Machine creation - PHP ${{ matrix.php-versions }} ${{ matrix.operating-system }}
+    name: Machine creation - PHP ${{ matrix.php }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
-        php-versions: ['8.0']
+        php: ['8.0']
     runs-on: ${{ matrix.operating-system }}
 
     steps:
@@ -24,13 +24,13 @@ jobs:
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php }}
           extensions: pgsql
 
       - name: Download dependencies
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ matrix.php-versions }}
+          php_version: ${{ matrix.php }}
           args: --ignore-platform-reqs --quiet
 
       - name: Pull images
