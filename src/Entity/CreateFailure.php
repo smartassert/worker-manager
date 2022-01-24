@@ -30,6 +30,9 @@ class CreateFailure implements \JsonSerializable
     public const CODE_UNPROCESSABLE_REQUEST = 6;
     public const REASON_UNPROCESSABLE_REQUEST = 'unprocessable request';
 
+    public const CODE_UNKNOWN_MACHINE_PROVIDER_ERROR = 7;
+    public const REASON_UNKNOWN_MACHINE_PROVIDER_ERROR = 'unknown machine provider error';
+
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=MachineIdInterface::LENGTH)

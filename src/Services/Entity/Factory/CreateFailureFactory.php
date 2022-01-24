@@ -6,8 +6,8 @@ use App\Entity\CreateFailure;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
-use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
+use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Services\Entity\Store\CreateFailureStore;
@@ -24,6 +24,7 @@ class CreateFailureFactory
         CreateFailure::CODE_CURL_ERROR => CreateFailure::REASON_CURL_ERROR,
         CreateFailure::CODE_HTTP_ERROR => CreateFailure::REASON_HTTP_ERROR,
         CreateFailure::CODE_UNPROCESSABLE_REQUEST => CreateFailure::REASON_UNPROCESSABLE_REQUEST,
+        CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR => CreateFailure::REASON_UNKNOWN_MACHINE_PROVIDER_ERROR,
     ];
 
     public function __construct(
@@ -31,18 +32,16 @@ class CreateFailureFactory
     ) {
     }
 
-    public function create(
-        string $machineId,
-        ExceptionInterface | UnsupportedProviderException $exception
-    ): CreateFailure {
+    public function create(string $machineId, \Throwable $throwable): CreateFailure
+    {
         $existingEntity = $this->store->find($machineId);
         if ($existingEntity instanceof CreateFailure) {
             return $existingEntity;
         }
 
-        $code = $this->findCode($exception);
+        $code = $this->findCode($throwable);
 
-        $entity = new CreateFailure($machineId, $code, $this->findReason($code), $this->createContext($exception));
+        $entity = new CreateFailure($machineId, $code, $this->findReason($code), $this->createContext($throwable));
         $this->store->store($entity);
 
         return $entity;
@@ -51,30 +50,34 @@ class CreateFailureFactory
     /**
      * @return CreateFailure::CODE_*
      */
-    private function findCode(ExceptionInterface | UnsupportedProviderException $exception): int
+    private function findCode(\Throwable $throwable): int
     {
-        if ($exception instanceof UnsupportedProviderException) {
+        if ($throwable instanceof UnsupportedProviderException) {
             return CreateFailure::CODE_UNSUPPORTED_PROVIDER;
         }
 
-        if ($exception instanceof ApiLimitExceptionInterface) {
+        if ($throwable instanceof ApiLimitExceptionInterface) {
             return CreateFailure::CODE_API_LIMIT_EXCEEDED;
         }
 
-        if ($exception instanceof AuthenticationExceptionInterface) {
+        if ($throwable instanceof AuthenticationExceptionInterface) {
             return CreateFailure::CODE_API_AUTHENTICATION_FAILURE;
         }
 
-        if ($exception instanceof CurlExceptionInterface) {
+        if ($throwable instanceof CurlExceptionInterface) {
             return CreateFailure::CODE_CURL_ERROR;
         }
 
-        if ($exception instanceof HttpExceptionInterface) {
+        if ($throwable instanceof HttpExceptionInterface) {
             return CreateFailure::CODE_HTTP_ERROR;
         }
 
-        if ($exception instanceof UnprocessableRequestExceptionInterface) {
+        if ($throwable instanceof UnprocessableRequestExceptionInterface) {
             return CreateFailure::CODE_UNPROCESSABLE_REQUEST;
+        }
+
+        if ($throwable instanceof UnknownExceptionInterface) {
+            return CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR;
         }
 
         return CreateFailure::CODE_UNKNOWN;
@@ -93,29 +96,29 @@ class CreateFailureFactory
     /**
      * @return array<string, int|string>
      */
-    private function createContext(ExceptionInterface | UnsupportedProviderException $exception): array
+    private function createContext(\Throwable $throwable): array
     {
-        if ($exception instanceof ApiLimitExceptionInterface) {
+        if ($throwable instanceof ApiLimitExceptionInterface) {
             return [
-                'reset-timestamp' => $exception->getResetTimestamp(),
+                'reset-timestamp' => $throwable->getResetTimestamp(),
             ];
         }
 
-        if ($exception instanceof CurlExceptionInterface) {
+        if ($throwable instanceof CurlExceptionInterface) {
             return [
-                'curl-code' => $exception->getCurlCode(),
+                'curl-code' => $throwable->getCurlCode(),
             ];
         }
 
-        if ($exception instanceof HttpExceptionInterface) {
+        if ($throwable instanceof HttpExceptionInterface) {
             return [
-                'status-code' => $exception->getStatusCode(),
+                'status-code' => $throwable->getStatusCode(),
             ];
         }
 
-        if ($exception instanceof UnprocessableRequestExceptionInterface) {
+        if ($throwable instanceof UnprocessableRequestExceptionInterface) {
             return [
-                'provider-reason' => $exception->getReason(),
+                'provider-reason' => $throwable->getReason(),
             ];
         }
 

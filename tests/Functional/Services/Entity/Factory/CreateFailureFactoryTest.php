@@ -13,7 +13,6 @@ use App\Exception\MachineProvider\CurlExceptionInterface;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
@@ -42,11 +41,9 @@ class CreateFailureFactoryTest extends AbstractEntityTest
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(
-        ExceptionInterface | UnsupportedProviderException $exception,
-        CreateFailure $expectedCreateFailure
-    ): void {
-        $createFailure = $this->factory->create(self::MACHINE_ID, $exception);
+    public function testCreate(\Throwable $throwable, CreateFailure $expectedCreateFailure): void
+    {
+        $createFailure = $this->factory->create(self::MACHINE_ID, $throwable);
 
         self::assertEquals($expectedCreateFailure, $createFailure);
 
@@ -64,7 +61,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
 
         return [
             UnsupportedProviderException::class => [
-                'exception' => new UnsupportedProviderException(ProviderInterface::NAME_DIGITALOCEAN),
+                'throwable' => new UnsupportedProviderException(ProviderInterface::NAME_DIGITALOCEAN),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_UNSUPPORTED_PROVIDER,
@@ -72,7 +69,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             ApiLimitExceptionInterface::class => [
-                'exception' => new ApiLimitExceededException(
+                'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
@@ -88,7 +85,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             AuthenticationExceptionInterface::class => [
-                'exception' => new AuthenticationException(
+                'throwable' => new AuthenticationException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
                     new \Exception(),
@@ -100,7 +97,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             CurlExceptionInterface::class => [
-                'exception' => new CurlException(
+                'throwable' => new CurlException(
                     7,
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
@@ -116,7 +113,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             HttpExceptionInterface::class => [
-                'exception' => new HttpException(
+                'throwable' => new HttpException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
                     new RuntimeException('', 500)
@@ -131,7 +128,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             UnprocessableRequestExceptionInterface::class => [
-                'exception' => new DropletLimitExceededException(
+                'throwable' => new DropletLimitExceededException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
                     new ValidationFailedException(
@@ -149,11 +146,19 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 ),
             ],
             UnknownExceptionInterface::class => [
-                'exception' => new UnknownException(
+                'throwable' => new UnknownException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_CREATE,
                     new \Exception()
                 ),
+                'expectedCreateFailure' => new CreateFailure(
+                    self::MACHINE_ID,
+                    CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR,
+                    CreateFailure::REASON_UNKNOWN_MACHINE_PROVIDER_ERROR,
+                ),
+            ],
+            'unknown exception' => [
+                'throwable' => new \RuntimeException('Runtime error'),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_UNKNOWN,
