@@ -7,7 +7,9 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Entity\MessageState;
-use App\Exception\MachineProvider\Exception;
+use App\Exception\MachineProvider\AuthenticationException;
+use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
@@ -17,19 +19,20 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\MachineManager;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Services\MockMachineManager;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\InvalidArgumentException;
+use DigitalOceanV2\Exception\ResourceNotFoundException;
+use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
@@ -43,10 +46,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MockHandler $mockHandler;
     private Machine $machine;
-    private MachineProvider $machineProvider;
     private MachineRequestFactory $machineRequestFactory;
     private SequentialRequestIdFactory $requestIdFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
+    private MachineStore $machineStore;
+    private MachineProviderStore $machineProviderStore;
 
     protected function setUp(): void
     {
@@ -63,8 +67,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
-        $this->machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $machineProviderStore->store($this->machineProvider);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProviderStore->store($machineProvider);
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -85,6 +89,14 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
+
+        $machineStore = self::getContainer()->get(MachineStore::class);
+        \assert($machineStore instanceof MachineStore);
+        $this->machineStore = $machineStore;
+
+        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
+        \assert($machineProviderStore instanceof MachineProviderStore);
+        $this->machineProviderStore = $machineProviderStore;
     }
 
     public function testInvokeSuccess(): void
@@ -133,110 +145,131 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @dataProvider handleWithUnrecoverableExceptionDataProvider
+     * @dataProvider invokeThrowsExceptionDataProvider
      */
-    public function testHandleWithUnrecoverableException(\Exception $exception, \Exception $expectedException): void
-    {
-        $message = new CreateMachine('id0', self::MACHINE_ID);
+    public function testInvokeThrowsException(
+        ?ResponseInterface $httpFixture,
+        Machine $machine,
+        MachineProvider $machineProvider,
+        \Exception $expectedException
+    ): void {
+        if ($httpFixture instanceof ResponseInterface) {
+            $this->mockHandler->append($httpFixture);
+        }
 
-        $machineManager = (new MockMachineManager())
-            ->withCreateCallThrowingException($this->machineProvider, $exception)
-            ->getMock()
-        ;
+        $this->machineStore->store($machine);
+        $this->machineProviderStore->store($machineProvider);
 
-        $this->setMachineManagerOnHandler($machineManager);
+        $message = new CreateMachine('id0', $machine->getId());
+        $machineState = $machine->getState();
 
-        $this->expectExceptionObject($expectedException);
+        try {
+            ($this->handler)($message);
+            $this->fail($expectedException::class . ' not thrown');
+        } catch (\Exception $exception) {
+            self::assertEquals($expectedException, $exception);
+        }
 
-        ($this->handler)($message);
+        self::assertSame($machineState, $machine->getState());
     }
 
     /**
      * @return array<mixed>
      */
-    public function handleWithUnrecoverableExceptionDataProvider(): array
+    public function invokeThrowsExceptionDataProvider(): array
     {
-        $unsupportedProviderException = new UnsupportedProviderException(
-            ProviderInterface::NAME_DIGITALOCEAN
+        $machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+
+        $authenticationException = new AuthenticationException(
+            self::MACHINE_ID,
+            MachineActionInterface::ACTION_CREATE,
+            new RuntimeException('Unauthorized', 401)
         );
 
-        $unknownRemoveMachineException = new UnknownRemoteMachineException(
+        $invalidProvider = 'invalid';
+        $unsupportedProviderException = new UnsupportedProviderException($invalidProvider);
+
+        $unknownRemoteMachineException = new UnknownRemoteMachineException(
             ProviderInterface::NAME_DIGITALOCEAN,
-            'machine id',
-            MachineActionInterface::ACTION_GET,
-            new \Exception()
+            self::MACHINE_ID,
+            MachineActionInterface::ACTION_CREATE,
+            new ResourceNotFoundException('Not Found', 404),
+        );
+
+        $rateLimitReset = 1400000;
+
+        $apiLimitExceededException = new ApiLimitExceededException(
+            $rateLimitReset,
+            $machine->getId(),
+            MachineActionInterface::ACTION_CREATE,
+            new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
         );
 
         return [
-            UnsupportedProviderException::class => [
-                'exception' => $unsupportedProviderException,
+            'HTTP 401' => [
+                'httpFixture' => new Response(401),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $authenticationException->getMessage(),
+                    $authenticationException->getCode(),
+                    $authenticationException
+                ),
+            ],
+            'HTTP 404' => [
+                'httpFixture' => new Response(404),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => $unknownRemoteMachineException,
+            ],
+            'HTTP 429' => [
+                'httpFixture' => new Response(
+                    429,
+                    [
+                        'ratelimit-reset' => (string) $rateLimitReset,
+                    ]
+                ),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $apiLimitExceededException->getMessage(),
+                    $apiLimitExceededException->getCode(),
+                    $apiLimitExceededException
+                ),
+            ],
+            'HTTP 503' => [
+                'httpFixture' => new Response(503),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => new HttpException(
+                    $machine->getId(),
+                    MachineActionInterface::ACTION_CREATE,
+                    new RuntimeException('Service Unavailable', 503)
+                ),
+            ],
+            'Unsupported provider' => [
+                'httpFixture' => null,
+                'machine' => $machine,
+                'machineProvider' => (function () {
+                    $invalidProvider = 'invalid';
+
+                    $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+                    ObjectReflector::setProperty(
+                        $machineProvider,
+                        MachineProvider::class,
+                        'provider',
+                        $invalidProvider
+                    );
+
+                    return $machineProvider;
+                })(),
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $unsupportedProviderException->getMessage(),
                     $unsupportedProviderException->getCode(),
                     $unsupportedProviderException
                 ),
             ],
-            UnknownRemoteMachineException::class . ' with action ' . MachineActionInterface::ACTION_GET => [
-                'exception' => $unknownRemoveMachineException,
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    $unknownRemoveMachineException->getMessage(),
-                    $unknownRemoveMachineException->getCode(),
-                    $unknownRemoveMachineException
-                ),
-            ],
         ];
-    }
-
-    /**
-     * @dataProvider invokeWithExceptionWithRetryDataProvider
-     */
-    public function testInvokeExceptionWithRetry(\Throwable $previous, int $retryCount): void
-    {
-        $message = $this->machineRequestFactory->createCreate(self::MACHINE_ID);
-        ObjectReflector::setProperty($message, $message::class, 'retryCount', $retryCount);
-
-        $exception = new Exception(self::MACHINE_ID, $message->getAction(), $previous);
-
-        $machineManager = (new MockMachineManager())
-            ->withCreateCallThrowingException($this->machineProvider, $exception)
-            ->getMock()
-        ;
-
-        $this->setMachineManagerOnHandler($machineManager);
-
-        $this->expectExceptionObject($exception);
-
-        ($this->handler)($message);
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function invokeWithExceptionWithRetryDataProvider(): array
-    {
-        return [
-            'requires retry, retry limit not reached (0)' => [
-                'previous' => \Mockery::mock(InvalidArgumentException::class),
-                'retryCount' => 0,
-            ],
-            'requires retry, retry limit not reached (1)' => [
-                'previous' => \Mockery::mock(InvalidArgumentException::class),
-                'retryCount' => 1,
-            ],
-            'requires retry, retry limit not reached (2)' => [
-                'previous' => \Mockery::mock(InvalidArgumentException::class),
-                'retryCount' => 2,
-            ],
-        ];
-    }
-
-    private function setMachineManagerOnHandler(MachineManager $machineManager): void
-    {
-        ObjectReflector::setProperty(
-            $this->handler,
-            CreateMachineHandler::class,
-            'machineManager',
-            $machineManager
-        );
     }
 }
