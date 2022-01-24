@@ -161,6 +161,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineProviderStore->store($machineProvider);
 
         $message = new CreateMachine('id0', $machine->getId());
+        $machineState = $machine->getState();
 
         try {
             ($this->handler)($message);
@@ -169,7 +170,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
+        self::assertSame($machineState, $machine->getState());
     }
 
     /**
