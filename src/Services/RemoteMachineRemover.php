@@ -9,6 +9,7 @@ class RemoteMachineRemover extends AbstractMachineManager
 {
     /**
      * @throws MachineNotRemovableException
+     * @throws \Throwable
      */
     public function remove(string $machineId): void
     {

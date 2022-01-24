@@ -24,6 +24,9 @@ class DeleteMachineHandler implements MessageHandlerInterface
     ) {
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function __invoke(DeleteMachine $message): void
     {
         $machineId = $message->getMachineId();

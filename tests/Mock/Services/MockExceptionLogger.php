@@ -22,20 +22,31 @@ class MockExceptionLogger
         return $this->mock;
     }
 
-    public function withLogCall(\Throwable $expectedException): self
+    /**
+     * @param \Throwable[] $exceptions
+     */
+    public function withLogCalls(array $exceptions): self
     {
-        if ($this->mock instanceof MockInterface) {
-            $this->mock
-                ->shouldReceive('log')
-                ->withArgs(function (\Throwable $exception) use ($expectedException) {
-                    TestCase::assertSame($expectedException::class, $exception::class);
-                    TestCase::assertSame($expectedException->getMessage(), $exception->getMessage());
-                    TestCase::assertSame($expectedException->getCode(), $exception->getCode());
-
-                    return true;
-                })
-            ;
+        if (!$this->mock instanceof MockInterface) {
+            return $this;
         }
+
+        $iteration = 0;
+
+        $this->mock
+            ->shouldReceive('log')
+            ->times(count($exceptions))
+            ->withArgs(function (\Throwable $exception) use ($exceptions, &$iteration) {
+                $expectedException = $exceptions[$iteration];
+                ++$iteration;
+
+                TestCase::assertSame($expectedException::class, $exception::class);
+                TestCase::assertSame($expectedException->getMessage(), $exception->getMessage());
+                TestCase::assertSame($expectedException->getCode(), $exception->getCode());
+
+                return true;
+            })
+        ;
 
         return $this;
     }
