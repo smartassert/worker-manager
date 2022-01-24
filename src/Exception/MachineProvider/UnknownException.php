@@ -2,6 +2,6 @@
 
 namespace App\Exception\MachineProvider;
 
-class UnknownException extends Exception
+class UnknownException extends Exception implements UnknownExceptionInterface
 {
 }
