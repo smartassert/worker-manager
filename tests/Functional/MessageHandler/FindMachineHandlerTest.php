@@ -324,11 +324,11 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->setExceptionLoggerOnHandler(
             (new MockExceptionLogger())
-                ->withLogCall(new HttpException(
+                ->withLogCalls([new HttpException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
                     new RuntimeException('Service Unavailable', 503)
-                ))
+                )])
                 ->getMock()
         );
 

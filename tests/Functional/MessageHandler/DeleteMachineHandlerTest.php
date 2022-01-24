@@ -137,11 +137,11 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->setExceptionLoggerOnHandler(
             (new MockExceptionLogger())
-                ->withLogCall(new HttpException(
+                ->withLogCalls([new HttpException(
                     self::MACHINE_ID,
                     MachineActionInterface::ACTION_DELETE,
                     new RuntimeException('Service Unavailable', 503)
-                ))
+                )])
                 ->getMock()
         );
 

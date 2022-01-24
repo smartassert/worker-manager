@@ -155,7 +155,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ;
 
         $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCall($exception)
+            ->withLogCalls([$exception])
             ->getMock()
         ;
 
@@ -253,7 +253,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ;
 
         $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCall($exception)
+            ->withLogCalls([$exception])
             ->getMock()
         ;
 

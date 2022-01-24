@@ -33,6 +33,9 @@ class GetMachineHandler implements MessageHandlerInterface
     ) {
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function __invoke(GetMachine $message): void
     {
         $machine = $this->machineStore->find($message->getMachineId());
