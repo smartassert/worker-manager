@@ -4,10 +4,13 @@ namespace App\Exception\MachineProvider\DigitalOcean;
 
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
+use App\Exception\UnrecoverableExceptionInterface;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
-class DropletLimitExceededException extends Exception implements UnprocessableRequestExceptionInterface
+class DropletLimitExceededException extends Exception implements
+    UnprocessableRequestExceptionInterface,
+    UnrecoverableExceptionInterface
 {
     public const MESSAGE_IDENTIFIER = 'exceed your droplet limit';
 

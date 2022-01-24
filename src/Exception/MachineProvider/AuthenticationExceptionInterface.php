@@ -2,6 +2,8 @@
 
 namespace App\Exception\MachineProvider;
 
-interface AuthenticationExceptionInterface extends ExceptionInterface
+use App\Exception\UnrecoverableExceptionInterface;
+
+interface AuthenticationExceptionInterface extends ExceptionInterface, UnrecoverableExceptionInterface
 {
 }

@@ -2,7 +2,9 @@
 
 namespace App\Exception\MachineProvider;
 
-interface ApiLimitExceptionInterface extends ExceptionInterface
+use App\Exception\UnrecoverableExceptionInterface;
+
+interface ApiLimitExceptionInterface extends ExceptionInterface, UnrecoverableExceptionInterface
 {
     public function getResetTimestamp(): int;
 }
