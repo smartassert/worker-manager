@@ -2,7 +2,7 @@
 
 namespace App\Exception;
 
-class UnsupportedProviderException extends \Exception
+class UnsupportedProviderException extends \Exception implements UnrecoverableExceptionInterface
 {
     private const MESSAGE = 'Unsupported provider "%s"';
 

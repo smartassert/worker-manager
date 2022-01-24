@@ -27,31 +27,8 @@ class MockMachineManager
         \Exception $exception
     ): self {
         if ($this->mock instanceof MockInterface) {
-            $this->withCallThrowingException('create', $machineProvider, $exception);
-        }
-
-        return $this;
-    }
-
-    public function withDeleteCallThrowingException(
-        MachineProvider $machineProvider,
-        \Exception $exception
-    ): self {
-        if ($this->mock instanceof MockInterface) {
-            $this->withCallThrowingException('delete', $machineProvider, $exception);
-        }
-
-        return $this;
-    }
-
-    private function withCallThrowingException(
-        string $method,
-        MachineProvider $machineProvider,
-        \Exception $exception
-    ): self {
-        if ($this->mock instanceof MockInterface) {
             $this->mock
-                ->shouldReceive($method)
+                ->shouldReceive('create')
                 ->with($machineProvider)
                 ->andThrow($exception)
             ;

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\MessageHandler;
 
-use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Entity\MessageState;
-use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
+use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
@@ -23,20 +21,16 @@ use App\Services\MachineManager;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Mock\Services\MockMachineManager;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededExceptionAlias;
 use DigitalOceanV2\Exception\InvalidArgumentException;
-use DigitalOceanV2\Exception\RuntimeException;
-use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Handler\MockHandler;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -50,7 +44,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private MockHandler $mockHandler;
     private Machine $machine;
     private MachineProvider $machineProvider;
-    private EntityManagerInterface $entityManager;
     private MachineRequestFactory $machineRequestFactory;
     private SequentialRequestIdFactory $requestIdFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
@@ -80,10 +73,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
-
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        \assert($entityManager instanceof EntityManagerInterface);
-        $this->entityManager = $entityManager;
 
         $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
@@ -143,10 +132,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messageStateEntityAsserter->assertHas(new MessageState($expectedRequest->getUniqueId()));
     }
 
-    public function testHandleWithUnsupportedProviderException(): void
+    /**
+     * @dataProvider handleWithUnrecoverableExceptionDataProvider
+     */
+    public function testHandleWithUnrecoverableException(\Exception $exception): void
     {
-        $exception = \Mockery::mock(UnsupportedProviderException::class);
-
         $message = new CreateMachine('id0', self::MACHINE_ID);
 
         $machineManager = (new MockMachineManager())
@@ -154,30 +144,35 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             ->getMock()
         ;
 
-        $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCalls([$exception])
-            ->getMock()
-        ;
+        $this->setMachineManagerOnHandler($machineManager);
 
-        $this->prepareHandler($machineManager, $exceptionLogger);
+        $this->expectExceptionObject(new UnrecoverableMessageHandlingException(
+            'message',
+            0,
+            $exception
+        ));
 
         ($this->handler)($message);
+    }
 
-        $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
-
-        self::assertSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
-        self::assertSame(0, $message->getRetryCount());
-
-        $createFailure = $this->entityManager->find(CreateFailure::class, $this->machine->getId());
-        self::assertEquals(
-            new CreateFailure(
-                self::MACHINE_ID,
-                CreateFailure::CODE_UNSUPPORTED_PROVIDER,
-                CreateFailure::REASON_UNSUPPORTED_PROVIDER
-            ),
-            $createFailure
-        );
+    /**
+     * @return array<mixed>
+     */
+    public function handleWithUnrecoverableExceptionDataProvider(): array
+    {
+        return [
+            UnsupportedProviderException::class => [
+                'exception' => \Mockery::mock(UnsupportedProviderException::class),
+            ],
+            UnknownRemoteMachineException::class . ' with action ' . MachineActionInterface::ACTION_GET => [
+                'exception' => new UnknownRemoteMachineException(
+                    ProviderInterface::NAME_DIGITALOCEAN,
+                    'machine id',
+                    MachineActionInterface::ACTION_GET,
+                    new \Exception()
+                ),
+            ],
+        ];
     }
 
     /**
@@ -195,24 +190,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             ->getMock()
         ;
 
-        $exceptionLogger = (new MockExceptionLogger())
-            ->withoutLogCall()
-            ->getMock()
-        ;
+        $this->setMachineManagerOnHandler($machineManager);
 
-        $this->prepareHandler($machineManager, $exceptionLogger);
+        $this->expectExceptionObject($exception);
 
         ($this->handler)($message);
-
-        $expectedMessage = $message->incrementRetryCount();
-
-        $this->messengerAsserter->assertQueueCount(1);
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
-
-        self::assertNotSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
-
-        $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState($expectedMessage->getUniqueId()));
     }
 
     /**
@@ -236,88 +218,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ];
     }
 
-    /**
-     * @dataProvider handleWithExceptionWithoutRetryDataProvider
-     */
-    public function testHandleExceptionWithoutRetry(
-        \Exception $exception,
-        int $retryCount,
-        CreateFailure $expectedCreateFailure
-    ): void {
-        $message = new CreateMachine('id0', self::MACHINE_ID);
-        ObjectReflector::setProperty($message, $message::class, 'retryCount', $retryCount);
-
-        $machineManager = (new MockMachineManager())
-            ->withCreateCallThrowingException($this->machineProvider, $exception)
-            ->getMock()
-        ;
-
-        $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCalls([$exception])
-            ->getMock()
-        ;
-
-        $this->prepareHandler($machineManager, $exceptionLogger);
-
-        ($this->handler)($message);
-
-        $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
-
-        self::assertSame(Machine::STATE_CREATE_FAILED, $this->machine->getState());
-
-        $createFailure = $this->entityManager->find(CreateFailure::class, $this->machine->getId());
-        self::assertEquals($expectedCreateFailure, $createFailure);
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function handleWithExceptionWithoutRetryDataProvider(): array
-    {
-        return [
-            'does not require retry' => [
-                'exception' => new ApiLimitExceededException(
-                    123,
-                    self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
-                    new VendorApiLimitExceededExceptionAlias()
-                ),
-                'retryCount' => 0,
-                'expectedCreateFailure' => new CreateFailure(
-                    self::MACHINE_ID,
-                    CreateFailure::CODE_API_LIMIT_EXCEEDED,
-                    CreateFailure::REASON_API_LIMIT_EXCEEDED,
-                    [
-                        'reset-timestamp' => 123,
-                    ]
-                ),
-            ],
-            'requires retry, retry limit reached (3)' => [
-                'exception' => new HttpException(
-                    self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
-                    new RuntimeException('Internal Server Error', 500)
-                ),
-                'retryCount' => 3,
-                'expectedCreateFailure' => new CreateFailure(
-                    self::MACHINE_ID,
-                    CreateFailure::CODE_HTTP_ERROR,
-                    CreateFailure::REASON_HTTP_ERROR,
-                    [
-                        'status-code' => 500,
-                    ]
-                ),
-            ],
-        ];
-    }
-
-    private function prepareHandler(MachineManager $machineManager, ExceptionLogger $exceptionLogger): void
-    {
-        $this->setMachineManagerOnHandler($machineManager);
-        $this->setExceptionLoggerOnHandler($exceptionLogger);
-    }
-
     private function setMachineManagerOnHandler(MachineManager $machineManager): void
     {
         ObjectReflector::setProperty(
@@ -325,16 +225,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             CreateMachineHandler::class,
             'machineManager',
             $machineManager
-        );
-    }
-
-    private function setExceptionLoggerOnHandler(ExceptionLogger $exceptionLogger): void
-    {
-        ObjectReflector::setProperty(
-            $this->handler,
-            CreateMachineHandler::class,
-            'exceptionLogger',
-            $exceptionLogger
         );
     }
 }
