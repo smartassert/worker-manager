@@ -34,6 +34,9 @@ class CreateMachineHandler implements MessageHandlerInterface
     ) {
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function __invoke(CreateMachine $message): void
     {
         $machine = $this->machineStore->find($message->getMachineId());

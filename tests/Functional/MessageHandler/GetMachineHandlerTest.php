@@ -271,7 +271,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCall($expectedLoggedException)
+            ->withLogCalls([$expectedLoggedException])
             ->getMock()
         ;
 
@@ -309,7 +309,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCall($expectedLoggedException)
+            ->withLogCalls([$expectedLoggedException])
             ->getMock()
         ;
 
@@ -348,7 +348,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineProviderStore->store($machineProvider);
 
         $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCall($expectedLoggedException)
+            ->withLogCalls([$expectedLoggedException])
             ->getMock()
         ;
 
