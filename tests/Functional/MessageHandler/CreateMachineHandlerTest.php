@@ -135,7 +135,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider handleWithUnrecoverableExceptionDataProvider
      */
-    public function testHandleWithUnrecoverableException(\Exception $exception): void
+    public function testHandleWithUnrecoverableException(\Exception $exception, \Exception $expectedException): void
     {
         $message = new CreateMachine('id0', self::MACHINE_ID);
 
@@ -146,11 +146,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->setMachineManagerOnHandler($machineManager);
 
-        $this->expectExceptionObject(new UnrecoverableMessageHandlingException(
-            'message',
-            0,
-            $exception
-        ));
+        $this->expectExceptionObject($expectedException);
 
         ($this->handler)($message);
     }
@@ -160,16 +156,32 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function handleWithUnrecoverableExceptionDataProvider(): array
     {
+        $unsupportedProviderException = new UnsupportedProviderException(
+            ProviderInterface::NAME_DIGITALOCEAN
+        );
+
+        $unknownRemoveMachineException = new UnknownRemoteMachineException(
+            ProviderInterface::NAME_DIGITALOCEAN,
+            'machine id',
+            MachineActionInterface::ACTION_GET,
+            new \Exception()
+        );
+
         return [
             UnsupportedProviderException::class => [
-                'exception' => \Mockery::mock(UnsupportedProviderException::class),
+                'exception' => $unsupportedProviderException,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $unsupportedProviderException->getMessage(),
+                    $unsupportedProviderException->getCode(),
+                    $unsupportedProviderException
+                ),
             ],
             UnknownRemoteMachineException::class . ' with action ' . MachineActionInterface::ACTION_GET => [
-                'exception' => new UnknownRemoteMachineException(
-                    ProviderInterface::NAME_DIGITALOCEAN,
-                    'machine id',
-                    MachineActionInterface::ACTION_GET,
-                    new \Exception()
+                'exception' => $unknownRemoveMachineException,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $unknownRemoveMachineException->getMessage(),
+                    $unknownRemoveMachineException->getCode(),
+                    $unknownRemoveMachineException
                 ),
             ],
         ];
