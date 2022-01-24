@@ -2,6 +2,7 @@
 
 namespace App\Exception\MachineProvider;
 
+use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 
 class UnknownRemoteMachineException extends Exception implements UnknownRemoteMachineExceptionInterface
@@ -21,5 +22,10 @@ class UnknownRemoteMachineException extends Exception implements UnknownRemoteMa
     public function getProvider(): string
     {
         return $this->provider;
+    }
+
+    public function isRecoverable(): bool
+    {
+        return MachineActionInterface::ACTION_GET !== $this->getAction();
     }
 }
