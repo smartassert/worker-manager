@@ -2,10 +2,10 @@
 
 namespace App\Exception\MachineProvider;
 
-use App\Exception\UnrecoverableExceptionInterface;
+use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Model\ProviderInterface;
 
-interface UnknownRemoteMachineExceptionInterface extends ExceptionInterface, UnrecoverableExceptionInterface
+interface UnknownRemoteMachineExceptionInterface extends ExceptionInterface, RecoverableDeciderExceptionInterface
 {
     /**
      * @return ProviderInterface::NAME_*
