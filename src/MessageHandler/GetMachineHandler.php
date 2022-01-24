@@ -6,26 +6,21 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
-use App\Exception\MachineProvider\ExceptionInterface;
-use App\Exception\MachineProvider\ProviderMachineNotFoundException;
-use App\Exception\UnsupportedProviderException;
+use App\Exception\RecoverableDeciderExceptionInterface;
+use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
-use App\Services\RemoteRequestRetryDecider;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
 class GetMachineHandler implements MessageHandlerInterface
 {
     public function __construct(
         private MachineManager $machineManager,
-        private RemoteRequestRetryDecider $retryDecider,
-        private ExceptionLogger $exceptionLogger,
         private MachineStore $machineStore,
         private MachineProviderStore $machineProviderStore,
         private MachineRequestDispatcher $machineRequestDispatcher,
@@ -48,39 +43,22 @@ class GetMachineHandler implements MessageHandlerInterface
             return;
         }
 
-        $lastException = null;
-
         try {
             $remoteMachine = $this->machineManager->get($machineProvider);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
-        } catch (ExceptionInterface $exception) {
-            $shouldRetry = $this->retryDecider->decide(
-                $machineProvider->getName(),
-                $message,
-                $exception->getRemoteException()
-            );
+        } catch (\Throwable $exception) {
+            if (
+                $exception instanceof UnrecoverableExceptionInterface
+                || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
+            ) {
+                $code = $exception->getCode();
+                $code = is_int($code) ? $code : 0;
 
-            $lastException = $exception;
-
-            if ($shouldRetry) {
-                $envelope = $this->machineRequestDispatcher->reDispatch($message);
-
-                if (MessageDispatcher::isDispatchable($envelope)) {
-                    $lastException = null;
-                }
+                throw new UnrecoverableMessageHandlingException($exception->getMessage(), $code, $exception);
             }
-        } catch (UnsupportedProviderException $unsupportedProviderException) {
-            $lastException = $unsupportedProviderException;
-        } catch (ProviderMachineNotFoundException $machineNotFoundException) {
-            $machine->setState(Machine::STATE_FIND_NOT_FOUND);
-            $this->machineStore->store($machine);
 
-            $lastException = $machineNotFoundException;
-        }
-
-        if ($lastException instanceof \Throwable) {
-            $this->exceptionLogger->log($lastException);
+            throw $exception;
         }
     }
 }
