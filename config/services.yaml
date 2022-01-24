@@ -81,11 +81,6 @@ services:
         arguments:
             $environmentPrefix: '%machine_name_prefix%'
 
-    App\Services\RemoteRequestRetryDecider:
-        arguments:
-            $deciders:
-                - '@App\Services\RemoteRequestRetryDecider\DigitalOcean\DigitalOceanRemoteRequestRetryDecider'
-
     app.message_dispatcher.backoff_strategy.check_machine_is_active:
         class: webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\FixedBackoffStrategy
         arguments:
