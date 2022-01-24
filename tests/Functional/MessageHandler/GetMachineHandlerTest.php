@@ -201,6 +201,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineProviderStore->store($machineProvider);
 
         $message = new GetMachine('id0', $machine->getId());
+        $machineState = $machine->getState();
 
         try {
             ($this->handler)($message);
@@ -209,7 +210,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
+        self::assertSame($machineState, $machine->getState());
     }
 
     /**
@@ -217,7 +218,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
 
         $authenticationException = new AuthenticationException(
