@@ -55,11 +55,10 @@ class CreateMachineHandler implements MessageHandlerInterface
                 $exception instanceof UnrecoverableExceptionInterface
                 || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
             ) {
-                throw new UnrecoverableMessageHandlingException(
-                    'message',
-                    0,
-                    $exception
-                );
+                $code = $exception->getCode();
+                $code = is_int($code) ? $code : 0;
+
+                throw new UnrecoverableMessageHandlingException($exception->getMessage(), $code, $exception);
             }
 
             throw $exception;
