@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Exception\MachineProvider\DigitalOcean;
 
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
+use App\Exception\UnrecoverableExceptionInterface;
 use App\Model\MachineActionInterface;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\TestCase;
@@ -42,5 +43,10 @@ class DropletLimitExceededExceptionTest extends TestCase
             UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED,
             $this->exception->getReason()
         );
+    }
+
+    public function testIsUnrecoverable(): void
+    {
+        self::assertInstanceOf(UnrecoverableExceptionInterface::class, $this->exception);
     }
 }
