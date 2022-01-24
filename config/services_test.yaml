@@ -29,9 +29,3 @@ services:
 
     App\Tests\Services\Asserter\MessageStateEntityAsserter:
         public: true
-
-    App\Services\RemoteRequestRetryDecider:
-        public: true
-        arguments:
-            $deciders:
-                - '@App\Services\RemoteRequestRetryDecider\DigitalOcean\DigitalOceanRemoteRequestRetryDecider'
