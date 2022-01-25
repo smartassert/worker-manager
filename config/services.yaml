@@ -10,11 +10,7 @@ parameters:
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
-    create_retry_limit: '%env(CREATE_RETRY_LIMIT)%'
-    get_retry_limit: '%env(GET_RETRY_LIMIT)%'
     machine_is_active_dispatch_delay: '%env(MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
-    delete_retry_limit: '%env(DELETE_RETRY_LIMIT)%'
-    find_retry_limit: '%env(FIND_RETRY_LIMIT)%'
     version: '%env(VERSION)%'
 
 services:
@@ -95,19 +91,10 @@ services:
                 App\Message\CheckMachineIsActive: '@app.message_dispatcher.backoff_strategy.check_machine_is_active'
                 App\Message\FindMachine: '@app.message_dispatcher.backoff_strategy.find_machine'
 
-    webignition\SymfonyMessengerMessageDispatcher\Middleware\RetryByLimitMiddleware:
-        arguments:
-            $retryLimits:
-                App\Message\CreateMachine: '%create_retry_limit%'
-                App\Message\GetMachine: '%get_retry_limit%'
-                App\Message\DeleteMachine: '%delete_retry_limit%'
-                App\Message\FindMachine: '%find_retry_limit%'
-
     webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher:
         arguments:
             $middleware:
                 - '@webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\DelayedMessageMiddleware'
-                - '@webignition\SymfonyMessengerMessageDispatcher\Middleware\RetryByLimitMiddleware'
 
     App\Services\ExceptionFactory\MachineProvider\ExceptionFactory:
         arguments:
