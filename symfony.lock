@@ -524,9 +524,6 @@
     "webignition/object-reflector": {
         "version": "1.0"
     },
-    "webignition/symfony-messenger-message-dispatcher": {
-        "version": "0.1"
-    },
     "webmozart/assert": {
         "version": "1.9.1"
     }

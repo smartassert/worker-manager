@@ -5,12 +5,12 @@ namespace App\Services;
 use App\Message\MachineRequestInterface;
 use App\Message\StampedMessageInterface;
 use Symfony\Component\Messenger\Envelope;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class MachineRequestDispatcher
 {
     public function __construct(
-        private MessageDispatcher $messageDispatcher
+        private MessageBusInterface $messageBus
     ) {
     }
 
@@ -22,7 +22,7 @@ class MachineRequestDispatcher
             $request->clearStamps();
         }
 
-        return $this->messageDispatcher->dispatch($request, $stamps);
+        return $this->messageBus->dispatch($request, $stamps);
     }
 
     /**

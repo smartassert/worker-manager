@@ -77,25 +77,6 @@ services:
         arguments:
             $environmentPrefix: '%machine_name_prefix%'
 
-    app.message_dispatcher.backoff_strategy.check_machine_is_active:
-        class: webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\FixedBackoffStrategy
-        arguments:
-            $delayInMilliseconds: '%machine_is_active_dispatch_delay%'
-
-    app.message_dispatcher.backoff_strategy.find_machine:
-        class: webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\ExponentialBackoffStrategy
-
-    webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\DelayedMessageMiddleware:
-        arguments:
-            $backoffStrategies:
-                App\Message\CheckMachineIsActive: '@app.message_dispatcher.backoff_strategy.check_machine_is_active'
-                App\Message\FindMachine: '@app.message_dispatcher.backoff_strategy.find_machine'
-
-    webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher:
-        arguments:
-            $middleware:
-                - '@webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\DelayedMessageMiddleware'
-
     App\Services\ExceptionFactory\MachineProvider\ExceptionFactory:
         arguments:
             $factories:

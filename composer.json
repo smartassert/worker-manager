@@ -27,8 +27,7 @@
         "symfony/proxy-manager-bridge": "5.4.*",
         "symfony/uid": "5.4.*",
         "symfony/yaml": "5.4.*",
-        "toin0u/digitalocean-v2": "^4.4",
-        "webignition/symfony-messenger-message-dispatcher": ">=0.4,<1"
+        "toin0u/digitalocean-v2": "^4.4"
     },
     "require-dev": {
         "dama/doctrine-test-bundle": "^6.7",
