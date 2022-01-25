@@ -26,4 +26,8 @@ framework:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
 
         routing:
-            '*': async
+            'App\Message\CreateMachine': create_machine
+            'App\Message\GetMachine': get_machine
+            'App\Message\FindMachine': find_machine
+            'App\Message\DeleteMachine': delete_machine
+            'App\Message\CheckMachineIsActive': async
