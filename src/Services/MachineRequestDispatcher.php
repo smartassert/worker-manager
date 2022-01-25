@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Message\MachineRequestInterface;
+use App\Message\StampedMessageInterface;
 use Symfony\Component\Messenger\Envelope;
 use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
@@ -15,7 +16,13 @@ class MachineRequestDispatcher
 
     public function dispatch(MachineRequestInterface $request): Envelope
     {
-        return $this->messageDispatcher->dispatch($request);
+        $stamps = [];
+        if ($request instanceof StampedMessageInterface) {
+            $stamps = $request->getStamps();
+            $request->clearStamps();
+        }
+
+        return $this->messageDispatcher->dispatch($request, $stamps);
     }
 
     /**

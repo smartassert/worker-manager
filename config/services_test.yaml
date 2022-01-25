@@ -29,3 +29,6 @@ services:
 
     App\Tests\Services\Asserter\MessageStateEntityAsserter:
         public: true
+
+    App\Tests\Services\TestMachineRequestFactory:
+        public: true
