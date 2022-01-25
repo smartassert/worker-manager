@@ -11,9 +11,9 @@ use App\Services\MachineRequestDispatcher;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
 class MachineRequestDispatcherTest extends TestCase
 {
@@ -24,9 +24,9 @@ class MachineRequestDispatcherTest extends TestCase
     /**
      * @dataProvider dispatchDataProvider
      */
-    public function testDispatch(MessageDispatcher $messageDispatcher, MachineRequestInterface $request): void
+    public function testDispatch(MessageBusInterface $messageBus, MachineRequestInterface $request): void
     {
-        $dispatcher = new MachineRequestDispatcher($messageDispatcher);
+        $dispatcher = new MachineRequestDispatcher($messageBus);
 
         $dispatcher->dispatch($request);
     }
@@ -46,11 +46,11 @@ class MachineRequestDispatcherTest extends TestCase
 
         return [
             'un-stamped request' => [
-                'messageDispatcher' => $this->createMessageDispatcher($createMachineRequest, []),
+                'messageBus' => $this->createMessageBus($createMachineRequest, []),
                 'request' => $createMachineRequest,
             ],
             'stamped request' => [
-                'messageDispatcher' => $this->createMessageDispatcher(
+                'messageBus' => $this->createMessageBus(
                     $checkMachineIsActiveRequestWithoutStamps,
                     $checkMachineActiveStamps
                 ),
@@ -62,12 +62,12 @@ class MachineRequestDispatcherTest extends TestCase
     /**
      * @param StampInterface[] $expectedStamps
      */
-    private function createMessageDispatcher(
+    private function createMessageBus(
         MachineRequestInterface $expectedRequest,
         array $expectedStamps
-    ): MessageDispatcher {
-        $messageDispatcher = \Mockery::mock(MessageDispatcher::class);
-        $messageDispatcher
+    ): MessageBusInterface {
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
             ->shouldReceive('dispatch')
             ->withArgs(
                 function (MachineRequestInterface $request, array $stamps) use ($expectedRequest, $expectedStamps) {
@@ -80,6 +80,6 @@ class MachineRequestDispatcherTest extends TestCase
             ->andReturn(new Envelope(new \stdClass()))
         ;
 
-        return $messageDispatcher;
+        return $messageBus;
     }
 }
