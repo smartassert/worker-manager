@@ -6,7 +6,8 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
-use App\Exception\MachineNotFindableException;
+use App\Exception\RecoverableDeciderExceptionInterface;
+use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Services\Entity\Store\MachineProviderStore;
@@ -14,9 +15,8 @@ use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Services\RemoteMachineFinder;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
 class FindMachineHandler implements MessageHandlerInterface
 {
@@ -26,10 +26,12 @@ class FindMachineHandler implements MessageHandlerInterface
         private RemoteMachineFinder $remoteMachineFinder,
         private MachineUpdater $machineUpdater,
         private MachineRequestDispatcher $machineRequestDispatcher,
-        private ExceptionLogger $exceptionLogger,
     ) {
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function __invoke(FindMachine $message): void
     {
         $machineId = $message->getMachineId();
@@ -65,17 +67,18 @@ class FindMachineHandler implements MessageHandlerInterface
 
                 $this->machineRequestDispatcher->dispatchCollection($message->getOnFailureCollection());
             }
-        } catch (MachineNotFindableException $machineNotFoundException) {
-            $envelope = $this->machineRequestDispatcher->reDispatch($message);
+        } catch (\Throwable $exception) {
+            if (
+                $exception instanceof UnrecoverableExceptionInterface
+                || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
+            ) {
+                $code = $exception->getCode();
+                $code = is_int($code) ? $code : 0;
 
-            if (false === MessageDispatcher::isDispatchable($envelope)) {
-                foreach ($machineNotFoundException->getExceptionStack() as $exception) {
-                    $this->exceptionLogger->log($exception);
-                }
-
-                $machine->setState(Machine::STATE_FIND_NOT_FINDABLE);
-                $this->machineStore->store($machine);
+                throw new UnrecoverableMessageHandlingException($exception->getMessage(), $code, $exception);
             }
+
+            throw $exception;
         }
     }
 }
