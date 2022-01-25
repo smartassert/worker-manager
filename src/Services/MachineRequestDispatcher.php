@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Message\MachineRequestInterface;
-use App\Message\RemoteMachineMessageInterface;
 use Symfony\Component\Messenger\Envelope;
 use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
@@ -35,14 +34,5 @@ class MachineRequestDispatcher
         }
 
         return $envelopes;
-    }
-
-    public function reDispatch(MachineRequestInterface $request): Envelope
-    {
-        if ($request instanceof RemoteMachineMessageInterface) {
-            $request = $request->incrementRetryCount();
-        }
-
-        return $this->dispatch($request);
     }
 }
