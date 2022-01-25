@@ -7,6 +7,8 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Entity\MessageState;
+use App\Exception\MachineNotFindableException;
+use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
@@ -18,7 +20,6 @@ use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
@@ -29,7 +30,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Psr\Http\Message\ResponseInterface;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
 class FindMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -99,12 +100,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         int $expectedQueueCount,
         array $expectedQueuedMessages
     ): void {
-        $this->setExceptionLoggerOnHandler(
-            (new MockExceptionLogger())
-                ->withoutLogCall()
-                ->getMock()
-        );
-
         $this->mockHandler->append(...$apiResponses);
         $this->machineStore->store($machine);
 
@@ -276,117 +271,96 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $machineId = 'invalid machine id';
 
-        $this->setExceptionLoggerOnHandler(
-            (new MockExceptionLogger())
-                ->withoutLogCall()
-                ->getMock()
-        );
-
         ($this->handler)(new FindMachine('id0', $machineId));
 
         self::assertNull($this->machineStore->find($machineId));
         self::assertNull($this->machineProviderStore->find($machineId));
     }
 
-    public function testInvokeRemoteMachineNotFoundRetrying(): void
-    {
-        $this->messengerAsserter->assertQueueIsEmpty();
+    /**
+     * @dataProvider invokeThrowsExceptionDataProvider
+     */
+    public function testInvokeThrowsException(
+        ?ResponseInterface $httpFixture,
+        Machine $machine,
+        MachineProvider $machineProvider,
+        \Exception $expectedException
+    ): void {
+        if ($httpFixture instanceof ResponseInterface) {
+            $this->mockHandler->append($httpFixture);
+        }
 
-        $this->setExceptionLoggerOnHandler(
-            (new MockExceptionLogger())
-                ->withoutLogCall()
-                ->getMock()
-        );
-
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
         $this->machineStore->store($machine);
+        $this->machineProviderStore->store($machineProvider);
 
-        $this->mockHandler->append(new Response(503));
+        $message = new FindMachine('id0', $machine->getId());
 
-        $message = $this->machineRequestFactory->createFind(self::MACHINE_ID);
-
-        ($this->handler)($message);
-
-        $this->messengerAsserter->assertQueueCount(1);
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $message->incrementRetryCount());
-
-        $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState($message->getUniqueId()));
+        try {
+            ($this->handler)($message);
+            $this->fail($expectedException::class . ' not thrown');
+        } catch (\Exception $exception) {
+            self::assertEquals($expectedException, $exception);
+        }
 
         self::assertSame(Machine::STATE_FIND_FINDING, $machine->getState());
-        self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
-        self::assertEquals($machine, $this->machineStore->find(self::MACHINE_ID));
     }
 
-    public function testInvokeRemoteMachineNotFindable(): void
+    /**
+     * @return array<mixed>
+     */
+    public function invokeThrowsExceptionDataProvider(): array
     {
-        $this->messengerAsserter->assertQueueIsEmpty();
-
-        $this->setExceptionLoggerOnHandler(
-            (new MockExceptionLogger())
-                ->withLogCalls([new HttpException(
-                    self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
-                    new RuntimeException('Service Unavailable', 503)
-                )])
-                ->getMock()
-        );
-
         $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $this->machineStore->store($machine);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
 
-        $this->mockHandler->append(new Response(503));
-
-        $message = new FindMachine('id0', self::MACHINE_ID);
-        $message = $message->incrementRetryCount();
-        $message = $message->incrementRetryCount();
-        $message = $message->incrementRetryCount();
-
-        ($this->handler)($message);
-
-        $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
-
-        self::assertSame(Machine::STATE_FIND_NOT_FINDABLE, $machine->getState());
-        self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
-        self::assertEquals($machine, $this->machineStore->find(self::MACHINE_ID));
-    }
-
-    public function testInvokeRemoteMachineNotFound(): void
-    {
-        $this->messengerAsserter->assertQueueIsEmpty();
-
-        $this->setExceptionLoggerOnHandler(
-            (new MockExceptionLogger())
-                ->withoutLogCall()
-                ->getMock()
+        $authenticationException = new AuthenticationException(
+            self::MACHINE_ID,
+            MachineActionInterface::ACTION_GET,
+            new RuntimeException('Unauthorized', 401)
         );
 
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $this->machineStore->store($machine);
-
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([]));
-
-        $message = new FindMachine('od', self::MACHINE_ID);
-
-        ($this->handler)($message);
-
-        $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
-
-        self::assertSame(Machine::STATE_FIND_NOT_FOUND, $machine->getState());
-        self::assertNull($this->machineProviderStore->find(self::MACHINE_ID));
-        self::assertEquals($machine, $this->machineStore->find(self::MACHINE_ID));
-    }
-
-    private function setExceptionLoggerOnHandler(ExceptionLogger $exceptionLogger): void
-    {
-        ObjectReflector::setProperty(
-            $this->handler,
-            FindMachineHandler::class,
-            'exceptionLogger',
-            $exceptionLogger
+        $serviceUnavailableException = new HttpException(
+            self::MACHINE_ID,
+            MachineActionInterface::ACTION_GET,
+            new RuntimeException('Service Unavailable', 503)
         );
+
+        $machineNotFindableAuthenticationException = new MachineNotFindableException(
+            self::MACHINE_ID,
+            [
+                $authenticationException,
+            ]
+        );
+
+        $machineNotFindableServiceUnavailableException = new MachineNotFindableException(
+            self::MACHINE_ID,
+            [
+                $serviceUnavailableException,
+            ]
+        );
+
+        return [
+            'HTTP 401' => [
+                'httpFixture' => new Response(401),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $machineNotFindableAuthenticationException->getMessage(),
+                    $machineNotFindableAuthenticationException->getCode(),
+                    $machineNotFindableAuthenticationException
+                ),
+            ],
+            'HTTP 503' => [
+                'httpFixture' => new Response(503),
+                'machine' => $machine,
+                'machineProvider' => $machineProvider,
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    $machineNotFindableServiceUnavailableException->getMessage(),
+                    $machineNotFindableServiceUnavailableException->getCode(),
+                    $machineNotFindableServiceUnavailableException
+                ),
+            ],
+        ];
     }
 
     private function getMachineRequestFactory(): MachineRequestFactory

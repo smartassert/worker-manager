@@ -2,7 +2,9 @@
 
 namespace App\Exception;
 
-class MachineNotFindableException extends AbstractMachineException implements StackedExceptionInterface
+class MachineNotFindableException extends AbstractMachineException implements
+    StackedExceptionInterface,
+    UnrecoverableExceptionInterface
 {
     /**
      * @var \Throwable[]
