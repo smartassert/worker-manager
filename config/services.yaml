@@ -10,7 +10,7 @@ parameters:
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
-    machine_is_active_dispatch_delay: '%env(MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
+    machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
 
 services:
@@ -110,6 +110,10 @@ services:
 
     SmartAssert\DoctrineInspectors\QueryInspector:
 
+    App\Services\ServiceStatusInspector\MessageQueueInspector:
+        arguments:
+            $checkIsActiveDispatchDelay: '%machine_is_active_dispatch_delay%'
+
     SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface:
         class: SmartAssert\ServiceStatusInspector\ServiceStatusInspector
         arguments:
@@ -134,3 +138,7 @@ services:
         class: App\Services\RequestIdFactory
 
     SmartAssert\InvokableLogger\ExceptionLogger:
+
+    App\Services\MachineRequestFactory:
+        arguments:
+            $checkIsActiveDispatchDelay: '%machine_is_active_dispatch_delay%'

@@ -9,11 +9,13 @@ use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 
 class MachineRequestFactory
 {
     public function __construct(
-        private RequestIdFactoryInterface $requestIdFactory
+        private RequestIdFactoryInterface $requestIdFactory,
+        private int $checkIsActiveDispatchDelay,
     ) {
     }
 
@@ -60,6 +62,9 @@ class MachineRequestFactory
         return new CheckMachineIsActive(
             $this->requestIdFactory->create(),
             $machineId,
+            [
+                new DelayStamp($this->checkIsActiveDispatchDelay),
+            ],
             [
                 $this->createGet($machineId),
             ]

@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Message;
 
-class CheckMachineIsActive extends AbstractMachineRequest implements ChainedMachineRequestInterface
+use Symfony\Component\Messenger\Stamp\StampInterface;
+
+class CheckMachineIsActive extends AbstractMachineRequest implements
+    ChainedMachineRequestInterface,
+    StampedMessageInterface
 {
     /**
      * @var MachineRequestInterface[]
@@ -17,12 +21,14 @@ class CheckMachineIsActive extends AbstractMachineRequest implements ChainedMach
     private array $onFailureCollection;
 
     /**
+     * @param StampInterface[]          $stamps
      * @param MachineRequestInterface[] $onSuccessCollection
      * @param MachineRequestInterface[] $onFailureCollection
      */
     public function __construct(
         string $uniqueId,
         string $machineId,
+        private array $stamps,
         array $onSuccessCollection = [],
         array $onFailureCollection = []
     ) {
@@ -51,5 +57,10 @@ class CheckMachineIsActive extends AbstractMachineRequest implements ChainedMach
     public function getOnFailureCollection(): array
     {
         return $this->onFailureCollection;
+    }
+
+    public function getStamps(): array
+    {
+        return $this->stamps;
     }
 }

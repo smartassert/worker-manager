@@ -6,6 +6,7 @@ use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
+use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\MachineRequestFactory;
 
@@ -75,6 +76,20 @@ class TestMachineRequestFactory
         $request = $method->invoke($this->factory, $machineId, $onSuccessCollection, $onFailureCollection);
         if (!$request instanceof FindMachine) {
             throw new \RuntimeException('Failed to create ' . FindMachine::class . ' instance');
+        }
+
+        return $request;
+    }
+
+    public function createGet(string $machineId): GetMachine
+    {
+        $reflector = new \ReflectionObject($this->factory);
+        $method = $reflector->getMethod('createGet');
+        $method->setAccessible(true);
+
+        $request = $method->invoke($this->factory, $machineId);
+        if (!$request instanceof GetMachine) {
+            throw new \RuntimeException('Failed to create ' . GetMachine::class . ' instance');
         }
 
         return $request;

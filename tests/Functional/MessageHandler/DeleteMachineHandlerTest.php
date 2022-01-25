@@ -87,7 +87,8 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
             new MachineRequestFactory(
-                $requestIdFactory
+                $requestIdFactory,
+                10000
             )
         );
 

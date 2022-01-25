@@ -362,7 +362,8 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         return new TestMachineRequestFactory(
             new MachineRequestFactory(
-                new SequentialRequestIdFactory()
+                new SequentialRequestIdFactory(),
+                10000
             )
         );
     }
