@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
-use App\Exception\MachineNotRemovableException;
+use App\Exception\RecoverableDeciderExceptionInterface;
+use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
 
 class DeleteMachineHandler implements MessageHandlerInterface
 {
@@ -20,7 +20,6 @@ class DeleteMachineHandler implements MessageHandlerInterface
         private MachineStore $machineStore,
         private RemoteMachineRemover $remoteMachineRemover,
         private MachineRequestDispatcher $machineRequestDispatcher,
-        private ExceptionLogger $exceptionLogger,
     ) {
     }
 
@@ -41,19 +40,19 @@ class DeleteMachineHandler implements MessageHandlerInterface
 
         try {
             $this->remoteMachineRemover->remove($machineId);
-
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
-        } catch (MachineNotRemovableException $machineNotRemovableException) {
-            $envelope = $this->machineRequestDispatcher->reDispatch($message);
+        } catch (\Throwable $exception) {
+            if (
+                $exception instanceof UnrecoverableExceptionInterface
+                || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
+            ) {
+                $code = $exception->getCode();
+                $code = is_int($code) ? $code : 0;
 
-            if (false === MessageDispatcher::isDispatchable($envelope)) {
-                foreach ($machineNotRemovableException->getExceptionStack() as $exception) {
-                    $this->exceptionLogger->log($exception);
-                }
-
-                $machine->setState(Machine::STATE_DELETE_FAILED);
-                $this->machineStore->store($machine);
+                throw new UnrecoverableMessageHandlingException($exception->getMessage(), $code, $exception);
             }
+
+            throw $exception;
         }
     }
 }

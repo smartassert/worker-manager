@@ -13,6 +13,7 @@ use App\Tests\AbstractBaseFunctionalTest;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 
 class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
 {
@@ -35,13 +36,31 @@ class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
         }
     }
 
-    public function testRemoveSuccess(): void
+    /**
+     * @dataProvider removeSuccessDataProvider
+     */
+    public function testRemoveSuccess(ResponseInterface $httpFixture): void
     {
-        $this->mockHandler->append(new Response(204));
+        $this->mockHandler->append($httpFixture);
 
         $this->expectNotToPerformAssertions();
 
         $this->remover->remove(self::MACHINE_ID);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function removeSuccessDataProvider(): array
+    {
+        return [
+            'removed' => [
+                'httpFixture' => new Response(204),
+            ],
+            'not found' => [
+                'httpFixture' => new Response(404),
+            ],
+        ];
     }
 
     public function testRemoveMachineNotRemovable(): void
