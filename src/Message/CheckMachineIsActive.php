@@ -63,4 +63,9 @@ class CheckMachineIsActive extends AbstractMachineRequest implements
     {
         return $this->stamps;
     }
+
+    public function clearStamps(): void
+    {
+        $this->stamps = [];
+    }
 }

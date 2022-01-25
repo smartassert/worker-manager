@@ -128,6 +128,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $requestIdFactory->reset(1);
 
         $expectedRequest = $machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
+
         $expectedRemoteMachine = new RemoteMachine($expectedDropletEntity);
         $this->messengerAsserter->assertQueueCount(1);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedRequest);

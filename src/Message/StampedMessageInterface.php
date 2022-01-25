@@ -12,4 +12,6 @@ interface StampedMessageInterface
      * @return StampInterface[]
      */
     public function getStamps(): array;
+
+    public function clearStamps(): void;
 }
