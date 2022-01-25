@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageDispatcher;
 
 use App\Entity\Machine;
-use App\Message\CheckMachineIsActive;
-use App\Message\CreateMachine;
-use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\Entity\Store\MachineStore;
+use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\SequentialRequestIdFactory;
+use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
@@ -74,17 +74,24 @@ class MessageDispatcherTest extends AbstractBaseFunctionalTest
      */
     public function dispatchDataProvider(): array
     {
+        $machineRequestFactory = new TestMachineRequestFactory(
+            new MachineRequestFactory(
+                new SequentialRequestIdFactory(),
+                10000
+            )
+        );
+
         return [
             'create' => [
-                'message' => new CreateMachine('id0', self::MACHINE_ID),
+                'message' => $machineRequestFactory->createCreate(self::MACHINE_ID),
                 'expectedDelayStamp' => null,
             ],
             'get' => [
-                'message' => new GetMachine('id0', self::MACHINE_ID),
+                'message' => $machineRequestFactory->createGet(self::MACHINE_ID),
                 'expectedDelayStamp' => null,
             ],
             'check machine is active' => [
-                'message' => new CheckMachineIsActive('id0', self::MACHINE_ID),
+                'message' => $machineRequestFactory->createCheckIsActive(self::MACHINE_ID),
                 'expectedDelayStamp' => new DelayStamp(10000),
             ],
         ];
