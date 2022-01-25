@@ -10,6 +10,7 @@ class RemoteMachineFinder extends AbstractMachineManager
 {
     /**
      * @throws MachineNotFindableException
+     * @throws \Throwable
      */
     public function find(string $machineId): ?RemoteMachineInterface
     {
