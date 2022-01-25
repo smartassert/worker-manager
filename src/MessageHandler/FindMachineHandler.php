@@ -56,7 +56,6 @@ class FindMachineHandler implements MessageHandlerInterface
                 $onSuccessCollection = $message->getOnSuccessCollection();
 
                 if ($message->getReDispatchOnSuccess()) {
-                    $message = $message->incrementRetryCount();
                     $onSuccessCollection[] = $message;
                 }
 
