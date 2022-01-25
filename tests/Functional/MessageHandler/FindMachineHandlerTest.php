@@ -260,8 +260,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
                     $this->getMachineRequestFactory()->createFind(self::MACHINE_ID)
-                        ->withReDispatchOnSuccess(true)
-                        ->incrementRetryCount(),
+                        ->withReDispatchOnSuccess(true),
                 ],
             ],
         ];
