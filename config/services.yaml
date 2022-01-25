@@ -11,7 +11,6 @@ parameters:
     worker_image: '%env(WORKER_IMAGE)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     create_retry_limit: '%env(CREATE_RETRY_LIMIT)%'
-    update_machine_dispatch_delay: '%env(UPDATE_MACHINE_DISPATCH_DELAY)%'
     get_retry_limit: '%env(GET_RETRY_LIMIT)%'
     machine_is_active_dispatch_delay: '%env(MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     delete_retry_limit: '%env(DELETE_RETRY_LIMIT)%'

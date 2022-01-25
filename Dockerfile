@@ -58,10 +58,10 @@ COPY config/routes/annotations.yaml /app/config/routes/
 
 RUN chown -R www-data:www-data /app/var/log \
   && composer check-platform-reqs --ansi \
+  && echo "APP_SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)" > .env \
   && composer install --no-dev --no-scripts \
   && rm composer.lock \
-  && touch /app/.env \
-  && php bin/console cache:clear --env=prod \
+  && php bin/console cache:clear \
   && mkdir -p /app/var/sqlite \
   && php bin/console doctrine:database:create \
   && php bin/console doctrine:schema:update --force \
