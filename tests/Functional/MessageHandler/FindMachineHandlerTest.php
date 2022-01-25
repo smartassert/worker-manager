@@ -24,6 +24,7 @@ use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
+use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
@@ -44,7 +45,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
-    private MachineRequestFactory $machineRequestFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
@@ -70,10 +70,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
-
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
-        $this->machineRequestFactory = $machineRequestFactory;
 
         $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
@@ -107,7 +103,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             $this->machineProviderStore->store($machineProvider);
         }
 
-        $message = $this->machineRequestFactory->createFind(
+        $message = $this->createMachineRequestFactory()->createFind(
             self::MACHINE_ID,
             $messageOnSuccessCollection,
             $messageOnFailureCollection
@@ -163,7 +159,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => null,
                 'messageOnSuccessCollection' => [
-                    $this->getMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
+                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
                 ],
                 'messageOnFailureCollection' => [],
                 'reDispatchOnSuccess' => false,
@@ -183,14 +179,14 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
-                    $this->getMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
+                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
                 ],
             ],
             'remote machine found and updated, has existing provider' => [
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
                 'messageOnSuccessCollection' => [
-                    $this->getMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
+                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
                 ],
                 'messageOnFailureCollection' => [],
                 'reDispatchOnSuccess' => false,
@@ -210,7 +206,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
-                    $this->getMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
+                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
                 ],
             ],
             'remote machine not found, create requested' => [
@@ -218,7 +214,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 'machineProvider' => $nonDigitalOceanMachineProvider,
                 'messageOnSuccessCollection' => [],
                 'messageOnFailureCollection' => [
-                    $this->getMachineRequestFactory()->createCreate(self::MACHINE_ID)
+                    $this->createMachineRequestFactory()->createCreate(self::MACHINE_ID)
                 ],
                 'reDispatchOnSuccess' => false,
                 'apiResponses' => [
@@ -234,7 +230,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
-                    $this->getMachineRequestFactory()->createCreate(self::MACHINE_ID),
+                    $this->createMachineRequestFactory()->createCreate(self::MACHINE_ID),
                 ],
             ],
             'remote machine found, re-dispatch self' => [
@@ -259,7 +255,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedQueueCount' => 1,
                 'expectedQueuedMessages' => [
-                    $this->getMachineRequestFactory()->createFind(self::MACHINE_ID)
+                    $this->createMachineRequestFactory()->createFind(self::MACHINE_ID)
                         ->withReDispatchOnSuccess(true),
                 ],
             ],
@@ -362,10 +358,12 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ];
     }
 
-    private function getMachineRequestFactory(): MachineRequestFactory
+    private function createMachineRequestFactory(): TestMachineRequestFactory
     {
-        return new MachineRequestFactory(
-            new SequentialRequestIdFactory()
+        return new TestMachineRequestFactory(
+            new MachineRequestFactory(
+                new SequentialRequestIdFactory()
+            )
         );
     }
 }

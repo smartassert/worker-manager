@@ -12,12 +12,12 @@ use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\Entity\Store\MachineStore;
-use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
+use App\Tests\Services\TestMachineRequestFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +28,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     private EntityManagerInterface $entityManager;
     private MessengerAsserter $messengerAsserter;
-    private MachineRequestFactory $machineRequestFactory;
+    private TestMachineRequestFactory $machineRequestFactory;
     private string $machineUrl;
     private SequentialRequestIdFactory $requestIdFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
@@ -45,8 +45,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
+        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
 
         $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);

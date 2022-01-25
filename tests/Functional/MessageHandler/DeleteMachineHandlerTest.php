@@ -18,11 +18,11 @@ use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
-use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
+use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
@@ -40,8 +40,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MockHandler $mockHandler;
     private Machine $machine;
-    private MachineRequestFactory $machineRequestFactory;
-    private SequentialRequestIdFactory $requestIdFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
@@ -74,14 +72,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
 
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
-        $this->machineRequestFactory = $machineRequestFactory;
-
-        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
-        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
-        $this->requestIdFactory = $requestIdFactory;
-
         $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
         $this->messageStateEntityAsserter = $messageStateEntityAsserter;
@@ -94,15 +84,22 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->mockHandler->append(new Response(204));
 
-        $message = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
+        $requestIdFactory = new SequentialRequestIdFactory();
+        $machineRequestFactory = new TestMachineRequestFactory(
+            new MachineRequestFactory(
+                $requestIdFactory
+            )
+        );
+
+        $message = $machineRequestFactory->createDelete(self::MACHINE_ID);
 
         ($this->handler)($message);
 
-        $this->requestIdFactory->reset();
+        $requestIdFactory->reset();
 
         self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
 
-        $expectedMessage = $this->machineRequestFactory
+        $expectedMessage = $machineRequestFactory
             ->createFind(self::MACHINE_ID)
             ->withOnNotFoundState(Machine::STATE_DELETE_DELETED)
             ->withReDispatchOnSuccess(true)

@@ -20,12 +20,12 @@ use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
-use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
+use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -46,8 +46,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MockHandler $mockHandler;
     private Machine $machine;
-    private MachineRequestFactory $machineRequestFactory;
-    private SequentialRequestIdFactory $requestIdFactory;
     private MessageStateEntityAsserter $messageStateEntityAsserter;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
@@ -77,14 +75,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
-
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
-        $this->machineRequestFactory = $machineRequestFactory;
-
-        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
-        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
-        $this->requestIdFactory = $requestIdFactory;
 
         $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
         \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
@@ -123,13 +113,20 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->mockHandler->append(HttpResponseFactory::fromDropletEntity($expectedDropletEntity));
 
-        $message = $this->machineRequestFactory->createCreate(self::MACHINE_ID);
+        $requestIdFactory = new SequentialRequestIdFactory();
+        $machineRequestFactory = new TestMachineRequestFactory(
+            new MachineRequestFactory(
+                $requestIdFactory
+            )
+        );
+
+        $message = $machineRequestFactory->createCreate(self::MACHINE_ID);
 
         ($this->handler)($message);
 
-        $this->requestIdFactory->reset(1);
+        $requestIdFactory->reset(1);
 
-        $expectedRequest = $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
+        $expectedRequest = $machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
         $expectedRemoteMachine = new RemoteMachine($expectedDropletEntity);
         $this->messengerAsserter->assertQueueCount(1);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedRequest);
