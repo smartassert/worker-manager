@@ -2,19 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\EventSubscriber\Messenger;
+namespace App\Tests\Unit\EventListener\Messenger;
 
-use App\Entity\Machine;
 use App\EventListener\Messenger\MachineRequestFailureHandler;
-use App\Exception\MachineNotFindableException;
 use App\Message\GetMachine;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\Entity\Store\MachineStore;
+use App\Services\MessageHandlerExceptionFinder;
+use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Services\MockExceptionLogger;
 use App\Tests\Mock\Services\MockMachineStore;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use SmartAssert\InvokableLogger\ExceptionLogger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 
@@ -61,67 +60,6 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $handler->onMessageFailed($event);
     }
 
-    public function testOnMessageFailedExceptionLoggingForStackableException(): void
-    {
-        $exception1 = new \Exception();
-        $exception2 = new \Exception();
-
-        $exceptionStack = [
-            $exception1,
-            $exception2,
-        ];
-
-        $exception = \Mockery::mock(MachineNotFindableException::class);
-        $exception
-            ->shouldReceive('getExceptionStack')
-            ->andReturn($exceptionStack)
-        ;
-
-        $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCalls($exceptionStack)
-            ->getMock()
-        ;
-
-        $this->doTestOnMessageFailedExceptionLogging($exception, $exceptionLogger);
-    }
-
-    public function testOnMessageFailedExceptionLoggingForNonStackableException(): void
-    {
-        $exception = new \Exception();
-
-        $exceptionLogger = (new MockExceptionLogger())
-            ->withLogCalls([$exception])
-            ->getMock()
-        ;
-
-        $this->doTestOnMessageFailedExceptionLogging($exception, $exceptionLogger);
-    }
-
-    private function doTestOnMessageFailedExceptionLogging(
-        \Throwable $exception,
-        ExceptionLogger $exceptionLogger
-    ): void {
-        $event = $this->createEvent(
-            new GetMachine(
-                'unique id',
-                self::MACHINE_ID
-            ),
-            $exception
-        );
-
-        $machine = new Machine(self::MACHINE_ID);
-
-        $handler = $this->createHandler(
-            (new MockMachineStore())
-                ->withFindCall(self::MACHINE_ID, $machine)
-                ->withStoreCall($machine)
-                ->getMock(),
-            $exceptionLogger
-        );
-
-        $handler->onMessageFailed($event);
-    }
-
     private function createEvent(?object $message = null, ?\Throwable $throwable = null): WorkerMessageFailedEvent
     {
         $throwable = $throwable instanceof \Throwable ? $throwable : new \Exception();
@@ -133,16 +71,14 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
     private function createHandler(
         MachineStore $machineStore,
-        ?ExceptionLogger $exceptionLogger = null
+        ?LoggerInterface $logger = null
     ): MachineRequestFailureHandler {
-        $exceptionLogger = $exceptionLogger instanceof ExceptionLogger
-            ? $exceptionLogger
-            : \Mockery::mock(ExceptionLogger::class);
-
         return new MachineRequestFailureHandler(
             $machineStore,
             \Mockery::mock(CreateFailureFactory::class),
-            $exceptionLogger
+            \Mockery::mock(MessageHandlerExceptionFinder::class),
+            \Mockery::mock(MessageHandlerExceptionStackFactory::class),
+            $logger instanceof LoggerInterface ? $logger : \Mockery::mock(LoggerInterface::class)
         );
     }
 }

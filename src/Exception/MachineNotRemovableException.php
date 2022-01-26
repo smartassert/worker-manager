@@ -18,7 +18,7 @@ class MachineNotRemovableException extends AbstractMachineException implements
         string $id,
         array $exceptionStack = [],
     ) {
-        parent::__construct($id);
+        parent::__construct($id, sprintf('Machine "%s" is not removable', $id));
 
         $this->exceptionStack = array_filter($exceptionStack, function ($item) {
             return $item instanceof \Throwable;
