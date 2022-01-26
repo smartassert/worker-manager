@@ -32,9 +32,9 @@ class Exception extends AbstractMachineException implements ExceptionInterface
     private static function createMessage(string $machineId, string $action): string
     {
         return sprintf(
-            'Unable to perform action %s for resource %s ',
+            'Unable to perform action "%s" for resource "%s"',
             $action,
-            (string) $machineId
+            $machineId
         );
     }
 }
