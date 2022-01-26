@@ -23,10 +23,15 @@ class MachineRequestDispatcherTest extends TestCase
 
     /**
      * @dataProvider dispatchDataProvider
+     *
+     * @param array<class-string, int> $dispatchDelays
      */
-    public function testDispatch(MessageBusInterface $messageBus, MachineRequestInterface $request): void
-    {
-        $dispatcher = new MachineRequestDispatcher($messageBus);
+    public function testDispatch(
+        MessageBusInterface $messageBus,
+        array $dispatchDelays,
+        MachineRequestInterface $request
+    ): void {
+        $dispatcher = new MachineRequestDispatcher($messageBus, $dispatchDelays);
 
         $dispatcher->dispatch($request);
     }
@@ -36,24 +41,24 @@ class MachineRequestDispatcherTest extends TestCase
      */
     public function dispatchDataProvider(): array
     {
+        $checkMachineIsActiveDispatchDelay = 10000;
+
         $createMachineRequest = new CreateMachine('id0', self::MACHINE_ID);
 
-        $checkMachineActiveStamps = [new DelayStamp(10000)];
-        $checkMachineIsActiveRequest = new CheckMachineIsActive('id1', self::MACHINE_ID, $checkMachineActiveStamps);
-
-        $checkMachineIsActiveRequestWithoutStamps = clone $checkMachineIsActiveRequest;
-        $checkMachineIsActiveRequestWithoutStamps->clearStamps();
+        $checkMachineActiveStamps = [new DelayStamp($checkMachineIsActiveDispatchDelay)];
+        $checkMachineIsActiveRequest = new CheckMachineIsActive('id1', self::MACHINE_ID);
 
         return [
-            'un-stamped request' => [
+            'request with no dispatch delay' => [
                 'messageBus' => $this->createMessageBus($createMachineRequest, []),
+                'dispatchDelays' => [],
                 'request' => $createMachineRequest,
             ],
-            'stamped request' => [
-                'messageBus' => $this->createMessageBus(
-                    $checkMachineIsActiveRequestWithoutStamps,
-                    $checkMachineActiveStamps
-                ),
+            'request with dispatch delay' => [
+                'messageBus' => $this->createMessageBus($checkMachineIsActiveRequest, $checkMachineActiveStamps),
+                'dispatchDelays' => [
+                    CheckMachineIsActive::class => $checkMachineIsActiveDispatchDelay,
+                ],
                 'request' => $checkMachineIsActiveRequest,
             ],
         ];

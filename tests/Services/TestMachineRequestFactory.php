@@ -9,7 +9,6 @@ use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\MachineRequestFactory;
-use Symfony\Component\Messenger\Stamp\StampInterface;
 
 class TestMachineRequestFactory
 {
@@ -47,10 +46,7 @@ class TestMachineRequestFactory
         return $request;
     }
 
-    /**
-     * @param StampInterface[] $stamps
-     */
-    public function createCheckIsActive(string $machineId, array $stamps = []): CheckMachineIsActive
+    public function createCheckIsActive(string $machineId): CheckMachineIsActive
     {
         $factoryReflector = new \ReflectionObject($this->factory);
         $method = $factoryReflector->getMethod('createCheckIsActive');
@@ -60,11 +56,6 @@ class TestMachineRequestFactory
         if (!$request instanceof CheckMachineIsActive) {
             throw new \RuntimeException('Failed to create ' . CheckMachineIsActive::class . ' instance');
         }
-
-        $requestReflector = new \ReflectionClass($request);
-        $property = $requestReflector->getProperty('stamps');
-        $property->setAccessible(true);
-        $property->setValue($request, $stamps);
 
         return $request;
     }

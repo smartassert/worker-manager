@@ -61,8 +61,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
         $machineRequestFactory = new TestMachineRequestFactory(
             new MachineRequestFactory(
-                new SequentialRequestIdFactory(),
-                10000
+                new SequentialRequestIdFactory()
             )
         );
 
@@ -111,7 +110,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory, 10000),
+            new MachineRequestFactory($requestIdFactory),
         );
 
         $request = $machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
@@ -160,7 +159,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     {
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory, 10000),
+            new MachineRequestFactory($requestIdFactory),
         );
 
         $message = $machineRequestFactory->createCheckIsActive('invalid machine id');

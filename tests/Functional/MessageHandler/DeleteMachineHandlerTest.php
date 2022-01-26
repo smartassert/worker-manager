@@ -86,10 +86,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory(
-                $requestIdFactory,
-                10000
-            )
+            new MachineRequestFactory($requestIdFactory)
         );
 
         $message = $machineRequestFactory->createDelete(self::MACHINE_ID);

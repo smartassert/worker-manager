@@ -13,12 +13,10 @@ use App\Message\GetMachine;
 use App\Services\MachineRequestFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Stamp\DelayStamp;
 
 class MachineRequestFactoryTest extends TestCase
 {
     private const MACHINE_ID = 'machine id';
-    private const CHECK_IS_ACTIVE_DISPATCH_DELAY = 10000;
 
     private MachineRequestFactory $factory;
 
@@ -27,8 +25,7 @@ class MachineRequestFactoryTest extends TestCase
         parent::setUp();
 
         $this->factory = new MachineRequestFactory(
-            new SequentialRequestIdFactory(),
-            self::CHECK_IS_ACTIVE_DISPATCH_DELAY
+            new SequentialRequestIdFactory()
         );
     }
 
@@ -45,9 +42,6 @@ class MachineRequestFactoryTest extends TestCase
         $expectedCheckMachineIsActiveRequest = new CheckMachineIsActive(
             'id1',
             self::MACHINE_ID,
-            [
-                new DelayStamp(self::CHECK_IS_ACTIVE_DISPATCH_DELAY),
-            ],
             [
                 $expectedGetMachineRequest,
             ]
@@ -88,9 +82,6 @@ class MachineRequestFactoryTest extends TestCase
         $expectedCheckMachineIsActiveRequest = new CheckMachineIsActive(
             'id0',
             self::MACHINE_ID,
-            [
-                new DelayStamp(self::CHECK_IS_ACTIVE_DISPATCH_DELAY),
-            ],
             [
                 $expectedGetMachineRequest,
             ]
