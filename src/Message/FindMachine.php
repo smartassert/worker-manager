@@ -9,8 +9,6 @@ use App\Model\MachineActionInterface;
 
 class FindMachine extends AbstractRemoteMachineRequest
 {
-    use RetryableRequestTrait;
-
     /**
      * @var Machine::STATE_*
      */

@@ -2,7 +2,9 @@
 
 namespace App\Exception;
 
-class MachineNotRemovableException extends AbstractMachineException
+class MachineNotRemovableException extends AbstractMachineException implements
+    StackedExceptionInterface,
+    UnrecoverableExceptionInterface
 {
     /**
      * @var \Throwable[]
@@ -16,7 +18,7 @@ class MachineNotRemovableException extends AbstractMachineException
         string $id,
         array $exceptionStack = [],
     ) {
-        parent::__construct($id);
+        parent::__construct($id, sprintf('Machine "%s" is not removable', $id));
 
         $this->exceptionStack = array_filter($exceptionStack, function ($item) {
             return $item instanceof \Throwable;

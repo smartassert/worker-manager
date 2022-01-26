@@ -10,11 +10,7 @@ parameters:
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
-    create_retry_limit: '%env(CREATE_RETRY_LIMIT)%'
-    get_retry_limit: '%env(GET_RETRY_LIMIT)%'
-    machine_is_active_dispatch_delay: '%env(MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
-    delete_retry_limit: '%env(DELETE_RETRY_LIMIT)%'
-    find_retry_limit: '%env(FIND_RETRY_LIMIT)%'
+    machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
 
 services:
@@ -81,39 +77,6 @@ services:
         arguments:
             $environmentPrefix: '%machine_name_prefix%'
 
-    App\Services\RemoteRequestRetryDecider:
-        arguments:
-            $deciders:
-                - '@App\Services\RemoteRequestRetryDecider\DigitalOcean\DigitalOceanRemoteRequestRetryDecider'
-
-    app.message_dispatcher.backoff_strategy.check_machine_is_active:
-        class: webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\FixedBackoffStrategy
-        arguments:
-            $delayInMilliseconds: '%machine_is_active_dispatch_delay%'
-
-    app.message_dispatcher.backoff_strategy.find_machine:
-        class: webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\ExponentialBackoffStrategy
-
-    webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\DelayedMessageMiddleware:
-        arguments:
-            $backoffStrategies:
-                App\Message\CheckMachineIsActive: '@app.message_dispatcher.backoff_strategy.check_machine_is_active'
-                App\Message\FindMachine: '@app.message_dispatcher.backoff_strategy.find_machine'
-
-    webignition\SymfonyMessengerMessageDispatcher\Middleware\RetryByLimitMiddleware:
-        arguments:
-            $retryLimits:
-                App\Message\CreateMachine: '%create_retry_limit%'
-                App\Message\GetMachine: '%get_retry_limit%'
-                App\Message\DeleteMachine: '%delete_retry_limit%'
-                App\Message\FindMachine: '%find_retry_limit%'
-
-    webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher:
-        arguments:
-            $middleware:
-                - '@webignition\SymfonyMessengerMessageDispatcher\Middleware\DelayedMessage\DelayedMessageMiddleware'
-                - '@webignition\SymfonyMessengerMessageDispatcher\Middleware\RetryByLimitMiddleware'
-
     App\Services\ExceptionFactory\MachineProvider\ExceptionFactory:
         arguments:
             $factories:
@@ -152,3 +115,8 @@ services:
         class: App\Services\RequestIdFactory
 
     SmartAssert\InvokableLogger\ExceptionLogger:
+
+    App\Services\MachineRequestDispatcher:
+        arguments:
+            $dispatchDelays:
+                'App\Message\CheckMachineIsActive': '%machine_is_active_dispatch_delay%'

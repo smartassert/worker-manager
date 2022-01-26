@@ -11,15 +11,12 @@ class MessageQueueInspector
     public const INVALID_MACHINE_ID = 'intentionally invalid';
 
     public function __construct(
-        private MessageBusInterface $messageBus
+        private MessageBusInterface $messageBus,
     ) {
     }
 
     public function __invoke(): void
     {
-        $this->messageBus->dispatch(new CheckMachineIsActive(
-            UniqueId::create(),
-            self::INVALID_MACHINE_ID,
-        ));
+        $this->messageBus->dispatch(new CheckMachineIsActive(UniqueId::create(), self::INVALID_MACHINE_ID));
     }
 }

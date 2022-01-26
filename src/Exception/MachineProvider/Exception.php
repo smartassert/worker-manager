@@ -31,10 +31,17 @@ class Exception extends AbstractMachineException implements ExceptionInterface
 
     private static function createMessage(string $machineId, string $action): string
     {
+        $className = '';
+        $classNameParts = explode('\\', static::class);
+        if (is_array($classNameParts)) {
+            $className = array_pop($classNameParts);
+        }
+
         return sprintf(
-            'Unable to perform action %s for resource %s ',
+            '%s Unable to perform action "%s" for resource "%s"',
+            $className,
             $action,
-            (string) $machineId
+            $machineId
         );
     }
 }

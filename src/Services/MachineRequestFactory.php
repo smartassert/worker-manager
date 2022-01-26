@@ -13,7 +13,7 @@ use App\Message\MachineRequestInterface;
 class MachineRequestFactory
 {
     public function __construct(
-        private RequestIdFactoryInterface $requestIdFactory
+        private RequestIdFactoryInterface $requestIdFactory,
     ) {
     }
 
@@ -26,33 +26,6 @@ class MachineRequestFactory
                 $this->createCreate($machineId),
             ]
         );
-    }
-
-    public function createCreate(string $machineId): CreateMachine
-    {
-        return new CreateMachine(
-            $this->requestIdFactory->create(),
-            $machineId,
-            [
-                $this->createCheckIsActive($machineId),
-            ]
-        );
-    }
-
-    public function createCheckIsActive(string $machineId): CheckMachineIsActive
-    {
-        return new CheckMachineIsActive(
-            $this->requestIdFactory->create(),
-            $machineId,
-            [
-                $this->createGet($machineId),
-            ]
-        );
-    }
-
-    public function createGet(string $machineId): GetMachine
-    {
-        return new GetMachine($this->requestIdFactory->create(), $machineId);
     }
 
     public function createDelete(string $machineId): DeleteMachine
@@ -82,11 +55,27 @@ class MachineRequestFactory
         );
     }
 
+    private function createCheckIsActive(string $machineId): CheckMachineIsActive
+    {
+        return new CheckMachineIsActive(
+            $this->requestIdFactory->create(),
+            $machineId,
+            [
+                $this->createGet($machineId),
+            ]
+        );
+    }
+
+    private function createGet(string $machineId): GetMachine
+    {
+        return new GetMachine($this->requestIdFactory->create(), $machineId);
+    }
+
     /**
      * @param MachineRequestInterface[] $onSuccessCollection
      * @param MachineRequestInterface[] $onFailureCollection
      */
-    public function createFind(
+    private function createFind(
         string $machineId,
         array $onSuccessCollection = [],
         array $onFailureCollection = []
@@ -96,6 +85,17 @@ class MachineRequestFactory
             $machineId,
             $onSuccessCollection,
             $onFailureCollection
+        );
+    }
+
+    private function createCreate(string $machineId): CreateMachine
+    {
+        return new CreateMachine(
+            $this->requestIdFactory->create(),
+            $machineId,
+            [
+                $this->createCheckIsActive($machineId),
+            ]
         );
     }
 }

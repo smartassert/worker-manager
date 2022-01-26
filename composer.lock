@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b75becb3559ac516f61cbbd48b76738e",
+    "content-hash": "16538630acd30cb12037fd8a1ddd215e",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -6207,55 +6207,6 @@
                 }
             ],
             "time": "2021-11-23T12:12:22+00:00"
-        },
-        {
-            "name": "webignition/symfony-messenger-message-dispatcher",
-            "version": "0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/webignition/symfony-messenger-message-dispatcher.git",
-                "reference": "0cbc1a480a19c39bb3f2dc3af8c8827082b3c547"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/webignition/symfony-messenger-message-dispatcher/zipball/0cbc1a480a19c39bb3f2dc3af8c8827082b3c547",
-                "reference": "0cbc1a480a19c39bb3f2dc3af8c8827082b3c547",
-                "shasum": ""
-            },
-            "require": {
-                "php": "8.*",
-                "symfony/messenger": "^5.2"
-            },
-            "require-dev": {
-                "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan": "^0.12.83",
-                "phpstan/phpstan-phpunit": "^0.12.18",
-                "phpunit/phpunit": "^9.5",
-                "squizlabs/php_codesniffer": "dev-master",
-                "symplify/easy-coding-standard": "^9.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "webignition\\SymfonyMessengerMessageDispatcher\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jon Cram",
-                    "email": "webignition@gmail.com"
-                }
-            ],
-            "homepage": "https://github.com/webignition/symfony-messenger-message-dispatcher",
-            "support": {
-                "issues": "https://github.com/webignition/symfony-messenger-message-dispatcher/issues",
-                "source": "https://github.com/webignition/symfony-messenger-message-dispatcher/tree/0.4"
-            },
-            "time": "2021-04-09T10:54:00+00:00"
         }
     ],
     "packages-dev": [

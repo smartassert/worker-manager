@@ -3,20 +3,31 @@
 namespace App\Services;
 
 use App\Message\MachineRequestInterface;
-use App\Message\RemoteMachineMessageInterface;
 use Symfony\Component\Messenger\Envelope;
-use webignition\SymfonyMessengerMessageDispatcher\MessageDispatcher;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 
 class MachineRequestDispatcher
 {
+    /**
+     * @param array<class-string, int> $dispatchDelays
+     */
     public function __construct(
-        private MessageDispatcher $messageDispatcher
+        private MessageBusInterface $messageBus,
+        private array $dispatchDelays,
     ) {
     }
 
     public function dispatch(MachineRequestInterface $request): Envelope
     {
-        return $this->messageDispatcher->dispatch($request);
+        $dispatchDelay = $this->dispatchDelays[$request::class] ?? null;
+        $stamps = [];
+
+        if (is_int($dispatchDelay)) {
+            $stamps[] = new DelayStamp($dispatchDelay);
+        }
+
+        return $this->messageBus->dispatch($request, $stamps);
     }
 
     /**
@@ -35,14 +46,5 @@ class MachineRequestDispatcher
         }
 
         return $envelopes;
-    }
-
-    public function reDispatch(MachineRequestInterface $request): Envelope
-    {
-        if ($request instanceof RemoteMachineMessageInterface) {
-            $request = $request->incrementRetryCount();
-        }
-
-        return $this->dispatch($request);
     }
 }
