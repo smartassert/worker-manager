@@ -10,7 +10,7 @@ on:
 
 jobs:
   integration:
-    name: Machine creation - PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
