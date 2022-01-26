@@ -3,23 +3,28 @@
 namespace App\Services;
 
 use App\Message\MachineRequestInterface;
-use App\Message\StampedMessageInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 
 class MachineRequestDispatcher
 {
+    /**
+     * @param array<class-string, int> $dispatchDelays
+     */
     public function __construct(
-        private MessageBusInterface $messageBus
+        private MessageBusInterface $messageBus,
+        private array $dispatchDelays,
     ) {
     }
 
     public function dispatch(MachineRequestInterface $request): Envelope
     {
+        $dispatchDelay = $this->dispatchDelays[$request::class] ?? null;
         $stamps = [];
-        if ($request instanceof StampedMessageInterface) {
-            $stamps = $request->getStamps();
-            $request->clearStamps();
+
+        if (is_int($dispatchDelay)) {
+            $stamps[] = new DelayStamp($dispatchDelay);
         }
 
         return $this->messageBus->dispatch($request, $stamps);

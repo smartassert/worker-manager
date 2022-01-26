@@ -91,10 +91,6 @@ services:
 
     SmartAssert\DoctrineInspectors\QueryInspector:
 
-    App\Services\ServiceStatusInspector\MessageQueueInspector:
-        arguments:
-            $checkIsActiveDispatchDelay: '%machine_is_active_dispatch_delay%'
-
     SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface:
         class: SmartAssert\ServiceStatusInspector\ServiceStatusInspector
         arguments:
@@ -120,6 +116,7 @@ services:
 
     SmartAssert\InvokableLogger\ExceptionLogger:
 
-    App\Services\MachineRequestFactory:
+    App\Services\MachineRequestDispatcher:
         arguments:
-            $checkIsActiveDispatchDelay: '%machine_is_active_dispatch_delay%'
+            $dispatchDelays:
+                'App\Message\CheckMachineIsActive': '%machine_is_active_dispatch_delay%'
