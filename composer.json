@@ -12,7 +12,7 @@
         "doctrine/orm": "^2.11",
         "guzzlehttp/guzzle": "^7.4",
         "http-interop/http-factory-guzzle": "^1.0",
-        "smartassert/digitalocean-droplet-configuration": "^0.1.0",
+        "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/doctrine-inspectors": "^0.1.0",
         "smartassert/invokable-exception-logger": "^0.1.0",
         "smartassert/service-status-inspector": "^0.1.0",

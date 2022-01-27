@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e3d8b84b0d650d7db4e93f5eb452ef00",
+    "content-hash": "635b08eacfdd8637ed0ff5212bf782f2",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2664,25 +2664,23 @@
         },
         {
             "name": "smartassert/digitalocean-droplet-configuration",
-            "version": "0.1",
+            "version": "1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/smartassert/digitalocean-droplet-configuration.git",
-                "reference": "a47f56073d85cf9a885bb4887bdb0756e45a1478"
+                "reference": "ccf3da6ae7d84377f33a4af5d5e188bd3112986e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smartassert/digitalocean-droplet-configuration/zipball/a47f56073d85cf9a885bb4887bdb0756e45a1478",
-                "reference": "a47f56073d85cf9a885bb4887bdb0756e45a1478",
+                "url": "https://api.github.com/repos/smartassert/digitalocean-droplet-configuration/zipball/ccf3da6ae7d84377f33a4af5d5e188bd3112986e",
+                "reference": "ccf3da6ae7d84377f33a4af5d5e188bd3112986e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8"
+                "php": "^8.0|^8.1"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.0",
-                "phpstan/phpstan": "^0.12.92",
-                "phpstan/phpstan-phpunit": "^0.12.21",
+                "phpstan/phpstan": "^1.4",
                 "phpunit/phpunit": "^9.5",
                 "squizlabs/php_codesniffer": "^3.6"
             },
@@ -2705,9 +2703,9 @@
             "homepage": "https://github.com/smartassert/digitalocean-droplet-configuration",
             "support": {
                 "issues": "https://github.com/smartassert/digitalocean-droplet-configuration/issues",
-                "source": "https://github.com/smartassert/digitalocean-droplet-configuration/tree/0.1"
+                "source": "https://github.com/smartassert/digitalocean-droplet-configuration/tree/1.2"
             },
-            "time": "2021-07-15T14:19:03+00:00"
+            "time": "2022-01-27T10:07:45+00:00"
         },
         {
             "name": "smartassert/doctrine-inspectors",
