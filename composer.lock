@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e8b7a316a937d3f566552ffaa041547",
+    "content-hash": "b0170b693b111fb54347ea1adbcce6e0",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2760,28 +2760,28 @@
         },
         {
             "name": "smartassert/invokable-exception-logger",
-            "version": "0.1",
+            "version": "0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/smartassert/invokable-exception-logger.git",
-                "reference": "e41a1510f735774e8e914bb5a910a5e6c800145f"
+                "reference": "116d3e7685cb5c0896e9bc6dfdfafc7d4d24bb0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smartassert/invokable-exception-logger/zipball/e41a1510f735774e8e914bb5a910a5e6c800145f",
-                "reference": "e41a1510f735774e8e914bb5a910a5e6c800145f",
+                "url": "https://api.github.com/repos/smartassert/invokable-exception-logger/zipball/116d3e7685cb5c0896e9bc6dfdfafc7d4d24bb0e",
+                "reference": "116d3e7685cb5c0896e9bc6dfdfafc7d4d24bb0e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8",
-                "psr/log": "~1"
+                "php": "^8.0|^8.1",
+                "psr/log": "^1.0|^2.0|^3.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.2",
                 "mockery/mockery": "^1.4",
                 "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan": "^0.12.99",
-                "phpstan/phpstan-mockery": "^0.12.14",
+                "phpstan/phpstan": "^1.4",
+                "phpstan/phpstan-mockery": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
                 "phpunit/phpunit": "^9.5",
                 "squizlabs/php_codesniffer": "^3.6"
             },
@@ -2805,9 +2805,9 @@
             "homepage": "https://github.com/smartassert/invokable-exception-logger",
             "support": {
                 "issues": "https://github.com/smartassert/invokable-exception-logger/issues",
-                "source": "https://github.com/smartassert/invokable-exception-logger/tree/0.1"
+                "source": "https://github.com/smartassert/invokable-exception-logger/tree/0.3"
             },
-            "time": "2021-10-28T17:36:46+00:00"
+            "time": "2022-01-27T11:02:27+00:00"
         },
         {
             "name": "smartassert/service-status-inspector",
