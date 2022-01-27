@@ -1,4 +1,4 @@
-FROM php:8.0-fpm-buster
+FROM php:8.1-fpm-buster
 
 WORKDIR /app
 
@@ -47,7 +47,7 @@ RUN mkdir -p var/log/supervisor
 COPY build/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY build/supervisor/conf.d/app.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY composer.json composer.lock /app/
+COPY composer.json symfony.lock /app/
 COPY bin/console /app/bin/console
 COPY public/index.php public/
 COPY src /app/src
@@ -57,7 +57,6 @@ COPY config/packages/prod /app/config/packages/prod
 COPY config/routes/annotations.yaml /app/config/routes/
 
 RUN chown -R www-data:www-data /app/var/log \
-  && composer check-platform-reqs --ansi \
   && echo "APP_SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)" > .env \
   && composer install --no-dev --no-scripts \
   && rm composer.lock \
