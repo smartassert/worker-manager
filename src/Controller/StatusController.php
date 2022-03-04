@@ -11,6 +11,7 @@ class StatusController
 
     public function __construct(
         private string $version,
+        private bool $isReady,
     ) {
     }
 
@@ -19,6 +20,7 @@ class StatusController
     {
         return new JsonResponse([
             'version' => $this->version,
+            'ready' => $this->isReady,
         ]);
     }
 }
