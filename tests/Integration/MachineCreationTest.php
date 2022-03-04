@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Controller\MachineController;
-use App\Controller\StatusController;
 use App\Entity\Machine as MachineEntity;
 use App\Tests\Model\Machine;
 
@@ -26,24 +25,16 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     public function testCreateRemoteMachine(): void
     {
-        $this->assertIsIdle();
-
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
-
-        $this->assertNotIsIdle();
 
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
-
-        $this->assertIsIdle();
     }
 
     public function testStatusForMissingLocalMachine(): void
     {
-        $this->assertIsIdle();
-
         $response = $this->httpClient->post($this->machineUrl);
         self::assertSame(202, $response->getStatusCode());
 
@@ -56,8 +47,6 @@ class MachineCreationTest extends AbstractIntegrationTest
 
         $response = $this->httpClient->get($this->machineUrl);
         self::assertSame(200, $response->getStatusCode());
-
-        $this->assertNotIsIdle();
 
         $expectedStates = [
             MachineEntity::STATE_FIND_RECEIVED,
@@ -74,8 +63,6 @@ class MachineCreationTest extends AbstractIntegrationTest
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
-
-        $this->assertIsIdle();
     }
 
     /**
@@ -131,28 +118,5 @@ class MachineCreationTest extends AbstractIntegrationTest
         }
 
         self::assertSame($state, $this->getMachine()->getState());
-    }
-
-    private function assertIsIdle(): void
-    {
-        self::assertTrue($this->getIsIdle());
-    }
-
-    private function assertNotIsIdle(): void
-    {
-        self::assertFalse($this->getIsIdle());
-    }
-
-    private function getIsIdle(): bool
-    {
-        $response = $this->httpClient->get(StatusController::ROUTE);
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-
-        $responseData = json_decode($response->getBody()->getContents(), true);
-        self::assertIsArray($responseData);
-
-        $isIdle = $responseData['idle'] ?? false;
-
-        return is_bool($isIdle) ? $isIdle : false;
     }
 }
