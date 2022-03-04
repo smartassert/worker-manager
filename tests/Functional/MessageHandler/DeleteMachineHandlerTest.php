@@ -6,7 +6,6 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
-use App\Entity\MessageState;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -19,7 +18,6 @@ use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -40,7 +38,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MockHandler $mockHandler;
     private Machine $machine;
-    private MessageStateEntityAsserter $messageStateEntityAsserter;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
 
@@ -71,10 +68,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
-
-        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
-        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
-        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     public function testInvokeSuccess(): void
@@ -106,9 +99,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         self::assertInstanceOf(FindMachine::class, $expectedMessage);
 
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
-
-        $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState($expectedMessage->getUniqueId()));
     }
 
     public function testInvokeMachineEntityMissing(): void
@@ -119,7 +109,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)(new DeleteMachine('id0', $machineId));
 
         $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
