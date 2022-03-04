@@ -5,36 +5,18 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Controller\StatusController;
-use App\Entity\MessageState;
-use App\Services\Entity\Store\MessageStateStore;
 use App\Tests\AbstractBaseFunctionalTest;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class StatusControllerTest extends AbstractBaseFunctionalTest
 {
-    private MessageStateStore $messageStateStore;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $messageStateStore = self::getContainer()->get(MessageStateStore::class);
-        \assert($messageStateStore instanceof MessageStateStore);
-        $this->messageStateStore = $messageStateStore;
-    }
-
     /**
      * @dataProvider getDataProvider
      *
-     * @param MessageState[]                            $messageStateEntities
-     * @param array{"version": string, "idle": boolean} $expectedResponseData
+     * @param array{"version": string} $expectedResponseData
      */
-    public function testGet(array $messageStateEntities, array $expectedResponseData): void
+    public function testGet(array $expectedResponseData): void
     {
-        foreach ($messageStateEntities as $messageStateEntity) {
-            $this->messageStateStore->store($messageStateEntity);
-        }
-
         $this->client->request('GET', StatusController::ROUTE);
 
         $response = $this->client->getResponse();
@@ -63,31 +45,9 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
     public function getDataProvider(): array
     {
         return [
-            'no message state entities' => [
-                'messageStateEntities' => [],
+            'default' => [
                 'expectedResponseData' => [
                     'version' => '{{ version }}',
-                    'idle' => true,
-                ],
-            ],
-            'one message state entity' => [
-                'messageStateEntities' => [
-                    new MessageState('id0'),
-                ],
-                'expectedResponseData' => [
-                    'version' => '{{ version }}',
-                    'idle' => false,
-                ],
-            ],
-            'many message state entities' => [
-                'messageStateEntities' => [
-                    new MessageState('id0'),
-                    new MessageState('id1'),
-                    new MessageState('id2'),
-                ],
-                'expectedResponseData' => [
-                    'version' => '{{ version }}',
-                    'idle' => false,
                 ],
             ],
         ];

@@ -19,7 +19,6 @@ class StatusTest extends AbstractIntegrationTest
         self::assertSame(
             [
                 'version' => $expectedVersion,
-                'idle' => true,
             ],
             json_decode($response->getBody()->getContents(), true)
         );
