@@ -52,7 +52,7 @@ services:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
 
-    GuzzleHttp\Client:
+    Psr\Http\Client\ClientInterface:
         class: GuzzleHttp\Client
         arguments:
             $config:
@@ -62,7 +62,7 @@ services:
         class: DigitalOceanV2\Client
         factory: ['DigitalOceanV2\Client', 'createWithHttpClient']
         arguments:
-            $httpClient: '@GuzzleHttp\Client'
+            $httpClient: '@Psr\Http\Client\ClientInterface'
         calls:
             - authenticate: ['%digitalocean_api_token%']
 
