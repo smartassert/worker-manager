@@ -136,7 +136,9 @@
         "integration-destroy": "docker-compose -f tests/docker/docker-compose.yml down",
         "integration-setup": [
             "@integration-build",
-            "@integration-up"
+            "@integration-up",
+            "sleep 2",
+            "@db-setup"
         ],
         "messenger-setup": "php bin/console messenger:setup-transports",
         "messenger-listen": "php bin/console messenger:consume async -vv",
