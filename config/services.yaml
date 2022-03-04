@@ -43,6 +43,7 @@ services:
         tags: ['controller.service_arguments']
         arguments:
             $version: '%version%'
+            $isReady: '%env(bool:IS_READY)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

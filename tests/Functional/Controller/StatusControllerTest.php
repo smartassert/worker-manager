@@ -48,6 +48,7 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
             'default' => [
                 'expectedResponseData' => [
                     'version' => '{{ version }}',
+                    'ready' => true,
                 ],
             ],
         ];

@@ -119,9 +119,7 @@
         ],
         "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres",
         "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres",
-        "functional-teardown": [
-            "docker-compose -f ./tests/build/docker-compose.yml down"
-        ],
+        "functional-teardown": "docker-compose -f ./tests/docker/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",
             "sleep 2",
