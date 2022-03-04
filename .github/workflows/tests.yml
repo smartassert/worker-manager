@@ -50,8 +50,8 @@ jobs:
       - name: Install composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Create DB schema
-        run: composer db-setup
+      - name: Setup functional test environment
+        run: composer functional-setup
 
       - name: Run tests
         run: composer test-functional

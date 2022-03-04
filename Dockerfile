@@ -3,6 +3,7 @@ FROM php:8.1-fpm-buster
 WORKDIR /app
 
 ARG APP_ENV=prod
+ARG DATABASE_URL=postgresql://database_user:database_password@0.0.0.0:5432/database_name?serverVersion=12&charset=utf8
 ARG MACHINE_NAME_PREFIX=dev
 ARG DIGITALOCEAN_API_TOKEN=digitalocean_api_token
 ARG DIGITALOCEAN_REGION=lon1
@@ -17,7 +18,7 @@ ARG MACHINE_IS_ACTIVE_DISPATCH_DELAY=10000
 ARG VERSION=dockerfile_version
 
 ENV APP_ENV=$APP_ENV
-ENV DATABASE_URL="sqlite:///%kernel.project_dir%/var/sqlite/data.db"
+ENV DATABASE_URL=$DATABASE_URL
 ENV MESSENGER_TRANSPORT_DSN=doctrine://default
 ENV MACHINE_NAME_PREFIX=$MACHINE_NAME_PREFIX
 ENV DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN
@@ -35,10 +36,12 @@ ENV VERSION=$VERSION
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 RUN apt-get -qq update && apt-get -qq -y install  \
+  libpq-dev \
   libzip-dev \
   supervisor \
   zip \
   && docker-php-ext-install \
+  pdo_pgsql \
   zip \
   && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -61,10 +64,6 @@ RUN chown -R www-data:www-data /app/var/log \
   && composer install --no-dev --no-scripts \
   && rm composer.lock \
   && php bin/console cache:clear \
-  && mkdir -p /app/var/sqlite \
-  && php bin/console doctrine:database:create \
-  && php bin/console doctrine:schema:update --force \
-  && chmod -R 0777 /app/var/sqlite \
   && printenv | grep "^WORKER_IMAGE" \
   && printenv | grep "^VERSION"
 
