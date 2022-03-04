@@ -83,8 +83,8 @@
             "@auto-scripts"
         ],
         "db-setup": [
-            "php bin/console doctrine:database:create",
-            "php bin/console doctrine:schema:update --force"
+            "php bin/console doctrine:database:create --if-not-exists --quiet",
+            "php bin/console doctrine:migrations:migrate --no-interaction --quiet --allow-no-migration"
         ],
         "db-destroy": [
             "php bin/console doctrine:database:drop --force"
@@ -117,8 +117,16 @@
             "@test-unit",
             "@test-functional"
         ],
+        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres",
+        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres",
+        "functional-teardown": [
+            "docker-compose -f ./tests/build/docker-compose.yml down"
+        ],
         "functional-setup": [
-            "@db-setup"
+            "@functional-start",
+            "sleep 2",
+            "@db-setup",
+            "@messenger-setup"
         ],
         "integration-pull": "docker-compose -f tests/docker/docker-compose.yml pull",
         "integration-build": "docker-compose -f tests/docker/docker-compose.yml build app",
@@ -130,6 +138,7 @@
             "@integration-build",
             "@integration-up"
         ],
+        "messenger-setup": "php bin/console messenger:setup-transports",
         "messenger-listen": "php bin/console messenger:consume async -vv",
         "ci": [
             "@cs",
