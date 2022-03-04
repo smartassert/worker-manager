@@ -6,7 +6,6 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
-use App\Entity\MessageState;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -20,7 +19,6 @@ use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
@@ -45,7 +43,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
-    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -70,10 +67,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
-
-        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
-        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
-        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -124,9 +117,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 $expectedMessage
             );
         }
-
-        $this->messageStateEntityAsserter->assertCount(1);
-        $this->messageStateEntityAsserter->assertHas(new MessageState($message->getUniqueId()));
     }
 
     /**

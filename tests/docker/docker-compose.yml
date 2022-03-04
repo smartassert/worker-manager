@@ -1,13 +1,20 @@
 version: "3"
 
 services:
+  postgres:
+    env_file: .env
+    image: postgres:12.5-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+
   nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: nginx
     ports:
-      - 9090:80
+      - "9090:80"
     links:
       - app:app
 
@@ -15,7 +22,8 @@ services:
     build:
       context: ../..
       args:
+        DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/worker_manager?serverVersion=12&charset=utf8
         MESSENGER_TRANSPORT_DSN: doctrine://default
         DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
-    container_name: test-basil-worker-manager
+    container_name: smartassert-worker-manager
