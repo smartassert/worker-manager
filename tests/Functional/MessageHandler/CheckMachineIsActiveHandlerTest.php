@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MessageState;
 use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -26,7 +24,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     private CheckMachineIsActiveHandler $handler;
     private MessengerAsserter $messengerAsserter;
     private MachineStore $machineStore;
-    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -43,10 +40,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
-
-        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
-        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
-        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -68,7 +61,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($machineRequestFactory->createCheckIsActive(self::MACHINE_ID));
 
         $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
@@ -125,16 +117,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
 
         $requestIdFactory->reset();
-
-        $expectedMessageStates = [
-            new MessageState($requestIdFactory->create()),
-            new MessageState($requestIdFactory->create()),
-        ];
-
-        $this->messageStateEntityAsserter->assertCount(count($expectedMessageStates));
-        foreach ($expectedMessageStates as $expectedMessageState) {
-            $this->messageStateEntityAsserter->assertHas($expectedMessageState);
-        }
     }
 
     /**
@@ -167,6 +149,5 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
     }
 }

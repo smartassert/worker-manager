@@ -18,7 +18,6 @@ use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\Asserter\MessageStateEntityAsserter;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -43,7 +42,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
-    private MessageStateEntityAsserter $messageStateEntityAsserter;
 
     protected function setUp(): void
     {
@@ -68,10 +66,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
-
-        $messageStateEntityAsserter = self::getContainer()->get(MessageStateEntityAsserter::class);
-        \assert($messageStateEntityAsserter instanceof MessageStateEntityAsserter);
-        $this->messageStateEntityAsserter = $messageStateEntityAsserter;
     }
 
     /**
@@ -98,7 +92,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         self::assertEquals($expectedMachineProvider, $machineProvider);
 
         $this->messengerAsserter->assertQueueIsEmpty();
-        $this->messageStateEntityAsserter->assertCount(0);
     }
 
     /**
