@@ -52,6 +52,9 @@ services:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
 
+    Psr\Http\Message\RequestFactoryInterface:
+        class: GuzzleHttp\Psr7\HttpFactory
+
     Psr\Http\Client\ClientInterface:
         class: GuzzleHttp\Client
         arguments:
