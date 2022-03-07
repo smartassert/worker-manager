@@ -32,8 +32,7 @@ class DropletApiProxy extends Droplet
         ;
 
         if ($outcome instanceof \Exception) {
-            $expectation
-                ->andThrow($outcome)
+            $expectation->andThrow($outcome)
             ;
         } else {
             $expectation->andReturn($outcome);
@@ -90,8 +89,7 @@ class DropletApiProxy extends Droplet
         ;
 
         if ($outcome instanceof \Exception) {
-            $expectation
-                ->andThrow($outcome)
+            $expectation->andThrow($outcome)
             ;
         } else {
             $expectation->andReturn($outcome);
@@ -150,5 +148,28 @@ class DropletApiProxy extends Droplet
         }
 
         return $droplet;
+    }
+
+    public function withRemoveTaggedCall(string $tag, ?\Exception $exception = null): self
+    {
+        if (false === $this->mock instanceof MockInterface) {
+            return $this;
+        }
+
+        $expectation = $this->mock
+            ->shouldReceive('removeTagged')
+            ->with($tag)
+        ;
+
+        if ($exception instanceof \Exception) {
+            $expectation->andThrow($exception);
+        }
+
+        return $this;
+    }
+
+    public function removeTagged(string $tag): void
+    {
+        $this->mock->removeTagged($tag);
     }
 }
