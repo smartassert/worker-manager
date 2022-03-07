@@ -132,7 +132,7 @@
         "integration-up": "docker-compose -f tests/docker/docker-compose.yml up -d",
         "integration-status": "docker-compose -f tests/docker/docker-compose.yml ps",
         "integration-stop": "docker-compose -f tests/docker/docker-compose.yml stop",
-        "integration-destroy": "docker-compose -f tests/docker/docker-compose.yml down",
+        "integration-teardown": "@functional-teardown",
         "integration-setup": [
             "@integration-build",
             "@integration-up",

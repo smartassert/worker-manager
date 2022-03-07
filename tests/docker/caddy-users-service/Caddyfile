@@ -1,0 +1,30 @@
+http://*:80, http://*:8080 {
+    @valid-token-matcher {
+        header Authorization "Bearer {$VALID_TOKEN}"
+    }
+
+    @invalid-token-matcher {
+        header Authorization "Bearer {$INVALID_TOKEN}"
+    }
+
+    @empty-token-matcher {
+        header Authorization "Bearer"
+    }
+
+    @no-authorization-matcher {
+        header !Authorization
+    }
+
+    respond @valid-token-matcher 200 {
+        body "{$USER_ID}"
+    }
+
+    respond @invalid-token-matcher 401 {
+    }
+
+    respond @empty-token-matcher 401 {
+    }
+
+    respond @no-authorization-matcher 401 {
+    }
+}
