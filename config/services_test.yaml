@@ -29,3 +29,10 @@ services:
 
     App\Tests\Services\TestMachineRequestFactory:
         public: true
+
+    App\Tests\Proxy\DigitalOceanV2\Api\DropletProxy:
+        public: true
+
+    DigitalOceanV2\Api\Droplet:
+        public: true
+        alias: App\Tests\Proxy\DigitalOceanV2\Api\DropletProxy
