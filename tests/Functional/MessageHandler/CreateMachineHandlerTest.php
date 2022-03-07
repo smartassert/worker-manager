@@ -22,6 +22,7 @@ use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\MachineNameFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -236,23 +237,15 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private function setDropletApiProxyCreateCallExpectation(DropletEntity | \Exception $outcome): void
     {
-        $machineNamePrefix = self::getContainer()->getParameter('machine_name_prefix');
-        $machineNamePrefix = is_string($machineNamePrefix) ? $machineNamePrefix : '';
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
 
-        $digitaloceanDropletTag = self::getContainer()->getParameter('digitalocean_droplet_tag');
-        $digitaloceanDropletTag = is_string($digitaloceanDropletTag) ? $digitaloceanDropletTag : '';
-
-        $expectedMachineName = sprintf(
-            '%s-%s-%s',
-            $machineNamePrefix,
-            $digitaloceanDropletTag,
-            self::MACHINE_ID
-        );
+        $expectedMachineName = $machineNameFactory->create(self::MACHINE_ID);
 
         $dropletConfiguration = $this->createDropletConfiguration($expectedMachineName);
 
         $this->dropletApiProxy->withCreateCall(
-            'test-worker-machine id',
+            $expectedMachineName,
             $dropletConfiguration->getRegion(),
             $dropletConfiguration->getSize(),
             $dropletConfiguration->getImage(),

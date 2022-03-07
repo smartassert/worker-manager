@@ -36,3 +36,9 @@ services:
     DigitalOceanV2\Api\Droplet:
         public: true
         alias: App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy
+
+    App\Tests\Services\MachineNameFactory:
+        public: true
+        arguments:
+            $machineNamePrefix: '%machine_name_prefix%'
+            $digitaloceanDropletTag: '%digitalocean_droplet_tag%'
