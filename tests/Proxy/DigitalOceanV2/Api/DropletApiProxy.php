@@ -172,4 +172,34 @@ class DropletApiProxy extends Droplet
     {
         $this->mock->removeTagged($tag);
     }
+
+    /**
+     * @param \Exception|DropletEntity[]|null $outcome
+     */
+    public function withGetAllCall(string $machineId, string $name, null|\Exception|array $outcome): self
+    {
+        if (false === $this->mock instanceof MockInterface) {
+            return $this;
+        }
+
+        $expectation = $this->mock
+            ->shouldReceive('getAll')
+            ->with($name);
+
+        if ($outcome instanceof \Exception) {
+            $expectation->andThrow($outcome);
+        } else {
+            $expectation->andReturn($outcome);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DropletEntity[]
+     */
+    public function getAll(?string $tag = null): array
+    {
+        return $this->mock->getAll($tag);
+    }
 }

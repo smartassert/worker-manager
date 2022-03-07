@@ -17,18 +17,16 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
+use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
-use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
@@ -40,9 +38,10 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private FindMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
+    private DropletApiProxy $dropletApiProxy;
+    private MachineNameFactory $machineNameFactory;
 
     protected function setUp(): void
     {
@@ -51,10 +50,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $handler = self::getContainer()->get(FindMachineHandler::class);
         \assert($handler instanceof FindMachineHandler);
         $this->handler = $handler;
-
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        \assert($mockHandler instanceof MockHandler);
-        $this->mockHandler = $mockHandler;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -67,6 +62,14 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
+
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineNameFactory = $machineNameFactory;
     }
 
     /**
@@ -74,7 +77,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
      *
      * @param MachineRequestInterface[] $messageOnSuccessCollection
      * @param MachineRequestInterface[] $messageOnFailureCollection
-     * @param ResponseInterface[]       $apiResponses
+     * @param DropletEntity[]           $expectedGetAllOutcome
      * @param object[]                  $expectedQueuedMessages
      */
     public function testInvokeSuccess(
@@ -83,13 +86,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         array $messageOnSuccessCollection,
         array $messageOnFailureCollection,
         bool $reDispatchOnSuccess,
-        array $apiResponses,
+        array $expectedGetAllOutcome,
         Machine $expectedMachine,
         MachineProvider $expectedMachineProvider,
         int $expectedQueueCount,
-        array $expectedQueuedMessages
+        array $expectedQueuedMessages,
     ): void {
-        $this->mockHandler->append(...$apiResponses);
+        $expectedMachineName = $this->machineNameFactory->create($machine->getId());
+
+        $this->dropletApiProxy->withGetAllCall($machine->getId(), $expectedMachineName, $expectedGetAllOutcome);
+
         $this->machineStore->store($machine);
 
         if ($machineProvider instanceof MachineProvider) {
@@ -153,9 +159,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ],
                 'messageOnFailureCollection' => [],
                 'reDispatchOnSuccess' => false,
-                'apiResponses' => [
-                    HttpResponseFactory::fromDropletEntityCollection([$upNewDropletEntity])
-                ],
+                'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
                     Machine::STATE_UP_STARTED,
@@ -180,9 +184,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ],
                 'messageOnFailureCollection' => [],
                 'reDispatchOnSuccess' => false,
-                'apiResponses' => [
-                    HttpResponseFactory::fromDropletEntityCollection([$upNewDropletEntity])
-                ],
+                'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
                     Machine::STATE_UP_STARTED,
@@ -207,9 +209,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     $this->createMachineRequestFactory()->createCreate(self::MACHINE_ID)
                 ],
                 'reDispatchOnSuccess' => false,
-                'apiResponses' => [
-                    HttpResponseFactory::fromDropletEntityCollection([])
-                ],
+                'expectedGetAllOutcome' => [],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
                     Machine::STATE_FIND_NOT_FOUND
@@ -229,9 +229,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 'messageOnSuccessCollection' => [],
                 'messageOnFailureCollection' => [],
                 'reDispatchOnSuccess' => true,
-                'apiResponses' => [
-                    HttpResponseFactory::fromDropletEntityCollection([$upNewDropletEntity])
-                ],
+                'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
                     Machine::STATE_UP_STARTED,
@@ -265,18 +263,19 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider invokeThrowsExceptionDataProvider
      */
-    public function testInvokeThrowsException(
-        ?ResponseInterface $httpFixture,
-        Machine $machine,
-        MachineProvider $machineProvider,
-        \Exception $expectedException
-    ): void {
-        if ($httpFixture instanceof ResponseInterface) {
-            $this->mockHandler->append($httpFixture);
-        }
-
+    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
+    {
+        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
         $this->machineStore->store($machine);
+
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
+
+        $this->dropletApiProxy->withGetAllCall(
+            $machine->getId(),
+            $this->machineNameFactory->create($machine->getId()),
+            $vendorException
+        );
 
         $message = new FindMachine('id0', $machine->getId());
 
@@ -295,40 +294,33 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $http401Exception = new RuntimeException('Unauthorized', 401);
 
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
             MachineActionInterface::ACTION_GET,
-            new RuntimeException('Unauthorized', 401)
+            $http401Exception
         );
+
+        $http503Exception = new RuntimeException('Service Unavailable', 503);
 
         $serviceUnavailableException = new HttpException(
             self::MACHINE_ID,
             MachineActionInterface::ACTION_GET,
-            new RuntimeException('Service Unavailable', 503)
+            $http503Exception
         );
 
-        $machineNotFindableAuthenticationException = new MachineNotFindableException(
-            self::MACHINE_ID,
-            [
-                $authenticationException,
-            ]
-        );
+        $machineNotFindableAuthenticationException = new MachineNotFindableException(self::MACHINE_ID, [
+           $authenticationException,
+        ]);
 
-        $machineNotFindableServiceUnavailableException = new MachineNotFindableException(
-            self::MACHINE_ID,
-            [
-                $serviceUnavailableException,
-            ]
-        );
+        $machineNotFindableServiceUnavailableException = new MachineNotFindableException(self::MACHINE_ID, [
+            $serviceUnavailableException,
+        ]);
 
         return [
             'HTTP 401' => [
-                'httpFixture' => new Response(401),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http401Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotFindableAuthenticationException->getMessage(),
                     $machineNotFindableAuthenticationException->getCode(),
@@ -336,9 +328,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'HTTP 503' => [
-                'httpFixture' => new Response(503),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http503Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotFindableServiceUnavailableException->getMessage(),
                     $machineNotFindableServiceUnavailableException->getCode(),
