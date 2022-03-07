@@ -176,7 +176,7 @@ class DropletApiProxy extends Droplet
     /**
      * @param null|DropletEntity[]|\Exception $outcome
      */
-    public function withGetAllCall(string $machineId, string $name, null | \Exception | array $outcome): self
+    public function withGetAllCall(string $name, null | \Exception | array $outcome): self
     {
         if (false === $this->mock instanceof MockInterface) {
             return $this;

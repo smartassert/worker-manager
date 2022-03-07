@@ -94,7 +94,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     ): void {
         $expectedMachineName = $this->machineNameFactory->create($machine->getId());
 
-        $this->dropletApiProxy->withGetAllCall($machine->getId(), $expectedMachineName, $expectedGetAllOutcome);
+        $this->dropletApiProxy->withGetAllCall($expectedMachineName, $expectedGetAllOutcome);
 
         $this->machineStore->store($machine);
 
@@ -271,11 +271,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
 
-        $this->dropletApiProxy->withGetAllCall(
-            $machine->getId(),
-            $this->machineNameFactory->create($machine->getId()),
-            $vendorException
-        );
+        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 
         $message = new FindMachine('id0', $machine->getId());
 
