@@ -29,8 +29,6 @@ use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
-use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
@@ -43,6 +41,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private CreateMachineHandler $handler;
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
+    private string $machineName;
 
     protected function setUp(): void
     {
@@ -65,6 +64,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
         $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
     }
 
     public function testInvokeSuccess(): void
@@ -91,8 +94,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         ];
 
         $expectedDropletEntity = new DropletEntity($dropletData);
-
-        $this->setDropletApiProxyCreateCallExpectation($expectedDropletEntity);
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $expectedDropletEntity);
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
@@ -162,7 +164,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $this->setDropletApiProxyCreateCallExpectation($vendorException);
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorException);
 
         $message = new CreateMachine('id0', $this->machine->getId());
 
@@ -233,44 +235,5 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
         ];
-    }
-
-    private function setDropletApiProxyCreateCallExpectation(DropletEntity | \Exception $outcome): void
-    {
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-
-        $expectedMachineName = $machineNameFactory->create(self::MACHINE_ID);
-
-        $dropletConfiguration = $this->createDropletConfiguration($expectedMachineName);
-
-        $this->dropletApiProxy->withCreateCall(
-            $expectedMachineName,
-            $dropletConfiguration->getRegion(),
-            $dropletConfiguration->getSize(),
-            $dropletConfiguration->getImage(),
-            $dropletConfiguration->getBackups(),
-            $dropletConfiguration->getIpv6(),
-            $dropletConfiguration->getVpcUuid(),
-            $dropletConfiguration->getSshKeys(),
-            $dropletConfiguration->getUserData(),
-            $dropletConfiguration->getMonitoring(),
-            $dropletConfiguration->getVolumes(),
-            $dropletConfiguration->getTags(),
-            $outcome,
-        );
-    }
-
-    private function createDropletConfiguration(string $name): Configuration
-    {
-        $factory = self::getContainer()->get(Factory::class);
-        if (false === $factory instanceof Factory) {
-            throw new \RuntimeException(Factory::class . ' service not found');
-        }
-
-        $configuration = $factory->create();
-        $configuration = $configuration->withNames([$name]);
-
-        return $configuration->addTags([$name]);
     }
 }

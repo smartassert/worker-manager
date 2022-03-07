@@ -8,13 +8,16 @@ use DigitalOceanV2\Api\Droplet;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use Mockery\MockInterface;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
+use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
 class DropletApiProxy extends Droplet
 {
     private Droplet $mock;
 
-    public function __construct()
-    {
+    public function __construct(
+        private Factory $digitalOceanDropletConfigurationFactory,
+    ) {
         parent::__construct(\Mockery::mock(Client::class));
 
         $this->mock = \Mockery::mock(Droplet::class);
@@ -202,5 +205,36 @@ class DropletApiProxy extends Droplet
     public function getAll(?string $tag = null): array
     {
         return $this->mock->getAll($tag);
+    }
+
+    public function prepareCreateCall(
+        string $machineName,
+        DropletEntity | \Exception $outcome
+    ): void {
+        $dropletConfiguration = $this->createDropletConfiguration($machineName);
+
+        $this->withCreateCall(
+            $machineName,
+            $dropletConfiguration->getRegion(),
+            $dropletConfiguration->getSize(),
+            $dropletConfiguration->getImage(),
+            $dropletConfiguration->getBackups(),
+            $dropletConfiguration->getIpv6(),
+            $dropletConfiguration->getVpcUuid(),
+            $dropletConfiguration->getSshKeys(),
+            $dropletConfiguration->getUserData(),
+            $dropletConfiguration->getMonitoring(),
+            $dropletConfiguration->getVolumes(),
+            $dropletConfiguration->getTags(),
+            $outcome,
+        );
+    }
+
+    private function createDropletConfiguration(string $name): Configuration
+    {
+        $configuration = $this->digitalOceanDropletConfigurationFactory->create();
+        $configuration = $configuration->withNames([$name]);
+
+        return $configuration->addTags([$name]);
     }
 }

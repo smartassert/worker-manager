@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services;
 
 use App\Entity\Machine;
-use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -16,20 +14,18 @@ use App\Services\Entity\Store\MachineStore;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use DigitalOceanV2\Client as DigitaloceanClient;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
-use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
-use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 use webignition\ObjectReflector\ObjectReflector;
 
 class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
 {
+    use RemoteRequestThrowsExceptionDataProviderTrait;
+
     private const MACHINE_ID = 'machine id';
 
     private DigitalOceanMachineManager $machineManager;
@@ -79,7 +75,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
         ];
 
         $droplet = new DropletEntity($dropletData);
-        $this->setDropletApiProxyCreateCallExpectation($droplet);
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
 
         $remoteMachine = $this->machineManager->create(self::MACHINE_ID, $this->machineName);
 
@@ -98,7 +94,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     ): void {
         $this->doActionThrowsExceptionTest(
             function () use ($dropletApiException) {
-                $this->setDropletApiProxyCreateCallExpectation($dropletApiException);
+                $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
                 $this->machineManager->create(self::MACHINE_ID, $this->machineName);
             },
             MachineActionInterface::ACTION_CREATE,
@@ -110,18 +106,18 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
 
     public function testCreateThrowsDropletLimitException(): void
     {
-        $createOutcome = new ValidationFailedException(
+        $dropletApiException = new ValidationFailedException(
             'creating this/these droplet(s) will exceed your droplet limit',
             422
         );
 
-        $this->setDropletApiProxyCreateCallExpectation($createOutcome);
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
 
         try {
             $this->machineManager->create(self::MACHINE_ID, $this->machineName);
             self::fail(ExceptionInterface::class . ' not thrown');
         } catch (ExceptionInterface $exception) {
-            self::assertSame($createOutcome, $exception->getRemoteException());
+            self::assertSame($dropletApiException, $exception->getRemoteException());
         }
     }
 
@@ -216,35 +212,6 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return array<mixed>
-     */
-    public function remoteRequestThrowsExceptionDataProvider(): array
-    {
-        return [
-            VendorApiLimitExceededException::class => [
-                'dropletApiException' => new VendorApiLimitExceededException('Too Many Requests', 429),
-                'apiResponse' => new Response(
-                    429,
-                    [
-                        'RateLimit-Reset' => '123',
-                    ]
-                ),
-                'expectedExceptionClass' => ApiLimitExceededException::class,
-            ],
-            RuntimeException::class . ' HTTP 503' => [
-                'dropletApiException' => new RuntimeException('Service Unavailable', 503),
-                'apiResponse' => new Response(503),
-                'expectedExceptionClass' => HttpException::class,
-            ],
-            ValidationFailedException::class => [
-                'dropletApiException' => new ValidationFailedException('Bad Request', 400),
-                'apiResponse' => new Response(400),
-                'expectedExceptionClass' => Exception::class,
-            ],
-        ];
-    }
-
-    /**
      * @param MachineActionInterface::ACTION_* $action
      * @param class-string                     $expectedExceptionClass
      */
@@ -278,39 +245,5 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
             self::assertSame($action, $exception->getAction());
             self::assertEquals($dropletApiException, $exception->getRemoteException());
         }
-    }
-
-    private function setDropletApiProxyCreateCallExpectation(DropletEntity | \Exception $outcome): void
-    {
-        $dropletConfiguration = $this->createDropletConfiguration($this->machineName);
-
-        $this->dropletApiProxy->withCreateCall(
-            $this->machineName,
-            $dropletConfiguration->getRegion(),
-            $dropletConfiguration->getSize(),
-            $dropletConfiguration->getImage(),
-            $dropletConfiguration->getBackups(),
-            $dropletConfiguration->getIpv6(),
-            $dropletConfiguration->getVpcUuid(),
-            $dropletConfiguration->getSshKeys(),
-            $dropletConfiguration->getUserData(),
-            $dropletConfiguration->getMonitoring(),
-            $dropletConfiguration->getVolumes(),
-            $dropletConfiguration->getTags(),
-            $outcome,
-        );
-    }
-
-    private function createDropletConfiguration(string $name): Configuration
-    {
-        $factory = self::getContainer()->get(Factory::class);
-        if (false === $factory instanceof Factory) {
-            throw new \RuntimeException(Factory::class . ' service not found');
-        }
-
-        $configuration = $factory->create();
-        $configuration = $configuration->withNames([$name]);
-
-        return $configuration->addTags([$name]);
     }
 }

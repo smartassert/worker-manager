@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services;
 
 use App\Entity\MachineProvider;
-use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
@@ -14,23 +12,27 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
+use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineManager;
+use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\HttpResponseFactory;
+use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
+use DigitalOceanV2\Client as DigitaloceanClient;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededExceptionAlias;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
+use webignition\ObjectReflector\ObjectReflector;
 
 class MachineManagerTest extends AbstractBaseFunctionalTest
 {
+    use RemoteRequestThrowsExceptionDataProviderTrait;
+
     private const MACHINE_ID = 'machine id';
 
     private MachineManager $machineManager;
-    private MockHandler $mockHandler;
+    private DropletApiProxy $dropletApiProxy;
+    private string $machineName;
 
     protected function setUp(): void
     {
@@ -40,10 +42,13 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         \assert($machineManager instanceof MachineManager);
         $this->machineManager = $machineManager;
 
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $this->mockHandler = $mockHandler;
-        }
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
     }
 
     public function testCreateSuccess(): void
@@ -65,12 +70,12 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
             ],
         ];
 
-        $expectedDropletEntity = new DropletEntity($dropletData);
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntity($expectedDropletEntity));
+        $droplet = new DropletEntity($dropletData);
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
 
         $remoteMachine = $this->machineManager->create($this->createMachineProvider());
 
-        self::assertEquals(new RemoteMachine($expectedDropletEntity), $remoteMachine);
+        self::assertEquals(new RemoteMachine($droplet), $remoteMachine);
     }
 
     /**
@@ -79,44 +84,36 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      * @param class-string $expectedExceptionClass
      */
     public function testCreateThrowsException(
+        \Exception $dropletApiException,
         ResponseInterface $apiResponse,
-        string $expectedExceptionClass,
-        \Exception $expectedRemoveException
+        string $expectedExceptionClass
     ): void {
         $this->doActionThrowsExceptionTest(
-            function () {
+            function () use ($dropletApiException) {
+                $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
                 $this->machineManager->create($this->createMachineProvider());
             },
             MachineActionInterface::ACTION_CREATE,
+            $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
-            $expectedRemoveException
         );
     }
 
     public function testCreateThrowsDropletLimitException(): void
     {
-        $this->mockHandler->append(
-            new Response(
-                422,
-                [
-                    'content-type' => 'application/json',
-                ],
-                (string) json_encode([
-                    'id' => 'unprocessable_entity',
-                    'message' => 'creating this/these droplet(s) will exceed your droplet limit',
-                ])
-            )
+        $dropletApiException = new ValidationFailedException(
+            'creating this/these droplet(s) will exceed your droplet limit',
+            422
         );
+
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
 
         try {
             $this->machineManager->create($this->createMachineProvider());
             self::fail(ExceptionInterface::class . ' not thrown');
         } catch (ExceptionInterface $exception) {
-            self::assertEquals(
-                new ValidationFailedException('creating this/these droplet(s) will exceed your droplet limit', 422),
-                $exception->getRemoteException()
-            );
+            self::assertSame($dropletApiException, $exception->getRemoteException());
         }
     }
 
@@ -140,7 +137,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         ];
 
         $expectedDropletEntity = new DropletEntity($dropletData);
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([$expectedDropletEntity]));
+        $this->dropletApiProxy->withGetAllCall($this->machineName, [$expectedDropletEntity]);
 
         $remoteMachine = $this->machineManager->get($this->createMachineProvider());
 
@@ -149,10 +146,12 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
 
     public function testGetThrowsMachineNotFoundException(): void
     {
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([]));
+        $this->dropletApiProxy->withGetAllCall(
+            $this->machineName,
+            []
+        );
 
         $machineProvider = $this->createMachineProvider();
-
         self::expectExceptionObject(new ProviderMachineNotFoundException(
             $machineProvider->getId(),
             $machineProvider->getName()
@@ -167,24 +166,25 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      * @param class-string $expectedExceptionClass
      */
     public function testGetThrowsException(
+        \Exception $dropletApiException,
         ResponseInterface $apiResponse,
-        string $expectedExceptionClass,
-        \Exception $expectedRemoveException
+        string $expectedExceptionClass
     ): void {
         $this->doActionThrowsExceptionTest(
-            function () {
+            function () use ($dropletApiException) {
+                $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
                 $this->machineManager->get($this->createMachineProvider());
             },
             MachineActionInterface::ACTION_GET,
+            $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
-            $expectedRemoveException
         );
     }
 
     public function testDeleteSuccess(): void
     {
-        $this->mockHandler->append(new Response(204));
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName);
 
         $this->machineManager->delete($this->createMachineProvider());
         self::expectNotToPerformAssertions();
@@ -196,48 +196,20 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      * @param class-string $expectedExceptionClass
      */
     public function testDeleteThrowsException(
+        \Exception $dropletApiException,
         ResponseInterface $apiResponse,
-        string $expectedExceptionClass,
-        \Exception $expectedRemoveException
+        string $expectedExceptionClass
     ): void {
         $this->doActionThrowsExceptionTest(
-            function () {
+            function () use ($dropletApiException) {
+                $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
                 $this->machineManager->delete($this->createMachineProvider());
             },
             MachineActionInterface::ACTION_DELETE,
+            $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
-            $expectedRemoveException
         );
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function remoteRequestThrowsExceptionDataProvider(): array
-    {
-        return [
-            VendorApiLimitExceededExceptionAlias::class => [
-                'apiResponse' => new Response(
-                    429,
-                    [
-                        'RateLimit-Reset' => '123',
-                    ]
-                ),
-                'expectedExceptionClass' => ApiLimitExceededException::class,
-                'expectedRemoteException' => new VendorApiLimitExceededExceptionAlias('Too Many Requests', 429),
-            ],
-            RuntimeException::class . ' HTTP 503' => [
-                'apiResponse' => new Response(503),
-                'expectedExceptionClass' => HttpException::class,
-                'expectedRemoteException' => new RuntimeException('Service Unavailable', 503),
-            ],
-            ValidationFailedException::class => [
-                'apiResponse' => new Response(400),
-                'expectedExceptionClass' => Exception::class,
-                'expectedRemoteException' => new ValidationFailedException('Bad Request', 400),
-            ],
-        ];
     }
 
     /**
@@ -247,19 +219,32 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     private function doActionThrowsExceptionTest(
         callable $callable,
         string $action,
+        \Exception $dropletApiException,
         ResponseInterface $apiResponse,
         string $expectedExceptionClass,
-        \Throwable $expectedRemoteException
     ): void {
-        $this->mockHandler->append($apiResponse);
+        $digitalOceanClient = \Mockery::mock(DigitaloceanClient::class);
+        $digitalOceanClient
+            ->shouldReceive('getLastResponse')
+            ->andReturn($apiResponse)
+        ;
+
+        $digitaloceanExceptionFactory = self::getContainer()->get(DigitalOceanExceptionFactory::class);
+        \assert($digitaloceanExceptionFactory instanceof DigitalOceanExceptionFactory);
+        ObjectReflector::setProperty(
+            $digitaloceanExceptionFactory,
+            DigitalOceanExceptionFactory::class,
+            'digitalOceanClient',
+            $digitalOceanClient
+        );
 
         try {
             $callable();
-            self::fail(ExceptionInterface::class . ' not thrown');
+            self::fail($dropletApiException::class . ' not thrown');
         } catch (Exception $exception) {
             self::assertSame($expectedExceptionClass, $exception::class);
             self::assertSame($action, $exception->getAction());
-            self::assertEquals($expectedRemoteException, $exception->getRemoteException());
+            self::assertEquals($dropletApiException, $exception->getRemoteException());
         }
     }
 
