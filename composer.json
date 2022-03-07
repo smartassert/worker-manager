@@ -120,9 +120,7 @@
         ],
         "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service",
         "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service",
-        "functional-teardown": [
-            "docker-compose -f ./tests/build/docker-compose.yml down"
-        ],
+        "functional-teardown": "docker-compose -f ./tests/docker/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",
             "sleep 2",
@@ -134,7 +132,7 @@
         "integration-up": "docker-compose -f tests/docker/docker-compose.yml up -d",
         "integration-status": "docker-compose -f tests/docker/docker-compose.yml ps",
         "integration-stop": "docker-compose -f tests/docker/docker-compose.yml stop",
-        "integration-destroy": "docker-compose -f tests/docker/docker-compose.yml down",
+        "integration-teardown": "@functional-teardown",
         "integration-setup": [
             "@integration-build",
             "@integration-up",
