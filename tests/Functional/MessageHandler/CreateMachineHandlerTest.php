@@ -20,7 +20,7 @@ use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletProxy;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -41,6 +41,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private CreateMachineHandler $handler;
     private Machine $machine;
+    private DropletApiProxy $dropletApiProxy;
 
     protected function setUp(): void
     {
@@ -59,6 +60,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($machineProviderStore instanceof MachineProviderStore);
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderStore->store($machineProvider);
+
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
     }
 
     public function testInvokeSuccess(): void
@@ -86,26 +91,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $expectedDropletEntity = new DropletEntity($dropletData);
 
-        $dropletApiProxy = self::getContainer()->get(DropletProxy::class);
-        if ($dropletApiProxy instanceof DropletProxy) {
-            $dropletConfiguration = $this->createDropletConfiguration('test-worker-machine id');
-
-            $dropletApiProxy->withCreateCall(
-                'test-worker-machine id',
-                $dropletConfiguration->getRegion(),
-                $dropletConfiguration->getSize(),
-                $dropletConfiguration->getImage(),
-                $dropletConfiguration->getBackups(),
-                $dropletConfiguration->getIpv6(),
-                $dropletConfiguration->getVpcUuid(),
-                $dropletConfiguration->getSshKeys(),
-                $dropletConfiguration->getUserData(),
-                $dropletConfiguration->getMonitoring(),
-                $dropletConfiguration->getVolumes(),
-                $dropletConfiguration->getTags(),
-                $expectedDropletEntity,
-            );
-        }
+        $this->setDropletApiProxyCreateCallExpectation($expectedDropletEntity);
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
@@ -175,26 +161,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $dropletApiProxy = self::getContainer()->get(DropletProxy::class);
-        if ($dropletApiProxy instanceof DropletProxy) {
-            $dropletConfiguration = $this->createDropletConfiguration('test-worker-machine id');
-
-            $dropletApiProxy->withCreateCall(
-                'test-worker-machine id',
-                $dropletConfiguration->getRegion(),
-                $dropletConfiguration->getSize(),
-                $dropletConfiguration->getImage(),
-                $dropletConfiguration->getBackups(),
-                $dropletConfiguration->getIpv6(),
-                $dropletConfiguration->getVpcUuid(),
-                $dropletConfiguration->getSshKeys(),
-                $dropletConfiguration->getUserData(),
-                $dropletConfiguration->getMonitoring(),
-                $dropletConfiguration->getVolumes(),
-                $dropletConfiguration->getTags(),
-                $vendorException,
-            );
-        }
+        $this->setDropletApiProxyCreateCallExpectation($vendorException);
 
         $message = new CreateMachine('id0', $this->machine->getId());
 
@@ -265,6 +232,40 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
         ];
+    }
+
+    private function setDropletApiProxyCreateCallExpectation(DropletEntity | \Exception $outcome): void
+    {
+        $machineNamePrefix = self::getContainer()->getParameter('machine_name_prefix');
+        $machineNamePrefix = is_string($machineNamePrefix) ? $machineNamePrefix : '';
+
+        $digitaloceanDropletTag = self::getContainer()->getParameter('digitalocean_droplet_tag');
+        $digitaloceanDropletTag = is_string($digitaloceanDropletTag) ? $digitaloceanDropletTag : '';
+
+        $expectedMachineName = sprintf(
+            '%s-%s-%s',
+            $machineNamePrefix,
+            $digitaloceanDropletTag,
+            self::MACHINE_ID
+        );
+
+        $dropletConfiguration = $this->createDropletConfiguration($expectedMachineName);
+
+        $this->dropletApiProxy->withCreateCall(
+            'test-worker-machine id',
+            $dropletConfiguration->getRegion(),
+            $dropletConfiguration->getSize(),
+            $dropletConfiguration->getImage(),
+            $dropletConfiguration->getBackups(),
+            $dropletConfiguration->getIpv6(),
+            $dropletConfiguration->getVpcUuid(),
+            $dropletConfiguration->getSshKeys(),
+            $dropletConfiguration->getUserData(),
+            $dropletConfiguration->getMonitoring(),
+            $dropletConfiguration->getVolumes(),
+            $dropletConfiguration->getTags(),
+            $outcome,
+        );
     }
 
     private function createDropletConfiguration(string $name): Configuration

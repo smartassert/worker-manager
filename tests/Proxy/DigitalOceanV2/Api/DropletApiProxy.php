@@ -9,7 +9,7 @@ use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use Mockery\MockInterface;
 
-class DropletProxy extends Droplet
+class DropletApiProxy extends Droplet
 {
     private Droplet $mock;
 
@@ -48,7 +48,7 @@ class DropletProxy extends Droplet
     }
 
     /**
-     * @param int[] $sshKeys
+     * @param int[]    $sshKeys
      * @param string[] $volumes
      * @param string[] $tags
      */
@@ -59,7 +59,7 @@ class DropletProxy extends Droplet
         string $image,
         bool $backups,
         bool $ipv6,
-        bool|string $vpcUuid,
+        bool | string $vpcUuid,
         array $sshKeys,
         string $userData,
         bool $monitoring,
@@ -86,11 +86,13 @@ class DropletProxy extends Droplet
                 $monitoring,
                 $volumes,
                 $tags
-            );
+            )
+        ;
 
         if ($outcome instanceof \Exception) {
             $expectation
-                ->andThrow($outcome);
+                ->andThrow($outcome)
+            ;
         } else {
             $expectation->andReturn($outcome);
         }
@@ -99,10 +101,12 @@ class DropletProxy extends Droplet
     }
 
     /**
-     * @param string[]|string $names
-     * @param int[] $sshKeys
-     * @param int[] $volumes
-     * @param int[] $tags
+     * @param string|string[] $names
+     * @param int[]           $sshKeys
+     * @param int[]           $volumes
+     * @param int[]           $tags
+     * @param mixed           $image
+     * @param mixed           $vpcUuid
      */
     public function create(
         $names,
@@ -118,6 +122,14 @@ class DropletProxy extends Droplet
         array $volumes = [],
         array $tags = []
     ): DropletEntity {
+        if (false === is_string($image)) {
+            throw new \RuntimeException('image is not a string');
+        }
+
+        if (false === is_string($vpcUuid) && false === is_bool($vpcUuid)) {
+            throw new \RuntimeException('vpcUuid is not a string');
+        }
+
         $droplet = $this->mock->create(
             $names,
             $region,

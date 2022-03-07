@@ -7,15 +7,15 @@ namespace App\Tests\Functional\Controller;
 use App\Controller\HealthCheckController;
 use App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletProxy;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 
 class HealthCheckControllerTest extends AbstractBaseFunctionalTest
 {
     public function testGet(): void
     {
-        $dropletApiProxy = self::getContainer()->get(DropletProxy::class);
-        if ($dropletApiProxy instanceof DropletProxy) {
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        if ($dropletApiProxy instanceof DropletApiProxy) {
             $dropletApiProxy->withGetByIdCall(DigitalOceanMachineProviderInspector::DROPLET_ID, new DropletEntity());
         }
 
