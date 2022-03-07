@@ -8,6 +8,19 @@ services:
     ports:
       - "5432:5432"
 
+  users-service:
+    image: caddy:2.4.5-alpine
+    container_name: users-service
+    restart: unless-stopped
+    environment:
+      VALID_TOKEN: ${VALID_AUTHENTICATION_TOKEN:-valid-token}
+      INVALID_TOKEN: ${INVALID_AUTHENTICATION_TOKEN:-invalid-token}
+      USER_ID: ${AUTHENTICATED_USER_ID:-01FWKGED9E2NZZR5HP21HS2YYT}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./caddy-users-service/Caddyfile:/etc/caddy/Caddyfile
+
   nginx:
     build:
       context: ./nginx
@@ -27,3 +40,6 @@ services:
         DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
     container_name: smartassert-worker-manager
+    depends_on:
+      - postgres
+      - users-service
