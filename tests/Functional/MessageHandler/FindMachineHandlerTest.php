@@ -311,7 +311,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $machineNotFindableAuthenticationException = new MachineNotFindableException(self::MACHINE_ID, [
-           $authenticationException,
+            $authenticationException,
         ]);
 
         $machineNotFindableServiceUnavailableException = new MachineNotFindableException(self::MACHINE_ID, [
