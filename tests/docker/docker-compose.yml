@@ -39,6 +39,7 @@ services:
         MESSENGER_TRANSPORT_DSN: doctrine://default
         DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
+        AUTHENTICATION_BASE_URL: http://users-service
     container_name: smartassert-worker-manager
     depends_on:
       - postgres
