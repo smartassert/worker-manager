@@ -1,0 +1,2 @@
+imports:
+    - { resource: '@UsersSecurityBundle/Resources/config/security.yaml' }

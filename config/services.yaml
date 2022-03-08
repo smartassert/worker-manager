@@ -12,6 +12,9 @@ parameters:
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
+    users_security_bundle_public_pattern: '(^/$)|(^/health-check$)'
+    users_security_bundle_secured_pattern: '/machine$'
+    users_security_bundle_access_control_path: '^/'
 
 services:
     # default configuration for services in *this* file
