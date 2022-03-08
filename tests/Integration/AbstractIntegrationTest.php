@@ -16,7 +16,10 @@ abstract class AbstractIntegrationTest extends TestCase
         parent::setUp();
 
         $this->httpClient = new Client([
-            'base_uri' => 'http://localhost:9090/'
+            'base_uri' => 'http://localhost:9090/',
+            'headers' => [
+                'Authorization' => 'Bearer valid-token',
+            ],
         ]);
     }
 }
