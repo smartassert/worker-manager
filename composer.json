@@ -17,6 +17,7 @@
         "smartassert/doctrine-inspectors": "^0.2.0",
         "smartassert/invokable-exception-logger": "^0.3.0",
         "smartassert/service-status-inspector": "^0.2.0",
+        "smartassert/users-security-bundle": "^0.4.0",
         "symfony/console": "6.0.*",
         "symfony/doctrine-messenger": "6.0.*",
         "symfony/dotenv": "6.0.*",
@@ -25,6 +26,7 @@
         "symfony/messenger": "6.0.*",
         "symfony/monolog-bundle": "^3.6",
         "symfony/proxy-manager-bridge": "6.0.*",
+        "symfony/security-bundle": "6.0.*",
         "symfony/uid": "6.0.*",
         "symfony/yaml": "6.0.*",
         "toin0u/digitalocean-v2": "^4.5"
@@ -99,6 +101,9 @@
         "static-analysis": "./vendor/bin/phpstan analyse --ansi",
         "test-unit": "./vendor/bin/phpunit --colors=always tests/Unit",
         "test-functional": "./vendor/bin/phpunit --colors=always tests/Functional",
+        "test-integration-unauthorized-user": [
+            "./vendor/bin/phpunit tests/Integration/UnauthorizedUserTest.php"
+        ],
         "test-integration-machine-creation": [
             "./vendor/bin/phpunit tests/Integration/MachineCreationTest.php"
         ],
@@ -109,6 +114,7 @@
             "./vendor/bin/phpunit tests/Integration/StatusTest.php"
         ],
         "test-integration": [
+            "@test-integration-unauthorized-user",
             "@test-integration-status",
             "@test-integration-machine-creation",
             "@test-integration-health-check"
@@ -117,8 +123,8 @@
             "@test-unit",
             "@test-functional"
         ],
-        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres",
-        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres",
+        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service",
+        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service",
         "functional-teardown": "docker-compose -f ./tests/docker/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",
@@ -131,7 +137,7 @@
         "integration-up": "docker-compose -f tests/docker/docker-compose.yml up -d",
         "integration-status": "docker-compose -f tests/docker/docker-compose.yml ps",
         "integration-stop": "docker-compose -f tests/docker/docker-compose.yml stop",
-        "integration-destroy": "docker-compose -f tests/docker/docker-compose.yml down",
+        "integration-teardown": "@functional-teardown",
         "integration-setup": [
             "@integration-build",
             "@integration-up",

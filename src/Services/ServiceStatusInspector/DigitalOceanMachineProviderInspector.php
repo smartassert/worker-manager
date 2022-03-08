@@ -7,6 +7,8 @@ use DigitalOceanV2\Exception\RuntimeException;
 
 class DigitalOceanMachineProviderInspector
 {
+    public const DROPLET_ID = 123456;
+
     public function __construct(
         private Droplet $dropletApi
     ) {
@@ -15,7 +17,7 @@ class DigitalOceanMachineProviderInspector
     public function __invoke(): void
     {
         try {
-            $this->dropletApi->getById(123456);
+            $this->dropletApi->getById(self::DROPLET_ID);
         } catch (RuntimeException $runtimeException) {
             if (404 !== $runtimeException->getCode()) {
                 throw $runtimeException;

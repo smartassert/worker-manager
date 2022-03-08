@@ -8,19 +8,19 @@ use App\Exception\MachineNotFindableException;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Model\MachineActionInterface;
+use App\Services\MachineNameFactory;
 use App\Services\RemoteMachineRemover;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use DigitalOceanV2\Exception\RuntimeException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ResponseInterface;
 
 class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
 {
     private const MACHINE_ID = 'machine id';
 
     private RemoteMachineRemover $remover;
-    private MockHandler $mockHandler;
+    private DropletApiProxy $dropletApiProxy;
+    private string $machineName;
 
     protected function setUp(): void
     {
@@ -30,18 +30,21 @@ class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
         \assert($machineManager instanceof RemoteMachineRemover);
         $this->remover = $machineManager;
 
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $this->mockHandler = $mockHandler;
-        }
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
     }
 
     /**
      * @dataProvider removeSuccessDataProvider
      */
-    public function testRemoveSuccess(ResponseInterface $httpFixture): void
+    public function testRemoveSuccess(?\Exception $dropletApiException): void
     {
-        $this->mockHandler->append($httpFixture);
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
 
         $this->expectNotToPerformAssertions();
 
@@ -55,24 +58,22 @@ class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
     {
         return [
             'removed' => [
-                'httpFixture' => new Response(204),
+                'exception' => null,
             ],
             'not found' => [
-                'httpFixture' => new Response(404),
+                'exception' => new RuntimeException('Not Found', 404),
             ],
         ];
     }
 
     public function testRemoveMachineNotRemovable(): void
     {
-        $this->mockHandler->append(new Response(503));
+        $httpException = new RuntimeException('Service Unavailable', 503);
+
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $httpException);
 
         $expectedExceptionStack = [
-            new HttpException(
-                self::MACHINE_ID,
-                MachineActionInterface::ACTION_DELETE,
-                new RuntimeException('Service Unavailable', 503)
-            ),
+            new HttpException(self::MACHINE_ID, MachineActionInterface::ACTION_DELETE, $httpException),
         ];
 
         try {
