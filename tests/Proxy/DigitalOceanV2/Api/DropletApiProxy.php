@@ -33,41 +33,23 @@ class DropletApiProxy extends Droplet
         return $this->mock->getById($id);
     }
 
-    /**
-     * @param int[]    $sshKeys
-     * @param string[] $volumes
-     * @param string[] $tags
-     */
-    public function withCreateCall(
-        string $name,
-        string $region,
-        string $size,
-        string $image,
-        bool $backups,
-        bool $ipv6,
-        bool | string $vpcUuid,
-        array $sshKeys,
-        string $userData,
-        bool $monitoring,
-        array $volumes,
-        array $tags,
-        object $outcome
-    ): self {
+    public function withCreateCall(string $name, Configuration $dropletConfiguration, object $outcome): self
+    {
         return $this->withCall(
             'create',
             [
                 $name,
-                $region,
-                $size,
-                $image,
-                $backups,
-                $ipv6,
-                $vpcUuid,
-                $sshKeys,
-                $userData,
-                $monitoring,
-                $volumes,
-                $tags
+                $dropletConfiguration->getRegion(),
+                $dropletConfiguration->getSize(),
+                $dropletConfiguration->getImage(),
+                $dropletConfiguration->getBackups(),
+                $dropletConfiguration->getIpv6(),
+                $dropletConfiguration->getVpcUuid(),
+                $dropletConfiguration->getSshKeys(),
+                $dropletConfiguration->getUserData(),
+                $dropletConfiguration->getMonitoring(),
+                $dropletConfiguration->getVolumes(),
+                $dropletConfiguration->getTags()
             ],
             $outcome
         );
@@ -157,21 +139,7 @@ class DropletApiProxy extends Droplet
     ): void {
         $dropletConfiguration = $this->createDropletConfiguration($machineName);
 
-        $this->withCreateCall(
-            $machineName,
-            $dropletConfiguration->getRegion(),
-            $dropletConfiguration->getSize(),
-            $dropletConfiguration->getImage(),
-            $dropletConfiguration->getBackups(),
-            $dropletConfiguration->getIpv6(),
-            $dropletConfiguration->getVpcUuid(),
-            $dropletConfiguration->getSshKeys(),
-            $dropletConfiguration->getUserData(),
-            $dropletConfiguration->getMonitoring(),
-            $dropletConfiguration->getVolumes(),
-            $dropletConfiguration->getTags(),
-            $outcome,
-        );
+        $this->withCreateCall($machineName, $dropletConfiguration, $outcome);
     }
 
     private function createDropletConfiguration(string $name): Configuration
