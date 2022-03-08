@@ -25,23 +25,7 @@ class DropletApiProxy extends Droplet
 
     public function withGetByIdCall(int $id, object $outcome): self
     {
-        if (false === $this->mock instanceof MockInterface) {
-            return $this;
-        }
-
-        $expectation = $this->mock
-            ->shouldReceive('getById')
-            ->with($id)
-        ;
-
-        if ($outcome instanceof \Exception) {
-            $expectation->andThrow($outcome)
-            ;
-        } else {
-            $expectation->andReturn($outcome);
-        }
-
-        return $this;
+        return $this->withCall('getById', [$id], $outcome);
     }
 
     public function getById(int $id): DropletEntity
@@ -69,13 +53,9 @@ class DropletApiProxy extends Droplet
         array $tags,
         object $outcome
     ): self {
-        if (false === $this->mock instanceof MockInterface) {
-            return $this;
-        }
-
-        $expectation = $this->mock
-            ->shouldReceive('create')
-            ->with(
+        return $this->withCall(
+            'create',
+            [
                 $name,
                 $region,
                 $size,
@@ -88,17 +68,9 @@ class DropletApiProxy extends Droplet
                 $monitoring,
                 $volumes,
                 $tags
-            )
-        ;
-
-        if ($outcome instanceof \Exception) {
-            $expectation->andThrow($outcome)
-            ;
-        } else {
-            $expectation->andReturn($outcome);
-        }
-
-        return $this;
+            ],
+            $outcome
+        );
     }
 
     /**
@@ -155,20 +127,7 @@ class DropletApiProxy extends Droplet
 
     public function withRemoveTaggedCall(string $tag, ?\Exception $exception = null): self
     {
-        if (false === $this->mock instanceof MockInterface) {
-            return $this;
-        }
-
-        $expectation = $this->mock
-            ->shouldReceive('removeTagged')
-            ->with($tag)
-        ;
-
-        if ($exception instanceof \Exception) {
-            $expectation->andThrow($exception);
-        }
-
-        return $this;
+        return $this->withCall('removeTagged', [$tag], $exception);
     }
 
     public function removeTagged(string $tag): void
@@ -181,22 +140,7 @@ class DropletApiProxy extends Droplet
      */
     public function withGetAllCall(string $name, null | \Exception | array $outcome): self
     {
-        if (false === $this->mock instanceof MockInterface) {
-            return $this;
-        }
-
-        $expectation = $this->mock
-            ->shouldReceive('getAll')
-            ->with($name)
-        ;
-
-        if ($outcome instanceof \Exception) {
-            $expectation->andThrow($outcome);
-        } else {
-            $expectation->andReturn($outcome);
-        }
-
-        return $this;
+        return $this->withCall('getAll', [$name], $outcome);
     }
 
     /**
@@ -236,5 +180,28 @@ class DropletApiProxy extends Droplet
         $configuration = $configuration->withNames([$name]);
 
         return $configuration->addTags([$name]);
+    }
+
+    /**
+     * @param array<mixed> $args
+     */
+    private function withCall(string $methodName, array $args, mixed $outcome): self
+    {
+        if (false === $this->mock instanceof MockInterface) {
+            return $this;
+        }
+
+        $expectation = $this->mock
+            ->shouldReceive($methodName)
+            ->withArgs($args)
+        ;
+
+        if ($outcome instanceof \Exception) {
+            $expectation->andThrow($outcome);
+        } elseif (null !== $outcome) {
+            $expectation->andReturn($outcome);
+        }
+
+        return $this;
     }
 }
