@@ -255,7 +255,13 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     private function makeCreateRequest(): Response
     {
-        $this->client->request('POST', $this->machineUrl);
+        $this->client->request(
+            method: 'POST',
+            uri: $this->machineUrl,
+            server: [
+                'HTTP_AUTHORIZATION' => 'Bearer valid-token',
+            ],
+        );
 
         return $this->client->getResponse();
     }
@@ -272,7 +278,13 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     private function makeMachineRequest(string $method): Response
     {
-        $this->client->request($method, $this->machineUrl);
+        $this->client->request(
+            method: $method,
+            uri: $this->machineUrl,
+            server: [
+                'HTTP_AUTHORIZATION' => 'Bearer valid-token',
+            ],
+        );
 
         return $this->client->getResponse();
     }
