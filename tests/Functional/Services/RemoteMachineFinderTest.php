@@ -8,20 +8,20 @@ use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
+use App\Services\MachineNameFactory;
 use App\Services\RemoteMachineFinder;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\HttpResponseFactory;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 
 class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
 {
     private const MACHINE_ID = 'machine id';
 
     private RemoteMachineFinder $finder;
-    private MockHandler $mockHandler;
+    private DropletApiProxy $dropletApiProxy;
+    private string $machineName;
 
     protected function setUp(): void
     {
@@ -31,10 +31,13 @@ class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
         \assert($machineManager instanceof RemoteMachineFinder);
         $this->finder = $machineManager;
 
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $this->mockHandler = $mockHandler;
-        }
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
     }
 
     public function testFindSuccess(): void
@@ -44,7 +47,7 @@ class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
             'status' => RemoteMachine::STATE_NEW,
         ]);
 
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([$dropletEntity]));
+        $this->dropletApiProxy->withGetAllCall($this->machineName, [$dropletEntity]);
 
         $remoteMachine = $this->finder->find(self::MACHINE_ID);
 
@@ -53,14 +56,12 @@ class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
 
     public function testFindMachineNotFindable(): void
     {
-        $this->mockHandler->append(new Response(503));
+        $http503Exception = new RuntimeException('Service Unavailable', 503);
+
+        $this->dropletApiProxy->withGetAllCall($this->machineName, $http503Exception);
 
         $expectedExceptionStack = [
-            new HttpException(
-                self::MACHINE_ID,
-                MachineActionInterface::ACTION_GET,
-                new RuntimeException('Service Unavailable', 503)
-            ),
+            new HttpException(self::MACHINE_ID, MachineActionInterface::ACTION_GET, $http503Exception),
         ];
 
         try {
@@ -73,7 +74,7 @@ class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
 
     public function testFindMachineDoesNotExist(): void
     {
-        $this->mockHandler->append(HttpResponseFactory::fromDropletEntityCollection([]));
+        $this->dropletApiProxy->withGetAllCall($this->machineName, []);
 
         self::assertNull($this->finder->find(self::MACHINE_ID));
     }

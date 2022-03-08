@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\ServiceStatusInspector;
 
+use App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\HttpResponseFactory;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ResponseInterface;
+use DigitalOceanV2\Exception\RuntimeException;
 use SmartAssert\ServiceStatusInspector\ServiceStatusInspector;
 use SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface;
 use webignition\ObjectReflector\ObjectReflector;
@@ -30,18 +29,20 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider getDataProvider
      *
-     * @param ResponseInterface[] $httpFixtures
      * @param callable[]          $modifiedComponentInspectors
      * @param array<string, bool> $expectedServiceStatus
      */
     public function testGet(
-        array $httpFixtures,
+        \Exception | DropletEntity $dropletApiGetByIdOutcome,
         array $modifiedComponentInspectors,
         array $expectedServiceStatus
     ): void {
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $mockHandler->append(...$httpFixtures);
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        if ($dropletApiProxy instanceof DropletApiProxy) {
+            $dropletApiProxy->withGetByIdCall(
+                DigitalOceanMachineProviderInspector::DROPLET_ID,
+                $dropletApiGetByIdOutcome
+            );
         }
 
         foreach ($modifiedComponentInspectors as $name => $componentInspector) {
@@ -58,9 +59,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
     {
         return [
             'all services available' => [
-                'httpFixtures' => [
-                    $this->createDigitalOceanDropletResponse(),
-                ],
+                'dropletApiGetByIdOutcome' => new DropletEntity(),
                 'modifiedComponentInspectors' => [],
                 'expectedServiceStatus' => [
                     'database_connection' => true,
@@ -70,9 +69,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
             ],
             'database unavailable' => [
-                'httpFixtures' => [
-                    $this->createDigitalOceanDropletResponse(),
-                ],
+                'dropletApiGetByIdOutcome' => new DropletEntity(),
                 'modifiedComponentInspectors' => [
                     'database_connection' => $this->createComponentInspectorThrowingException(),
                 ],
@@ -84,9 +81,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
             ],
             'message queue unavailable' => [
-                'httpFixtures' => [
-                    $this->createDigitalOceanDropletResponse(),
-                ],
+                'dropletApiGetByIdOutcome' => new DropletEntity(),
                 'modifiedComponentInspectors' => [
                     'message_queue' => $this->createComponentInspectorThrowingException(),
                 ],
@@ -98,9 +93,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
             ],
             'digital ocean machine provider unavailable' => [
-                'httpFixtures' => [
-                    new Response(401),
-                ],
+                'dropletApiGetByIdOutcome' => new RuntimeException('Unauthorized', 401),
                 'modifiedComponentInspectors' => [],
                 'expectedServiceStatus' => [
                     'database_connection' => true,
@@ -110,9 +103,7 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
                 ],
             ],
             'all services unavailable' => [
-                'httpFixtures' => [
-                    new Response(401),
-                ],
+                'dropletApiGetByIdOutcome' => new RuntimeException('Unauthorized', 401),
                 'modifiedComponentInspectors' => [
                     'database_connection' => $this->createComponentInspectorThrowingException(),
                     'message_queue' => $this->createComponentInspectorThrowingException(),
@@ -153,10 +144,5 @@ class ServiceStatusInspectorTest extends AbstractBaseFunctionalTest
         return function () {
             throw new \Exception();
         };
-    }
-
-    private function createDigitalOceanDropletResponse(): ResponseInterface
-    {
-        return HttpResponseFactory::fromDropletEntity(new DropletEntity());
     }
 }

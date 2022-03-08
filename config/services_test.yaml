@@ -14,18 +14,15 @@ services:
         arguments:
             $transport: '@messenger.transport.async'
 
-    GuzzleHttp\Handler\MockHandler:
-        public: true
-        class: GuzzleHttp\Handler\MockHandler
-
-    GuzzleHttp\HandlerStack:
-        class: GuzzleHttp\HandlerStack
-        factory: ['GuzzleHttp\HandlerStack', 'create']
-        arguments:
-            $handler: '@GuzzleHttp\Handler\MockHandler'
-
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
 
     App\Tests\Services\TestMachineRequestFactory:
         public: true
+
+    App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
+        public: true
+
+    DigitalOceanV2\Api\Droplet:
+        public: true
+        alias: App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy

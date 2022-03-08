@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Controller\HealthCheckController;
+use App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet;
-use GuzzleHttp\Handler\MockHandler;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
+use DigitalOceanV2\Entity\Droplet as DropletEntity;
 
 class HealthCheckControllerTest extends AbstractBaseFunctionalTest
 {
     public function testGet(): void
     {
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $mockHandler->append(HttpResponseFactory::fromDropletEntity(new Droplet()));
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        if ($dropletApiProxy instanceof DropletApiProxy) {
+            $dropletApiProxy->withGetByIdCall(DigitalOceanMachineProviderInspector::DROPLET_ID, new DropletEntity());
         }
 
         $this->client->request('GET', HealthCheckController::ROUTE);
