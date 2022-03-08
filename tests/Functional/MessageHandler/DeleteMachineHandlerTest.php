@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -13,19 +12,16 @@ use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Model\MachineActionInterface;
-use App\Model\ProviderInterface;
-use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
+use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -36,10 +32,9 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private DeleteMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MockHandler $mockHandler;
     private Machine $machine;
-    private MachineStore $machineStore;
-    private MachineProviderStore $machineProviderStore;
+    private DropletApiProxy $dropletApiProxy;
+    private MachineNameFactory $machineNameFactory;
 
     protected function setUp(): void
     {
@@ -51,23 +46,22 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
-        $this->machineStore = $machineStore;
 
         $this->machine = new Machine(self::MACHINE_ID);
         $this->machine->setState(Machine::STATE_DELETE_RECEIVED);
         $machineStore->store($this->machine);
 
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        \assert($machineProviderStore instanceof MachineProviderStore);
-        $this->machineProviderStore = $machineProviderStore;
-
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        \assert($mockHandler instanceof MockHandler);
-        $this->mockHandler = $mockHandler;
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineNameFactory = $machineNameFactory;
     }
 
     public function testInvokeSuccess(): void
@@ -75,7 +69,9 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->messengerAsserter->assertQueueIsEmpty();
         self::assertSame(Machine::STATE_DELETE_RECEIVED, $this->machine->getState());
 
-        $this->mockHandler->append(new Response(204));
+        $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
+
+        $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName);
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
@@ -114,21 +110,12 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider invokeThrowsExceptionDataProvider
      */
-    public function testInvokeThrowsException(
-        ?ResponseInterface $httpFixture,
-        Machine $machine,
-        MachineProvider $machineProvider,
-        \Exception $expectedException
-    ): void {
-        if ($httpFixture instanceof ResponseInterface) {
-            $this->mockHandler->append($httpFixture);
-        }
+    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
+    {
+        $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
+        $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName, $vendorException);
 
-        $this->machineStore->store($machine);
-        $this->machineProviderStore->store($machineProvider);
-
-        $message = new DeleteMachine('id0', $machine->getId());
-        $machineState = $machine->getState();
+        $message = new DeleteMachine('id0', self::MACHINE_ID);
 
         try {
             ($this->handler)($message);
@@ -137,7 +124,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame($machineState, $machine->getState());
+        self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
     }
 
     /**
@@ -145,40 +132,33 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $http401Exception = new RuntimeException('Unauthorized', 401);
 
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
             MachineActionInterface::ACTION_DELETE,
-            new RuntimeException('Unauthorized', 401)
+            $http401Exception
         );
+
+        $http503Exception = new RuntimeException('Service Unavailable', 503);
 
         $serviceUnavailableException = new HttpException(
             self::MACHINE_ID,
             MachineActionInterface::ACTION_DELETE,
-            new RuntimeException('Service Unavailable', 503)
+            $http503Exception
         );
 
-        $machineNotRemovableAuthenticationException = new MachineNotRemovableException(
-            self::MACHINE_ID,
-            [
-                $authenticationException,
-            ]
-        );
+        $machineNotRemovableAuthenticationException = new MachineNotRemovableException(self::MACHINE_ID, [
+            $authenticationException,
+        ]);
 
-        $machineNotRemovableServiceUnavailableException = new MachineNotRemovableException(
-            self::MACHINE_ID,
-            [
-                $serviceUnavailableException,
-            ]
-        );
+        $machineNotRemovableServiceUnavailableException = new MachineNotRemovableException(self::MACHINE_ID, [
+            $serviceUnavailableException,
+        ]);
 
         return [
             'HTTP 401' => [
-                'httpFixture' => new Response(401),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http401Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotRemovableAuthenticationException->getMessage(),
                     $machineNotRemovableAuthenticationException->getCode(),
@@ -186,9 +166,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'HTTP 503' => [
-                'httpFixture' => new Response(503),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http503Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotRemovableServiceUnavailableException->getMessage(),
                     $machineNotRemovableServiceUnavailableException->getCode(),

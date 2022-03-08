@@ -17,16 +17,14 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
+use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
-use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use webignition\ObjectReflector\ObjectReflector;
 
@@ -39,9 +37,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private GetMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MockHandler $mockHandler;
     private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
+    private DropletApiProxy $dropletApiProxy;
+    private MachineNameFactory $machineNameFactory;
 
     protected function setUp(): void
     {
@@ -50,10 +49,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $handler = self::getContainer()->get(GetMachineHandler::class);
         \assert($handler instanceof GetMachineHandler);
         $this->handler = $handler;
-
-        $mockHandler = self::getContainer()->get(MockHandler::class);
-        \assert($mockHandler instanceof MockHandler);
-        $this->mockHandler = $mockHandler;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -66,17 +61,27 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $this->machineProviderStore = $machineProviderStore;
+
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
+        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
+        \assert($machineNameFactory instanceof MachineNameFactory);
+        $this->machineNameFactory = $machineNameFactory;
     }
 
     /**
+     * @param DropletEntity[] $getAllOutcome
+     *
      * @dataProvider invokeSuccessDataProvider
      */
     public function testInvokeSuccess(
-        ResponseInterface $apiResponse,
+        array $getAllOutcome,
         Machine $machine,
         Machine $expectedMachine,
     ): void {
-        $this->mockHandler->append($apiResponse);
+        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $getAllOutcome);
 
         $this->machineStore->store($machine);
 
@@ -145,7 +150,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         return [
             'updated within initial remote id and initial remote state' => [
-                'apiResponse' => HttpResponseFactory::fromDropletEntityCollection([$createdDropletEntity]),
+                'getAllOutcome' => [$createdDropletEntity],
                 'machine' => new Machine(self::MACHINE_ID),
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -153,7 +158,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'updated within initial ip addresses' => [
-                'apiResponse' => HttpResponseFactory::fromDropletEntityCollection([$upNewDropletEntity]),
+                'getAllOutcome' => [$upNewDropletEntity],
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_UP_STARTED),
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -162,7 +167,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'updated within active remote state' => [
-                'apiResponse' => HttpResponseFactory::fromDropletEntityCollection([$upActiveDropletEntity]),
+                'getAllOutcome' => [$upActiveDropletEntity],
                 'machine' => new Machine(
                     self::MACHINE_ID,
                     Machine::STATE_UP_STARTED,
@@ -177,21 +182,53 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         ];
     }
 
-    /**
-     * @dataProvider invokeThrowsExceptionDataProvider
-     */
-    public function testInvokeThrowsException(
-        ?ResponseInterface $httpFixture,
-        Machine $machine,
-        MachineProvider $machineProvider,
-        \Exception $expectedException
-    ): void {
-        if ($httpFixture instanceof ResponseInterface) {
-            $this->mockHandler->append($httpFixture);
-        }
+    public function testInvokeUnsupportedProvider(): void
+    {
+        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
+        $invalidProvider = 'invalid';
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        ObjectReflector::setProperty(
+            $machineProvider,
+            MachineProvider::class,
+            'provider',
+            $invalidProvider
+        );
 
         $this->machineStore->store($machine);
         $this->machineProviderStore->store($machineProvider);
+
+        $message = new GetMachine('id0', $machine->getId());
+        $machineState = $machine->getState();
+
+        $unsupportedProviderException = new UnsupportedProviderException($invalidProvider);
+        $expectedException = new UnrecoverableMessageHandlingException(
+            $unsupportedProviderException->getMessage(),
+            $unsupportedProviderException->getCode(),
+            $unsupportedProviderException
+        );
+
+        try {
+            ($this->handler)($message);
+            $this->fail($expectedException::class . ' not thrown');
+        } catch (\Exception $exception) {
+            self::assertEquals($expectedException, $exception);
+        }
+
+        self::assertSame($machineState, $machine->getState());
+    }
+
+    /**
+     * @dataProvider invokeThrowsExceptionDataProvider
+     */
+    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
+    {
+        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
+        $this->machineStore->store($machine);
+
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $this->machineProviderStore->store($machineProvider);
+
+        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
@@ -211,30 +248,26 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-
+        $http401Exception = new RuntimeException('Unauthorized', 401);
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
             MachineActionInterface::ACTION_GET,
-            new RuntimeException('Unauthorized', 401)
+            $http401Exception
         );
 
-        $invalidProvider = 'invalid';
-        $unsupportedProviderException = new UnsupportedProviderException($invalidProvider);
-
+        $http404Exception = new ResourceNotFoundException('Not Found', 404);
         $unknownRemoteMachineException = new UnknownRemoteMachineException(
             ProviderInterface::NAME_DIGITALOCEAN,
             self::MACHINE_ID,
             MachineActionInterface::ACTION_GET,
-            new ResourceNotFoundException('Not Found', 404),
+            $http404Exception,
         );
+
+        $http503Exception = new RuntimeException('Service Unavailable', 503);
 
         return [
             'HTTP 401' => [
-                'httpFixture' => new Response(401),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http401Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $authenticationException->getMessage(),
                     $authenticationException->getCode(),
@@ -242,9 +275,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'HTTP 404' => [
-                'httpFixture' => new Response(404),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http404Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $unknownRemoteMachineException->getMessage(),
                     $unknownRemoteMachineException->getCode(),
@@ -252,35 +283,11 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'HTTP 503' => [
-                'httpFixture' => new Response(503),
-                'machine' => $machine,
-                'machineProvider' => $machineProvider,
+                'vendorException' => $http503Exception,
                 'expectedException' => new HttpException(
-                    $machine->getId(),
+                    self::MACHINE_ID,
                     MachineActionInterface::ACTION_GET,
-                    new RuntimeException('Service Unavailable', 503)
-                ),
-            ],
-            'Unsupported provider' => [
-                'httpFixture' => null,
-                'machine' => $machine,
-                'machineProvider' => (function () {
-                    $invalidProvider = 'invalid';
-
-                    $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-                    ObjectReflector::setProperty(
-                        $machineProvider,
-                        MachineProvider::class,
-                        'provider',
-                        $invalidProvider
-                    );
-
-                    return $machineProvider;
-                })(),
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    $unsupportedProviderException->getMessage(),
-                    $unsupportedProviderException->getCode(),
-                    $unsupportedProviderException
+                    $http503Exception
                 ),
             ],
         ];
