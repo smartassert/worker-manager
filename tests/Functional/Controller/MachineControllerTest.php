@@ -70,7 +70,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertQueueIsEmpty();
 
-        $response = $this->makeCreateRequest();
+        $response = $this->makeRequest('POST', 'valid-token');
 
         self::assertSame(202, $response->getStatusCode());
         self::assertInstanceOf(Response::class, $response);
@@ -116,7 +116,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeCreateRequest();
+        $response = $this->makeRequest('POST', 'valid-token');
 
         $this->assertBadRequestResponse(
             [
@@ -130,7 +130,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
     public function testStatusMachineNotFound(): void
     {
-        $response = $this->makeStatusRequest();
+        $response = $this->makeRequest('GET', 'valid-token');
 
         self::assertInstanceOf(JsonResponse::class, $response);
         self::assertJsonStringEqualsJsonString(
@@ -155,7 +155,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeStatusRequest();
+        $response = $this->makeRequest('GET', 'valid-token');
 
         self::assertInstanceOf(JsonResponse::class, $response);
         self::assertJsonStringEqualsJsonString(
@@ -190,7 +190,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
             )
         );
 
-        $response = $this->makeStatusRequest();
+        $response = $this->makeRequest('GET', 'valid-token');
 
         self::assertInstanceOf(JsonResponse::class, $response);
         self::assertJsonStringEqualsJsonString(
@@ -218,7 +218,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeDeleteRequest();
+        $response = $this->makeRequest('DELETE', 'valid-token');
         self::assertSame(202, $response->getStatusCode());
 
         $this->messengerAsserter->assertQueueCount(1);
@@ -232,7 +232,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     {
         self::assertNull($this->entityManager->find(Machine::class, self::MACHINE_ID));
 
-        $response = $this->makeDeleteRequest();
+        $response = $this->makeRequest('DELETE', 'valid-token');
         self::assertSame(202, $response->getStatusCode());
 
         self::assertInstanceOf(Machine::class, $this->entityManager->find(Machine::class, self::MACHINE_ID));
@@ -253,36 +253,13 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         self::assertSame($expectedResponseBody, json_decode((string) $response->getContent(), true));
     }
 
-    private function makeCreateRequest(): Response
-    {
-        $this->client->request(
-            method: 'POST',
-            uri: $this->machineUrl,
-            server: [
-                'HTTP_AUTHORIZATION' => 'Bearer valid-token',
-            ],
-        );
-
-        return $this->client->getResponse();
-    }
-
-    private function makeStatusRequest(): Response
-    {
-        return $this->makeMachineRequest('GET');
-    }
-
-    private function makeDeleteRequest(): Response
-    {
-        return $this->makeMachineRequest('DELETE');
-    }
-
-    private function makeMachineRequest(string $method): Response
+    private function makeRequest(string $method, string $token): Response
     {
         $this->client->request(
             method: $method,
             uri: $this->machineUrl,
             server: [
-                'HTTP_AUTHORIZATION' => 'Bearer valid-token',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
             ],
         );
 
