@@ -22,10 +22,10 @@ class UnauthorizedUserTest extends AbstractIntegrationTest
     /**
      * @dataProvider requestAsUnauthorizedUserDataProvider
      */
-    public function testRequestAsUnauthorizedUser(string $method): void
+    public function testRequestAsUnauthorizedUser(string $method, ?string $token): void
     {
         try {
-            $response = $this->httpClient->request($method, $this->machineUrl);
+            $response = $this->makeRequest($method, $this->machineUrl, $token);
             self::fail(ClientException::class . ' not thrown');
         } catch (ClientException $e) {
             $response = $e->getResponse();
@@ -35,19 +35,34 @@ class UnauthorizedUserTest extends AbstractIntegrationTest
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<string, array<string, ?string>>
      */
     public function requestAsUnauthorizedUserDataProvider(): array
     {
         return [
-            'create' => [
+            'create, invalid token' => [
                 'method' => 'POST',
+                'token' => 'invalid-token',
             ],
-            'status' => [
+            'status, invalid token' => [
                 'method' => 'GET',
+                'token' => 'invalid-token',
             ],
-            'delete' => [
+            'delete, invalid token' => [
                 'method' => 'DELETE',
+                'token' => 'invalid-token',
+            ],
+            'create, no token' => [
+                'method' => 'POST',
+                'token' => null,
+            ],
+            'status, no token' => [
+                'method' => 'GET',
+                'token' => null,
+            ],
+            'delete, no token' => [
+                'method' => 'DELETE',
+                'token' => null,
             ],
         ];
     }

@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Controller\MachineController;
 use App\Entity\Machine as MachineEntity;
 use App\Tests\Model\Machine;
+use Psr\Http\Message\ResponseInterface;
 
 class MachineCreationTest extends AbstractIntegrationTest
 {
@@ -25,7 +26,7 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     public function testCreateRemoteMachine(): void
     {
-        $response = $this->httpClient->post($this->machineUrl);
+        $response = $this->makeMachineRequest('POST');
         self::assertSame(202, $response->getStatusCode());
 
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
@@ -35,7 +36,7 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     public function testStatusForMissingLocalMachine(): void
     {
-        $response = $this->httpClient->post($this->machineUrl);
+        $response = $this->makeMachineRequest('POST');
         self::assertSame(202, $response->getStatusCode());
 
         sleep(3);
@@ -45,7 +46,7 @@ class MachineCreationTest extends AbstractIntegrationTest
             'DELETE From machine;'
         ));
 
-        $response = $this->httpClient->get($this->machineUrl);
+        $response = $this->makeMachineRequest('GET');
         self::assertSame(200, $response->getStatusCode());
 
         $expectedStates = [
@@ -63,6 +64,11 @@ class MachineCreationTest extends AbstractIntegrationTest
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
         $this->deleteMachine();
         $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
+    }
+
+    protected function makeMachineRequest(string $method): ResponseInterface
+    {
+        return parent::makeRequest($method, $this->machineUrl, 'valid-token');
     }
 
     /**
@@ -88,7 +94,8 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     private function getMachine(): Machine
     {
-        $response = $this->httpClient->get($this->machineUrl);
+        $response = $this->makeMachineRequest('GET');
+
         self::assertSame(200, $response->getStatusCode());
 
         $data = json_decode($response->getBody()->getContents(), true);
@@ -99,7 +106,7 @@ class MachineCreationTest extends AbstractIntegrationTest
 
     private function deleteMachine(): void
     {
-        $response = $this->httpClient->delete($this->machineUrl);
+        $response = $this->makeMachineRequest('DELETE');
         self::assertSame(202, $response->getStatusCode());
     }
 

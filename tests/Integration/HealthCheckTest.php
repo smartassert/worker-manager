@@ -8,7 +8,7 @@ class HealthCheckTest extends AbstractIntegrationTest
 {
     public function testHealthCheck(): void
     {
-        $response = $this->httpClient->get('/health-check');
+        $response = $this->makeRequest('GET', '/health-check');
 
         self::assertSame(
             [
