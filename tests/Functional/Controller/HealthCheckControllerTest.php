@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Controller;
 
-use App\Controller\HealthCheckController;
 use App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
@@ -19,12 +18,15 @@ class HealthCheckControllerTest extends AbstractBaseFunctionalTest
             $dropletApiProxy->withGetByIdCall(DigitalOceanMachineProviderInspector::DROPLET_ID, new DropletEntity());
         }
 
-        $this->client->request('GET', HealthCheckController::ROUTE);
+        $healthCheckUrl = self::getContainer()->getParameter('health_check_bundle_route_path');
+        self::assertIsString($healthCheckUrl);
+
+        $this->client->request('GET', $healthCheckUrl);
 
         $response = $this->client->getResponse();
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame(
+        self::assertEquals(
             [
                 'database_connection' => true,
                 'database_entities' => true,

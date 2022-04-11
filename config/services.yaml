@@ -89,25 +89,13 @@ services:
             $factories:
                 - '@App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory'
 
-    SmartAssert\DoctrineInspectors\EntityMappingInspector:
-        arguments:
-            $entityClassNames:
-                - 'App\Entity\CreateFailure'
-                - 'App\Entity\Machine'
-                - 'App\Entity\MachineProvider'
+    App\Services\ServiceStatusInspector\MessageQueueInspector:
+        tags:
+            - { name: 'health_check_bundle.component_inspector', key: 'message_queue' }
 
-    SmartAssert\DoctrineInspectors\QueryInspector:
-
-    SmartAssert\ServiceStatusInspector\ServiceStatusInspectorInterface:
-        class: SmartAssert\ServiceStatusInspector\ServiceStatusInspector
-        arguments:
-            $componentInspectors:
-                database_connection: '@SmartAssert\DoctrineInspectors\QueryInspector'
-                database_entities: '@SmartAssert\DoctrineInspectors\EntityMappingInspector'
-                message_queue: '@App\Services\ServiceStatusInspector\MessageQueueInspector'
-                machine_provider_digital_ocean: '@App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector'
-            $exceptionHandlers:
-                - '@SmartAssert\InvokableLogger\ExceptionLogger'
+    App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector:
+        tags:
+            - { name: 'health_check_bundle.component_inspector', key: 'machine_provider_digital_ocean' }
 
     SmartAssert\DigitalOceanDropletConfiguration\Factory:
         arguments:
@@ -120,8 +108,6 @@ services:
 
     App\Services\RequestIdFactoryInterface:
         class: App\Services\RequestIdFactory
-
-    SmartAssert\InvokableLogger\ExceptionLogger:
 
     App\Services\MachineRequestDispatcher:
         arguments:

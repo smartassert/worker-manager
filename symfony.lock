@@ -282,13 +282,16 @@
         "version": "0.1"
     },
     "smartassert/doctrine-inspectors": {
-        "version": "0.1"
+        "version": "1.2"
     },
-    "smartassert/invokable-exception-logger": {
-        "version": "0.1"
+    "smartassert/health-check-bundle": {
+        "version": "0.2"
+    },
+    "smartassert/invokable-logger": {
+        "version": "0.3"
     },
     "smartassert/service-status-inspector": {
-        "version": "0.1"
+        "version": "3.0"
     },
     "smartassert/users-client": {
         "version": "0.2"
