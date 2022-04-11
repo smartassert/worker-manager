@@ -10,7 +10,7 @@ class HealthCheckTest extends AbstractIntegrationTest
     {
         $response = $this->makeRequest('GET', '/health-check');
 
-        self::assertSame(
+        self::assertEquals(
             [
                 'database_connection' => true,
                 'database_entities' => true,
