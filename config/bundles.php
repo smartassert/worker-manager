@@ -9,4 +9,5 @@ return [
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     SmartAssert\UsersSecurityBundle\UsersSecurityBundle::class => ['all' => true],
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
+    SmartAssert\HealthCheckBundle\HealthCheckBundle::class => ['all' => true],
 ];

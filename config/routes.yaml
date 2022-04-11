@@ -1,3 +1,2 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+_health_check_bundle_routes:
+  resource: '@HealthCheckBundle/Resources/config/routes.yaml'
