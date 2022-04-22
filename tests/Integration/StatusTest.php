@@ -14,7 +14,7 @@ class StatusTest extends AbstractIntegrationTest
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertSame(
+        self::assertEquals(
             [
                 'version' => $expectedVersion,
                 'ready' => false,
