@@ -72,6 +72,7 @@ services:
         arguments:
             $client: '@SmartAssert\SymfonyTestClient\SymfonyClient'
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
+            $statusUrl: '%health_check_bundle_status_path%'
 
     app.tests.services.application.client.http:
         public: true
@@ -79,6 +80,7 @@ services:
         arguments:
             $client: '@SmartAssert\SymfonyTestClient\HttpClient'
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
+            $statusUrl: '%health_check_bundle_status_path%'
 
     App\Tests\Services\AuthenticationConfiguration:
         public: true

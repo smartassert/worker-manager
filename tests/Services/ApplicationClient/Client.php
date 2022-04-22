@@ -13,6 +13,7 @@ class Client
     public function __construct(
         private readonly ClientInterface $client,
         private readonly string $healthCheckUrl,
+        private readonly string $statusUrl,
     ) {
     }
 
@@ -55,6 +56,11 @@ class Client
     public function makeGetHealthCheckRequest(string $method = 'GET'): ResponseInterface
     {
         return $this->client->makeRequest($method, $this->healthCheckUrl);
+    }
+
+    public function makeGetStatusRequest(string $method = 'GET'): ResponseInterface
+    {
+        return $this->client->makeRequest($method, $this->statusUrl);
     }
 
     private function createMachineRequestUrl(string $machineId): string
