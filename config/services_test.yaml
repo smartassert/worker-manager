@@ -29,3 +29,33 @@ services:
     DigitalOceanV2\Api\Droplet:
         public: true
         alias: App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy
+
+    SmartAssert\SymfonyTestClient\SymfonyClient:
+
+    app.tests.integration.http.client:
+        public: true
+        class: GuzzleHttp\Client
+        arguments:
+            $config:
+                base_uri: "https://localhost/"
+                verify: false
+
+    SmartAssert\SymfonyTestClient\HttpClient:
+        arguments:
+            $httpClient: '@app.tests.integration.http.client'
+
+    App\Tests\Services\ApplicationClient\ClientFactory: ~
+
+    app.tests.services.application.client.symfony:
+        public: true
+        class: App\Tests\Services\ApplicationClient\Client
+        factory: ['@App\Tests\Services\ApplicationClient\ClientFactory', 'create']
+        arguments:
+            $client: '@SmartAssert\SymfonyTestClient\SymfonyClient'
+
+    app.tests.services.application.client.http:
+        public: true
+        class: App\Tests\Services\ApplicationClient\Client
+        factory: ['@App\Tests\Services\ApplicationClient\ClientFactory', 'create']
+        arguments:
+            $client: '@SmartAssert\SymfonyTestClient\HttpClient'
