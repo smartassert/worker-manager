@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Model;
 
 use App\Entity\Machine as MachineEntity;
+use Symfony\Component\Uid\Ulid;
 
 class Machine
 {
@@ -14,6 +15,11 @@ class Machine
     public function __construct(
         private array $data,
     ) {
+    }
+
+    public static function createId(): string
+    {
+        return (string) new Ulid();
     }
 
     public function getId(): string

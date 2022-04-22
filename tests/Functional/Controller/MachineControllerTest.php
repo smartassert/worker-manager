@@ -66,34 +66,6 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @dataProvider requestAsUnauthorizedUserDataProvider
-     */
-    public function testRequestAsUnauthorizedUser(string $method): void
-    {
-        $response = $this->makeRequest($method, 'invalid-token');
-
-        self::assertSame(401, $response->getStatusCode());
-    }
-
-    /**
-     * @return array<string, array<string, string>>
-     */
-    public function requestAsUnauthorizedUserDataProvider(): array
-    {
-        return [
-            'create' => [
-                'method' => 'POST',
-            ],
-            'status' => [
-                'method' => 'GET',
-            ],
-            'delete' => [
-                'method' => 'DELETE',
-            ],
-        ];
-    }
-
-    /**
      * @dataProvider createSuccessDataProvider
      */
     public function testCreateSuccess(?Machine $existingMachine): void
