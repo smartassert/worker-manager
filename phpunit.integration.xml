@@ -27,7 +27,4 @@
       <directory>tests/Integration</directory>
     </testsuite>
   </testsuites>
-  <extensions>
-    <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
-  </extensions>
 </phpunit>

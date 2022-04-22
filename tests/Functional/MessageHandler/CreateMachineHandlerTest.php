@@ -23,6 +23,7 @@ use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -51,19 +52,25 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($handler instanceof CreateMachineHandler);
         $this->handler = $handler;
 
+        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
+        \assert($dropletApiProxy instanceof DropletApiProxy);
+        $this->dropletApiProxy = $dropletApiProxy;
+
         $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
-        $machineStore->store($this->machine);
 
         $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
         \assert($machineProviderStore instanceof MachineProviderStore);
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $machineProviderStore->store($machineProvider);
 
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
+
+        $machineStore->store($this->machine);
+        $machineProviderStore->store($machineProvider);
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);

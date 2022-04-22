@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Services\Entity\Store;
 use App\Entity\Machine;
 use App\Services\Entity\Store\MachineStore;
 use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Services\EntityRemover;
 
 class MachineStoreTest extends AbstractEntityTest
 {
@@ -19,6 +20,11 @@ class MachineStoreTest extends AbstractEntityTest
         $store = self::getContainer()->get(MachineStore::class);
         \assert($store instanceof MachineStore);
         $this->store = $store;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
     }
 
     public function testStore(): void

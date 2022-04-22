@@ -30,7 +30,6 @@
         "toin0u/digitalocean-v2": "^4.5"
     },
     "require-dev": {
-        "dama/doctrine-test-bundle": "^6.7",
         "mockery/mockery": "^1.4",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.4",

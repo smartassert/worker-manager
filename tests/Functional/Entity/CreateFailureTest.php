@@ -6,10 +6,21 @@ namespace App\Tests\Functional\Entity;
 
 use App\Entity\CreateFailure;
 use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Services\EntityRemover;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateFailureTest extends AbstractEntityTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(CreateFailure::class);
+        }
+    }
+
     public function testEntityMapping(): void
     {
         $repository = $this->entityManager->getRepository(CreateFailure::class);

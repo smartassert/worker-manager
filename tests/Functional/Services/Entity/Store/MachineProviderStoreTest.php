@@ -8,6 +8,7 @@ use App\Entity\MachineProvider;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Services\EntityRemover;
 use webignition\ObjectReflector\ObjectReflector;
 
 class MachineProviderStoreTest extends AbstractEntityTest
@@ -21,6 +22,11 @@ class MachineProviderStoreTest extends AbstractEntityTest
         $store = self::getContainer()->get(MachineProviderStore::class);
         \assert($store instanceof MachineProviderStore);
         $this->store = $store;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(MachineProvider::class);
+        }
     }
 
     public function testStore(): void

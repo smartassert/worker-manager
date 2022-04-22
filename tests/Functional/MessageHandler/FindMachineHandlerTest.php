@@ -22,6 +22,7 @@ use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -70,6 +71,11 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineNameFactory = $machineNameFactory;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
     }
 
     /**

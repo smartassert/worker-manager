@@ -18,6 +18,7 @@ use App\Model\ProviderInterface;
 use App\Services\Entity\Store\CreateFailureStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Services\EntityRemover;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -43,6 +44,12 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $machineStore = self::getContainer()->get(MachineStore::class);
         \assert($machineStore instanceof MachineStore);
         $this->machineStore = $machineStore;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(CreateFailure::class);
+        }
 
         $machineStore->store(new Machine(self::MACHINE_ID));
     }

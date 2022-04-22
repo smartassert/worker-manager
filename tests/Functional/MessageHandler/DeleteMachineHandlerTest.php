@@ -18,6 +18,7 @@ use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -44,13 +45,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($handler instanceof DeleteMachineHandler);
         $this->handler = $handler;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-
-        $this->machine = new Machine(self::MACHINE_ID);
-        $this->machine->setState(Machine::STATE_DELETE_RECEIVED);
-        $machineStore->store($this->machine);
-
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
@@ -62,6 +56,18 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineNameFactory = $machineNameFactory;
+
+        $machineStore = self::getContainer()->get(MachineStore::class);
+        \assert($machineStore instanceof MachineStore);
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
+
+        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machine->setState(Machine::STATE_DELETE_RECEIVED);
+        $machineStore->store($this->machine);
     }
 
     public function testInvokeSuccess(): void
