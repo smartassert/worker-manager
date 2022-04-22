@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Controller;
 
-use App\Controller\StatusController;
 use App\Tests\AbstractBaseFunctionalTest;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -17,7 +16,10 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
      */
     public function testGet(array $expectedResponseData): void
     {
-        $this->client->request('GET', StatusController::ROUTE);
+        $statusUrl = self::getContainer()->getParameter('health_check_bundle_status_path');
+        self::assertIsString($statusUrl);
+
+        $this->client->request('GET', $statusUrl);
 
         $response = $this->client->getResponse();
 
@@ -33,10 +35,7 @@ class StatusControllerTest extends AbstractBaseFunctionalTest
             $expectedResponseData['version']
         );
 
-        self::assertSame(
-            $expectedResponseData,
-            json_decode((string) $response->getContent(), true)
-        );
+        self::assertEquals($expectedResponseData, json_decode((string) $response->getContent(), true));
     }
 
     /**
