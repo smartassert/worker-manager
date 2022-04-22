@@ -18,7 +18,7 @@ class HealthCheckControllerTest extends AbstractBaseFunctionalTest
             $dropletApiProxy->withGetByIdCall(DigitalOceanMachineProviderInspector::DROPLET_ID, new DropletEntity());
         }
 
-        $healthCheckUrl = self::getContainer()->getParameter('health_check_bundle_route_path');
+        $healthCheckUrl = self::getContainer()->getParameter('health_check_bundle_health_check_path');
         self::assertIsString($healthCheckUrl);
 
         $this->client->request('GET', $healthCheckUrl);
