@@ -12,6 +12,7 @@ class Client
 {
     public function __construct(
         private readonly ClientInterface $client,
+        private readonly string $healthCheckUrl,
     ) {
     }
 
@@ -49,6 +50,11 @@ class Client
             $this->createMachineRequestUrl($machineId),
             $this->createAuthorizationHeader($authenticationToken)
         );
+    }
+
+    public function makeGetHealthCheckRequest(string $method = 'GET'): ResponseInterface
+    {
+        return $this->client->makeRequest($method, $this->healthCheckUrl);
     }
 
     private function createMachineRequestUrl(string $machineId): string
