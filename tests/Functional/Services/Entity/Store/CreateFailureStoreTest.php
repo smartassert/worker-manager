@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Services\Entity\Store;
 use App\Entity\CreateFailure;
 use App\Services\Entity\Store\CreateFailureStore;
 use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Services\EntityRemover;
 
 class CreateFailureStoreTest extends AbstractEntityTest
 {
@@ -19,6 +20,11 @@ class CreateFailureStoreTest extends AbstractEntityTest
         $store = self::getContainer()->get(CreateFailureStore::class);
         \assert($store instanceof CreateFailureStore);
         $this->store = $store;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(CreateFailure::class);
+        }
     }
 
     public function testStore(): void

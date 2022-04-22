@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Controller\MachineController;
+use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -14,6 +15,7 @@ use App\Services\Entity\Store\MachineStore;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,6 +57,12 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
             self::MACHINE_ID,
             MachineController::PATH_MACHINE
         );
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(CreateFailure::class);
+        }
     }
 
     /**

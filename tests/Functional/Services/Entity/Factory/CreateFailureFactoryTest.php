@@ -22,6 +22,7 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
@@ -36,6 +37,11 @@ class CreateFailureFactoryTest extends AbstractEntityTest
         $factory = self::getContainer()->get(CreateFailureFactory::class);
         \assert($factory instanceof CreateFailureFactory);
         $this->factory = $factory;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(CreateFailure::class);
+        }
     }
 
     /**
