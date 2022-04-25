@@ -8,7 +8,7 @@ abstract class AbstractStatusTest extends AbstractApplicationTest
 {
     public function testGetStatus(): void
     {
-        $this->responseAsserter->assertMachineStatusResponse(
+        $this->responseAsserter->assertStatusResponse(
             $this->applicationClient->makeGetStatusRequest(),
             $this->getExpectedVersion(),
             $this->getExpectedReadyValue()

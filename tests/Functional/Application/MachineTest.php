@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\Controller;
+namespace App\Tests\Functional\Application;
 
-use App\Controller\MachineController;
-use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -13,23 +11,21 @@ use App\Model\MachineActionInterface;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\RequestIdFactoryInterface;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\Application\AbstractMachineTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
-use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
-class MachineControllerTest extends AbstractBaseFunctionalTest
+class MachineTest extends AbstractMachineTest
 {
+    use GetApplicationClientTrait;
+
     private const MACHINE_ID = 'machine id';
 
     private EntityManagerInterface $entityManager;
     private MessengerAsserter $messengerAsserter;
     private TestMachineRequestFactory $machineRequestFactory;
-    private string $machineUrl;
     private SequentialRequestIdFactory $requestIdFactory;
 
     protected function setUp(): void
@@ -51,18 +47,6 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
-
-        $this->machineUrl = str_replace(
-            MachineController::PATH_COMPONENT_ID,
-            self::MACHINE_ID,
-            MachineController::PATH_MACHINE
-        );
-
-        $entityRemover = self::getContainer()->get(EntityRemover::class);
-        if ($entityRemover instanceof EntityRemover) {
-            $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(CreateFailure::class);
-        }
     }
 
     /**
@@ -78,20 +62,17 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $this->messengerAsserter->assertQueueIsEmpty();
 
-        $response = $this->makeRequest('POST', 'valid-token');
+        $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
         self::assertSame(202, $response->getStatusCode());
-        self::assertInstanceOf(Response::class, $response);
 
         $machine = $this->entityManager->find(Machine::class, self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
-        \assert($machine instanceof Machine);
         self::assertSame(self::MACHINE_ID, $machine->getId());
 
         $machineProvider = $this->entityManager->find(MachineProvider::class, self::MACHINE_ID);
         self::assertInstanceOf(MachineProvider::class, $machineProvider);
         self::assertSame(self::MACHINE_ID, $machineProvider->getId());
-        \assert($machineProvider instanceof MachineProvider);
 
         $this->messengerAsserter->assertQueueCount(1);
 
@@ -124,30 +105,24 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeRequest('POST', 'valid-token');
+        $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $this->assertBadRequestResponse(
-            [
-                'type' => 'machine-create-request',
-                'message' => 'id taken',
-                'code' => 100,
-            ],
-            $response
-        );
+        $this->responseAsserter->assertMachineCreateBadRequestResponse($response, [
+            'type' => 'machine-create-request',
+            'message' => 'id taken',
+            'code' => 100,
+        ]);
     }
 
     public function testStatusMachineNotFound(): void
     {
-        $response = $this->makeRequest('GET', 'valid-token');
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        self::assertInstanceOf(JsonResponse::class, $response);
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'state' => Machine::STATE_FIND_RECEIVED,
-                'ip_addresses' => [],
-            ]),
-            (string) $response->getContent()
+        $this->responseAsserter->assertMachineStatusResponse(
+            $response,
+            self::MACHINE_ID,
+            Machine::STATE_FIND_RECEIVED,
+            []
         );
 
         $this->messengerAsserter->assertQueueCount(1);
@@ -163,16 +138,13 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeRequest('GET', 'valid-token');
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        self::assertInstanceOf(JsonResponse::class, $response);
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'state' => Machine::STATE_CREATE_RECEIVED,
-                'ip_addresses' => [],
-            ]),
-            (string) $response->getContent()
+        $this->responseAsserter->assertMachineStatusResponse(
+            $response,
+            self::MACHINE_ID,
+            Machine::STATE_CREATE_RECEIVED,
+            []
         );
 
         $this->messengerAsserter->assertQueueIsEmpty();
@@ -198,23 +170,20 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
             )
         );
 
-        $response = $this->makeRequest('GET', 'valid-token');
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        self::assertInstanceOf(JsonResponse::class, $response);
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'state' => Machine::STATE_CREATE_FAILED,
-                'ip_addresses' => [],
-                'create_failure' => [
-                    'code' => 2,
-                    'reason' => 'api limit exceeded',
-                    'context' => [
-                        'reset-timestamp' => 123,
-                    ],
+        $this->responseAsserter->assertMachineStatusResponse(
+            $response,
+            self::MACHINE_ID,
+            Machine::STATE_CREATE_FAILED,
+            [],
+            [
+                'code' => 2,
+                'reason' => 'api limit exceeded',
+                'context' => [
+                    'reset-timestamp' => 123,
                 ],
-            ]),
-            (string) $response->getContent()
+            ]
         );
 
         $this->messengerAsserter->assertQueueIsEmpty();
@@ -226,8 +195,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         \assert($machineStore instanceof MachineStore);
         $machineStore->store(new Machine(self::MACHINE_ID));
 
-        $response = $this->makeRequest('DELETE', 'valid-token');
-        self::assertSame(202, $response->getStatusCode());
+        $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
+        $this->responseAsserter->assertMachineDeleteResponse($response);
 
         $this->messengerAsserter->assertQueueCount(1);
 
@@ -240,8 +209,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
     {
         self::assertNull($this->entityManager->find(Machine::class, self::MACHINE_ID));
 
-        $response = $this->makeRequest('DELETE', 'valid-token');
-        self::assertSame(202, $response->getStatusCode());
+        $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
+        $this->responseAsserter->assertMachineDeleteResponse($response);
 
         self::assertInstanceOf(Machine::class, $this->entityManager->find(Machine::class, self::MACHINE_ID));
         $this->messengerAsserter->assertQueueCount(1);
@@ -249,28 +218,5 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $this->requestIdFactory->reset();
         $expectedMessage = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
         $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
-    }
-
-    /**
-     * @param array<mixed> $expectedResponseBody
-     */
-    private function assertBadRequestResponse(array $expectedResponseBody, Response $response): void
-    {
-        self::assertSame(400, $response->getStatusCode());
-        self::assertInstanceOf(JsonResponse::class, $response);
-        self::assertSame($expectedResponseBody, json_decode((string) $response->getContent(), true));
-    }
-
-    private function makeRequest(string $method, string $token): Response
-    {
-        $this->client->request(
-            method: $method,
-            uri: $this->machineUrl,
-            server: [
-                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
-            ],
-        );
-
-        return $this->client->getResponse();
     }
 }
