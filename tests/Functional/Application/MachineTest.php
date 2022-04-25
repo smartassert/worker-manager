@@ -63,8 +63,7 @@ class MachineTest extends AbstractMachineTest
         $this->messengerAsserter->assertQueueIsEmpty();
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
-
-        self::assertSame(202, $response->getStatusCode());
+        $this->responseAsserter->assertMachineCreateResponse($response);
 
         $machine = $this->entityManager->find(Machine::class, self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);

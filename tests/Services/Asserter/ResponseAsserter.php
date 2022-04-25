@@ -86,6 +86,11 @@ class ResponseAsserter
         Assert::assertSame(202, $response->getStatusCode());
     }
 
+    public function assertMachineCreateResponse(ResponseInterface $response): void
+    {
+        Assert::assertSame(202, $response->getStatusCode());
+    }
+
     /**
      * @param array<mixed> $expectedResponseData
      */
