@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration;
+namespace App\Tests\Functional\Application;
 
 use App\Tests\Application\AbstractStatusTest;
 
@@ -12,11 +12,11 @@ class StatusTest extends AbstractStatusTest
 
     protected function getExpectedReadyValue(): bool
     {
-        return false;
+        return true;
     }
 
     protected function getExpectedVersion(): string
     {
-        return $_SERVER['EXPECTED_VERSION'] ?? 'docker_compose_version';
+        return 'dev';
     }
 }

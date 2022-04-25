@@ -281,6 +281,9 @@
     "smartassert/service-status-inspector": {
         "version": "3.0"
     },
+    "smartassert/symfony-test-client": {
+        "version": "0.1"
+    },
     "smartassert/users-client": {
         "version": "0.2"
     },
@@ -480,6 +483,9 @@
     },
     "symfony/proxy-manager-bridge": {
         "version": "v5.2.4"
+    },
+    "symfony/psr-http-message-bridge": {
+        "version": "v2.1.2"
     },
     "symfony/routing": {
         "version": "5.1",

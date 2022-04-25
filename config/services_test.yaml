@@ -29,3 +29,67 @@ services:
     DigitalOceanV2\Api\Droplet:
         public: true
         alias: App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy
+
+    GuzzleHttp\Psr7\HttpFactory:
+
+    Psr\Http\Message\RequestFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\ResponseFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\ServerRequestFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\StreamFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\UploadedFileFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\UriFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+
+    SmartAssert\SymfonyTestClient\SymfonyClient:
+
+    app.tests.integration.http.client:
+        public: true
+        class: GuzzleHttp\Client
+        arguments:
+            $config:
+                base_uri: "http://localhost:9090/"
+
+    SmartAssert\SymfonyTestClient\HttpClient:
+        arguments:
+            $httpClient: '@app.tests.integration.http.client'
+
+    app.tests.services.application.client.symfony:
+        public: true
+        class: App\Tests\Services\ApplicationClient\Client
+        arguments:
+            $client: '@SmartAssert\SymfonyTestClient\SymfonyClient'
+            $healthCheckUrl: '%health_check_bundle_health_check_path%'
+            $statusUrl: '%health_check_bundle_status_path%'
+
+    app.tests.services.application.client.http:
+        public: true
+        class: App\Tests\Services\ApplicationClient\Client
+        arguments:
+            $client: '@SmartAssert\SymfonyTestClient\HttpClient'
+            $healthCheckUrl: '%health_check_bundle_health_check_path%'
+            $statusUrl: '%health_check_bundle_status_path%'
+
+    App\Tests\Services\AuthenticationConfiguration:
+        public: true
+        arguments:
+            $validToken: '%env(VALID_AUTHENTICATION_TOKEN)%'
+            $invalidToken: '%env(INVALID_AUTHENTICATION_TOKEN)%'
+            $headerName: !php/const SmartAssert\UsersSecurityBundle\Security\AuthorizationProperties::DEFAULT_HEADER_NAME
+            $headerValuePrefix: !php/const SmartAssert\UsersSecurityBundle\Security\AuthorizationProperties::DEFAULT_VALUE_PREFIX
+            $authenticatedUserId: '%env(AUTHENTICATED_USER_ID)%'
+
+    App\Tests\Services\Asserter\ResponseAsserter:
+        public: true
