@@ -46,7 +46,7 @@ class MachineRequestFailureHandler implements EventSubscriberInterface
         $envelope = $event->getEnvelope();
         $message = $envelope->getMessage();
 
-        if (!($message instanceof MachineRequestInterface)) {
+        if (!$message instanceof MachineRequestInterface) {
             return;
         }
 
