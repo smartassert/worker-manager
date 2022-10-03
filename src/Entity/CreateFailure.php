@@ -4,9 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class CreateFailure implements \JsonSerializable
 {
     public const CODE_UNKNOWN = 0;
@@ -33,31 +31,26 @@ class CreateFailure implements \JsonSerializable
     public const CODE_UNKNOWN_MACHINE_PROVIDER_ERROR = 7;
     public const REASON_UNKNOWN_MACHINE_PROVIDER_ERROR = 'unknown machine provider error';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=MachineIdInterface::LENGTH)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
 
     /**
-     * @ORM\Column(type="integer")
-     *
      * @var self::CODE_*
      */
+    #[ORM\Column(type: 'integer')]
     private int $code;
 
     /**
-     * @ORM\Column(type="text")
-     *
      * @var self::REASON_*
      */
+    #[ORM\Column(type: 'text')]
     private string $reason;
 
     /**
-     * @ORM\Column(type="simple_array", nullable=true)
-     *
      * @var array<string, int|string>
      */
+    #[ORM\Column(type: 'simple_array', nullable: true)]
     private array $context = [];
 
     /**

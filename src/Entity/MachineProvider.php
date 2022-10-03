@@ -5,22 +5,17 @@ namespace App\Entity;
 use App\Model\ProviderInterface;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class MachineProvider
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=MachineIdInterface::LENGTH)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     *
      * @var ProviderInterface::NAME_*
      */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $provider;
 
     /**
