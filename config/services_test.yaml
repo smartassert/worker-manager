@@ -93,6 +93,3 @@ services:
 
     App\Tests\Services\Asserter\ResponseAsserter:
         public: true
-
-    App\Services\Entity\Store\MachineProviderStore:
-        public: true
