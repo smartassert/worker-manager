@@ -216,12 +216,14 @@ class MachineTest extends AbstractMachineTest
 
     public function testDeleteLocalMachineDoesNotExist(): void
     {
-        self::assertNull($this->machineRepository->find(self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineDeleteResponse($response);
 
-        self::assertInstanceOf(Machine::class, $this->machineRepository->find(self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertInstanceOf(Machine::class, $machine);
         $this->messengerAsserter->assertQueueCount(1);
 
         $this->requestIdFactory->reset();
