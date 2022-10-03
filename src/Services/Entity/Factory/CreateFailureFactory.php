@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
+use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Store\CreateFailureStore;
 
 class CreateFailureFactory
@@ -29,12 +30,13 @@ class CreateFailureFactory
 
     public function __construct(
         private CreateFailureStore $store,
+        private readonly CreateFailureRepository $repository,
     ) {
     }
 
     public function create(string $machineId, \Throwable $throwable): CreateFailure
     {
-        $existingEntity = $this->store->find($machineId);
+        $existingEntity = $this->repository->find($machineId);
         if ($existingEntity instanceof CreateFailure) {
             return $existingEntity;
         }
