@@ -6,8 +6,8 @@ use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Model\ProviderInterface;
+use App\Repository\CreateFailureRepository;
 use App\Response\BadMachineCreateRequestResponse;
-use App\Services\Entity\Store\CreateFailureStore;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
@@ -46,7 +46,7 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
-    public function status(string $id, CreateFailureStore $createFailureStore): Response
+    public function status(string $id, CreateFailureRepository $createFailureRepository): Response
     {
         $machine = $this->machineStore->find($id);
         if (!$machine instanceof Machine) {
@@ -60,7 +60,7 @@ class MachineController
 
         $responseData = $machine->jsonSerialize();
 
-        $createFailure = $createFailureStore->find($id);
+        $createFailure = $createFailureRepository->find($id);
         if ($createFailure instanceof CreateFailure) {
             $responseData['create_failure'] = $createFailure->jsonSerialize();
         }

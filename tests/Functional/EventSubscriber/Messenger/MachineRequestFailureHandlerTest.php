@@ -15,7 +15,7 @@ use App\Message\GetMachine;
 use App\Message\RemoteMachineMessageInterface;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
-use App\Services\Entity\Store\CreateFailureStore;
+use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Store\MachineStore;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\EntityRemover;
@@ -75,10 +75,10 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         self::assertSame($expectedMachineState, $machine->getState());
 
-        $createFailureStore = self::getContainer()->get(CreateFailureStore::class);
-        \assert($createFailureStore instanceof CreateFailureStore);
+        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
+        \assert($createFailureRepository instanceof CreateFailureRepository);
 
-        self::assertEquals($expectedCreateFailure, $createFailureStore->find(self::MACHINE_ID));
+        self::assertEquals($expectedCreateFailure, $createFailureRepository->find(self::MACHINE_ID));
     }
 
     /**
