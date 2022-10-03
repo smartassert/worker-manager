@@ -3,19 +3,21 @@
 namespace App\Services\Entity\Store;
 
 use App\Entity\MachineProvider;
+use App\Repository\MachineProviderRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 class MachineProviderStore extends AbstractEntityStore
 {
-    public function find(string $machineId): ?MachineProvider
-    {
-        $entity = $this->entityManager->find(MachineProvider::class, $machineId);
-
-        return $entity instanceof MachineProvider ? $entity : null;
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        private readonly MachineProviderRepository $machineProviderRepository,
+    ) {
+        parent::__construct($entityManager);
     }
 
     public function store(MachineProvider $entity): void
     {
-        $existingEntity = $this->find($entity->getId());
+        $existingEntity = $this->machineProviderRepository->find($entity->getId());
         if ($existingEntity instanceof MachineProvider) {
             $entity = $existingEntity->merge($entity);
         }
