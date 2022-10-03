@@ -7,10 +7,11 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\Machine;
 use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineRepository;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
+use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -23,7 +24,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
     private CheckMachineIsActiveHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MachineStore $machineStore;
+    private MachineRepository $machineRepository;
+    private Machine $machine;
 
     protected function setUp(): void
     {
@@ -33,13 +35,21 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         \assert($handler instanceof CheckMachineIsActiveHandler);
         $this->handler = $handler;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machineStore = $machineStore;
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machineRepository = $machineRepository;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
+
+        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machineRepository->add($this->machine);
     }
 
     /**
@@ -49,8 +59,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeMachineIsActiveOrEnded(string $state): void
     {
-        $machine = new Machine(self::MACHINE_ID, $state);
-        $this->machineStore->store($machine);
+        $this->machine->setState($state);
+        $this->machineRepository->add($this->machine);
 
         $machineRequestFactory = new TestMachineRequestFactory(
             new MachineRequestFactory(
@@ -97,8 +107,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testHandleMachineIsPreActive(string $state): void
     {
-        $machine = new Machine(self::MACHINE_ID, $state);
-        $this->machineStore->store($machine);
+        $this->machine->setState($state);
+        $this->machineRepository->add($this->machine);
 
         $requestIdFactory = new SequentialRequestIdFactory();
         $machineRequestFactory = new TestMachineRequestFactory(
