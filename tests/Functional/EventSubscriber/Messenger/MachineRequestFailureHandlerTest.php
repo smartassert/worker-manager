@@ -17,7 +17,6 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Store\MachineStore;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\EntityRemover;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -52,9 +51,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             $entityRemover->removeAllForEntity(CreateFailure::class);
         }
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $machineStore->store(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID));
     }
 
     /**
