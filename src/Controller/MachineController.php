@@ -32,13 +32,8 @@ class MachineController
     public function create(string $id, MachineProviderStore $machineProviderStore): Response
     {
         $machine = $this->machineStore->find($id);
-        if ($machine instanceof Machine) {
-            if (in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
-                $machine->reset();
-                $this->machineStore->persist($machine);
-            } else {
-                return BadMachineCreateRequestResponse::createIdTakenResponse();
-            }
+        if ($machine instanceof Machine && !in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
+            return BadMachineCreateRequestResponse::createIdTakenResponse();
         }
 
         $this->machineStore->store(new Machine($id));
