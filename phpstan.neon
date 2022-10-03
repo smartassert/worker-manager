@@ -6,9 +6,3 @@ parameters:
     - src
     - tests
   inferPrivatePropertyTypeFromConstructor: true
-  ignoreErrors:
-    -
-      # @todo: fix in #289
-      # Call to static method PHPUnit\Framework\Assert::assertInstanceOf() with 'App\\Entity\\Machine' and null will always evaluate to false.
-      message: "#Call to static method .* with '.*Machine' and null will always evaluate to false#"
-      path: tests/Functional/Application/MachineTest.php

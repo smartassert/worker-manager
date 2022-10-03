@@ -8,6 +8,7 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
+use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\RequestIdFactoryInterface;
@@ -15,7 +16,6 @@ use App\Tests\Application\AbstractMachineTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
-use Doctrine\ORM\EntityManagerInterface;
 
 class MachineTest extends AbstractMachineTest
 {
@@ -23,19 +23,15 @@ class MachineTest extends AbstractMachineTest
 
     private const MACHINE_ID = 'machine id';
 
-    private EntityManagerInterface $entityManager;
     private MessengerAsserter $messengerAsserter;
     private TestMachineRequestFactory $machineRequestFactory;
     private SequentialRequestIdFactory $requestIdFactory;
     private MachineRepository $machineRepository;
+    private MachineProviderRepository $machineProviderRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        \assert($entityManager instanceof EntityManagerInterface);
-        $this->entityManager = $entityManager;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -52,6 +48,10 @@ class MachineTest extends AbstractMachineTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
+
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderRepository;
     }
 
     /**
@@ -68,7 +68,7 @@ class MachineTest extends AbstractMachineTest
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineCreateResponse($response);
 
-        $machine = $this->entityManager->find(Machine::class, self::MACHINE_ID);
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
         self::assertSame(self::MACHINE_ID, $machine->getId());
         self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
@@ -77,7 +77,7 @@ class MachineTest extends AbstractMachineTest
             self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
         }
 
-        $machineProvider = $this->entityManager->find(MachineProvider::class, self::MACHINE_ID);
+        $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(MachineProvider::class, $machineProvider);
         self::assertSame(self::MACHINE_ID, $machineProvider->getId());
 
@@ -216,12 +216,14 @@ class MachineTest extends AbstractMachineTest
 
     public function testDeleteLocalMachineDoesNotExist(): void
     {
-        self::assertNull($this->entityManager->find(Machine::class, self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineDeleteResponse($response);
 
-        self::assertInstanceOf(Machine::class, $this->entityManager->find(Machine::class, self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertInstanceOf(Machine::class, $machine);
         $this->messengerAsserter->assertQueueCount(1);
 
         $this->requestIdFactory->reset();

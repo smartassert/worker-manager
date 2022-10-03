@@ -20,6 +20,7 @@ use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
+use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Functional\AbstractEntityTest;
 use App\Tests\Services\EntityRemover;
@@ -53,7 +54,10 @@ class CreateFailureFactoryTest extends AbstractEntityTest
 
         self::assertEquals($expectedCreateFailure, $createFailure);
 
-        $retrievedCreateFailure = $this->entityManager->find(CreateFailure::class, self::MACHINE_ID);
+        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
+        \assert($createFailureRepository instanceof CreateFailureRepository);
+        $retrievedCreateFailure = $createFailureRepository->find(self::MACHINE_ID);
+
         self::assertInstanceOf(CreateFailure::class, $retrievedCreateFailure);
         self::assertEquals($createFailure, $retrievedCreateFailure);
     }
