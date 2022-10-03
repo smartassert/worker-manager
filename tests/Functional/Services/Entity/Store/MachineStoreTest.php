@@ -52,26 +52,4 @@ class MachineStoreTest extends AbstractEntityTest
         $this->store->store($newEntity);
         self::assertCount(1, $repository->findAll());
     }
-
-    public function testPersistResetsExistingEntity(): void
-    {
-        $repository = $this->entityManager->getRepository(Machine::class);
-        self::assertCount(0, $repository->findAll());
-
-        $entity = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED, ['10.0.0.1']);
-        $this->store->store($entity);
-        self::assertCount(1, $repository->findAll());
-
-        $retrievedEntity = $repository->find(self::MACHINE_ID);
-        self::assertInstanceOf(Machine::class, $retrievedEntity);
-
-        self::assertSame(Machine::STATE_CREATE_FAILED, $retrievedEntity->getState());
-        self::assertSame(['10.0.0.1'], $retrievedEntity->getIpAddresses());
-
-        $entity->reset();
-        $this->store->persist($entity);
-
-        self::assertSame(Machine::STATE_CREATE_RECEIVED, $retrievedEntity->getState());
-        self::assertSame([], $retrievedEntity->getIpAddresses());
-    }
 }
