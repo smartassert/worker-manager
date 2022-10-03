@@ -10,7 +10,6 @@ use App\Repository\CreateFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
 use App\Services\Entity\Store\MachineProviderStore;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +22,6 @@ class MachineController
     public const PATH_MACHINE = '/' . self::PATH_COMPONENT_ID . '/machine';
 
     public function __construct(
-        private MachineStore $machineStore,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineRequestFactory $machineRequestFactory,
         private readonly MachineRepository $machineRepository,
@@ -60,7 +58,7 @@ class MachineController
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
             $machine = new Machine($id, Machine::STATE_FIND_RECEIVED);
-            $this->machineStore->store($machine);
+            $this->machineRepository->add($machine);
 
             $this->machineRequestDispatcher->dispatch(
                 $this->machineRequestFactory->createFindThenCheckIsActive($id)
@@ -81,9 +79,8 @@ class MachineController
     public function delete(string $id): Response
     {
         $machine = $this->machineRepository->find($id);
-        if (false === $machine instanceof Machine) {
-            $machine = new Machine($id, Machine::STATE_DELETE_RECEIVED);
-            $this->machineStore->store($machine);
+        if (!$machine instanceof Machine) {
+            $this->machineRepository->add(new Machine($id, Machine::STATE_DELETE_RECEIVED));
         }
 
         $this->machineRequestDispatcher->dispatch(
