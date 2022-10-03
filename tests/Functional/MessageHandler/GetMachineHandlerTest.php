@@ -15,8 +15,8 @@ use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
+use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
@@ -39,7 +39,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     private GetMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
     private MachineRepository $machineRepository;
-    private MachineProviderStore $machineProviderStore;
+    private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
 
@@ -59,9 +59,9 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
 
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        \assert($machineProviderStore instanceof MachineProviderStore);
-        $this->machineProviderStore = $machineProviderStore;
+        $machineProviderStore = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderStore instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderStore;
 
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
@@ -74,6 +74,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 
@@ -92,7 +93,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $expectedMachineProvider = clone $machineProvider;
 
@@ -201,7 +202,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         $this->machineRepository->add($machine);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
@@ -232,7 +233,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 
