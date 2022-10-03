@@ -17,7 +17,6 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Store\MachineProviderStore;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -40,7 +39,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private FindMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MachineStore $machineStore;
     private MachineProviderStore $machineProviderStore;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
@@ -57,10 +55,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
-
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machineStore = $machineStore;
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
@@ -108,7 +102,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->dropletApiProxy->withGetAllCall($expectedMachineName, $expectedGetAllOutcome);
 
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         if ($machineProvider instanceof MachineProvider) {
             $this->machineProviderStore->store($machineProvider);
@@ -278,7 +272,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $this->machineProviderStore->store($machineProvider);
