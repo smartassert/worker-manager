@@ -10,7 +10,6 @@ use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MessageHandlerExceptionFinder;
 use App\Services\MessageHandlerExceptionStackFactory;
 use Psr\Log\LoggerInterface;
@@ -20,7 +19,6 @@ use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 class MachineRequestFailureHandler implements EventSubscriberInterface
 {
     public function __construct(
-        private MachineStore $machineStore,
         private CreateFailureFactory $createFailureFactory,
         private MessageHandlerExceptionFinder $messageHandlerExceptionFinder,
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
@@ -79,7 +77,7 @@ class MachineRequestFailureHandler implements EventSubscriberInterface
             $machine->setState(Machine::STATE_FIND_NOT_FOUND);
         }
 
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
     }
 
     private function logException(MachineRequestInterface $message, \Throwable $throwable): void
