@@ -74,21 +74,4 @@ class MachineStoreTest extends AbstractEntityTest
         self::assertSame(Machine::STATE_CREATE_RECEIVED, $retrievedEntity->getState());
         self::assertSame([], $retrievedEntity->getIpAddresses());
     }
-
-    public function testFind(): void
-    {
-        $entity = new Machine(self::MACHINE_ID);
-
-        $repository = $this->entityManager->getRepository($entity::class);
-        self::assertCount(0, $repository->findAll());
-
-        $this->store->store($entity);
-
-        self::assertCount(1, $repository->findAll());
-        $this->entityManager->clear();
-
-        $retrievedEntity = $this->store->find(self::MACHINE_ID);
-
-        self::assertEquals($entity, $retrievedEntity);
-    }
 }

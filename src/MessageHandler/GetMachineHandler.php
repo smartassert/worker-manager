@@ -9,8 +9,8 @@ use App\Entity\MachineProvider;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
+use App\Repository\MachineRepository;
 use App\Services\Entity\Store\MachineProviderStore;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -21,10 +21,10 @@ class GetMachineHandler implements MessageHandlerInterface
 {
     public function __construct(
         private MachineManager $machineManager,
-        private MachineStore $machineStore,
         private MachineProviderStore $machineProviderStore,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineUpdater $machineUpdater,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
@@ -33,7 +33,7 @@ class GetMachineHandler implements MessageHandlerInterface
      */
     public function __invoke(GetMachine $message): void
     {
-        $machine = $this->machineStore->find($message->getMachineId());
+        $machine = $this->machineRepository->find($message->getMachineId());
         if (!$machine instanceof Machine) {
             return;
         }

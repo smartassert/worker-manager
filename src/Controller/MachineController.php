@@ -7,6 +7,7 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
+use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
@@ -25,13 +26,14 @@ class MachineController
         private MachineStore $machineStore,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineRequestFactory $machineRequestFactory,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
     public function create(string $id, MachineProviderStore $machineProviderStore): Response
     {
-        $machine = $this->machineStore->find($id);
+        $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine && !in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
             return BadMachineCreateRequestResponse::createIdTakenResponse();
         }
@@ -48,7 +50,7 @@ class MachineController
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
     public function status(string $id, CreateFailureRepository $createFailureRepository): Response
     {
-        $machine = $this->machineStore->find($id);
+        $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
             $machine = new Machine($id, Machine::STATE_FIND_RECEIVED);
             $this->machineStore->store($machine);
@@ -71,7 +73,7 @@ class MachineController
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
     public function delete(string $id): Response
     {
-        $machine = $this->machineStore->find($id);
+        $machine = $this->machineRepository->find($id);
         if (false === $machine instanceof Machine) {
             $machine = new Machine($id, Machine::STATE_DELETE_RECEIVED);
             $this->machineStore->store($machine);

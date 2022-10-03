@@ -10,6 +10,7 @@ use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
+use App\Repository\MachineRepository;
 use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
@@ -26,6 +27,7 @@ class FindMachineHandler implements MessageHandlerInterface
         private RemoteMachineFinder $remoteMachineFinder,
         private MachineUpdater $machineUpdater,
         private MachineRequestDispatcher $machineRequestDispatcher,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
@@ -36,7 +38,7 @@ class FindMachineHandler implements MessageHandlerInterface
     {
         $machineId = $message->getMachineId();
 
-        $machine = $this->machineStore->find($machineId);
+        $machine = $this->machineRepository->find($machineId);
         if (!$machine instanceof Machine) {
             return;
         }

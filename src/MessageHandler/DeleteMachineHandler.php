@@ -8,6 +8,7 @@ use App\Entity\Machine;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
+use App\Repository\MachineRepository;
 use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
@@ -20,6 +21,7 @@ class DeleteMachineHandler implements MessageHandlerInterface
         private MachineStore $machineStore,
         private RemoteMachineRemover $remoteMachineRemover,
         private MachineRequestDispatcher $machineRequestDispatcher,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
@@ -30,7 +32,7 @@ class DeleteMachineHandler implements MessageHandlerInterface
     {
         $machineId = $message->getMachineId();
 
-        $machine = $this->machineStore->find($machineId);
+        $machine = $this->machineRepository->find($machineId);
         if (!$machine instanceof Machine) {
             return;
         }
