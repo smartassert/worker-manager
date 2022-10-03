@@ -17,16 +17,9 @@ class MachineStore extends AbstractEntityStore
 
     public function store(Machine $entity): void
     {
-        $this->save($entity, function (Machine $entity, Machine $existingEntity) {
-            return $existingEntity->merge($entity);
-        });
-    }
-
-    private function save(Machine $entity, callable $existingEntityHandler): void
-    {
         $existingEntity = $this->machineRepository->find($entity->getId());
         if ($existingEntity instanceof Machine) {
-            $entity = $existingEntityHandler($entity, $existingEntity);
+            $entity = $existingEntity->merge($entity);
         }
 
         $this->doStore($entity);
