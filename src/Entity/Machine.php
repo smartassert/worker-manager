@@ -4,9 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Machine
 {
     public const STATE_UNKNOWN = 'unknown';
@@ -45,24 +43,20 @@ class Machine
 
     private const NAME = 'worker-%s';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=MachineIdInterface::LENGTH)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     *
      * @var self::STATE_*
      */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $state;
 
     /**
-     * @ORM\Column(type="simple_array", nullable=true)
-     *
      * @var string[]
      */
+    #[ORM\Column(type: 'simple_array', nullable: true)]
     private array $ip_addresses;
 
     /**
