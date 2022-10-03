@@ -16,8 +16,8 @@ use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
-use App\Services\Entity\Store\MachineProviderStore;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineProviderRepository;
+use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -43,6 +43,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
+    private MachineProviderRepository $machineProviderRepository;
 
     protected function setUp(): void
     {
@@ -56,21 +57,22 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($dropletApiProxy instanceof DropletApiProxy);
         $this->dropletApiProxy = $dropletApiProxy;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
-
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        \assert($machineProviderStore instanceof MachineProviderStore);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
 
-        $machineStore->store($this->machine);
-        $machineProviderStore->store($machineProvider);
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderRepository;
+        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProviderRepository->add($machineProvider);
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
+        $machineRepository->add($this->machine);
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
@@ -141,17 +143,16 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             $unsupportedProviderException
         );
 
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        ObjectReflector::setProperty(
-            $machineProvider,
-            MachineProvider::class,
-            'provider',
-            $invalidProvider
-        );
+        $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
+        if ($machineProvider instanceof MachineProvider) {
+            ObjectReflector::setProperty(
+                $machineProvider,
+                MachineProvider::class,
+                'provider',
+                $invalidProvider
+            );
 
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        if ($machineProviderStore instanceof MachineProviderStore) {
-            $machineProviderStore->store($machineProvider);
+            $this->machineProviderRepository->add($machineProvider);
         }
 
         $message = new CreateMachine('id0', $this->machine->getId());

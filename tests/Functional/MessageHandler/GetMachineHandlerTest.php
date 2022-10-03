@@ -15,8 +15,8 @@ use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
-use App\Services\Entity\Store\MachineProviderStore;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineProviderRepository;
+use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
@@ -38,8 +38,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private GetMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MachineStore $machineStore;
-    private MachineProviderStore $machineProviderStore;
+    private MachineRepository $machineRepository;
+    private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
 
@@ -55,13 +55,13 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machineStore = $machineStore;
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machineRepository = $machineRepository;
 
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        \assert($machineProviderStore instanceof MachineProviderStore);
-        $this->machineProviderStore = $machineProviderStore;
+        $machineProviderStore = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderStore instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderStore;
 
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
@@ -74,6 +74,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 
@@ -89,10 +90,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     ): void {
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $getAllOutcome);
 
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $expectedMachineProvider = clone $machineProvider;
 
@@ -200,8 +201,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             $invalidProvider
         );
 
-        $this->machineStore->store($machine);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineRepository->add($machine);
+        $this->machineProviderRepository->add($machineProvider);
 
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
@@ -229,10 +230,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 

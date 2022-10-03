@@ -8,14 +8,14 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
+use App\Repository\MachineProviderRepository;
+use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\Application\AbstractMachineTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
-use Doctrine\ORM\EntityManagerInterface;
 
 class MachineTest extends AbstractMachineTest
 {
@@ -23,18 +23,15 @@ class MachineTest extends AbstractMachineTest
 
     private const MACHINE_ID = 'machine id';
 
-    private EntityManagerInterface $entityManager;
     private MessengerAsserter $messengerAsserter;
     private TestMachineRequestFactory $machineRequestFactory;
     private SequentialRequestIdFactory $requestIdFactory;
+    private MachineRepository $machineRepository;
+    private MachineProviderRepository $machineProviderRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        \assert($entityManager instanceof EntityManagerInterface);
-        $this->entityManager = $entityManager;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -47,6 +44,14 @@ class MachineTest extends AbstractMachineTest
         $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
         \assert($requestIdFactory instanceof SequentialRequestIdFactory);
         $this->requestIdFactory = $requestIdFactory;
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machineRepository = $machineRepository;
+
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderRepository;
     }
 
     /**
@@ -54,10 +59,8 @@ class MachineTest extends AbstractMachineTest
      */
     public function testCreateSuccess(?Machine $existingMachine): void
     {
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
         if ($existingMachine instanceof Machine) {
-            $machineStore->store($existingMachine);
+            $this->machineRepository->add($existingMachine);
         }
 
         $this->messengerAsserter->assertQueueIsEmpty();
@@ -65,11 +68,16 @@ class MachineTest extends AbstractMachineTest
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineCreateResponse($response);
 
-        $machine = $this->entityManager->find(Machine::class, self::MACHINE_ID);
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
         self::assertSame(self::MACHINE_ID, $machine->getId());
+        self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
 
-        $machineProvider = $this->entityManager->find(MachineProvider::class, self::MACHINE_ID);
+        if ($existingMachine instanceof Machine) {
+            self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
+        }
+
+        $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(MachineProvider::class, $machineProvider);
         self::assertSame(self::MACHINE_ID, $machineProvider->getId());
 
@@ -92,17 +100,25 @@ class MachineTest extends AbstractMachineTest
             'existing machine state: find/not-found' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_NOT_FOUND),
             ],
-            'existing machine state: create/failed' => [
+            'existing machine state: create/failed, no ip addresses' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED),
+            ],
+            'existing machine state: create/failed, has ip addresses' => [
+                'existingMachine' => new Machine(
+                    self::MACHINE_ID,
+                    Machine::STATE_CREATE_FAILED,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                ),
             ],
         ];
     }
 
     public function testCreateIdTaken(): void
     {
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $machineStore->store(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
@@ -133,9 +149,7 @@ class MachineTest extends AbstractMachineTest
 
     public function testStatusWithoutCreateFailure(): void
     {
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $machineStore->store(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
@@ -151,11 +165,9 @@ class MachineTest extends AbstractMachineTest
 
     public function testStatusWithCreateFailure(): void
     {
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
         $machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED);
 
-        $machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         $createFailureFactory = self::getContainer()->get(CreateFailureFactory::class);
         \assert($createFailureFactory instanceof CreateFailureFactory);
@@ -190,9 +202,7 @@ class MachineTest extends AbstractMachineTest
 
     public function testDeleteLocalMachineExists(): void
     {
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $machineStore->store(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineDeleteResponse($response);
@@ -206,12 +216,14 @@ class MachineTest extends AbstractMachineTest
 
     public function testDeleteLocalMachineDoesNotExist(): void
     {
-        self::assertNull($this->entityManager->find(Machine::class, self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineDeleteResponse($response);
 
-        self::assertInstanceOf(Machine::class, $this->entityManager->find(Machine::class, self::MACHINE_ID));
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertInstanceOf(Machine::class, $machine);
         $this->messengerAsserter->assertQueueCount(1);
 
         $this->requestIdFactory->reset();

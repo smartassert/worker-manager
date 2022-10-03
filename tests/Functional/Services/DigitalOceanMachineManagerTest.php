@@ -9,13 +9,14 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
+use App\Repository\MachineRepository;
 use App\Services\DigitalOceanMachineManager;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
+use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Client as DigitaloceanClient;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ValidationFailedException;
@@ -41,11 +42,6 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
         \assert($machineManager instanceof DigitalOceanMachineManager);
         $this->machineManager = $machineManager;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machine = new Machine(self::MACHINE_ID);
-        $machineStore->store($this->machine);
-
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
@@ -53,6 +49,16 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
         $this->dropletApiProxy = $dropletApiProxy;
+
+        $entityRemover = self::getContainer()->get(EntityRemover::class);
+        if ($entityRemover instanceof EntityRemover) {
+            $entityRemover->removeAllForEntity(Machine::class);
+        }
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machine = new Machine(self::MACHINE_ID);
+        $machineRepository->add($this->machine);
     }
 
     public function testCreateSuccess(): void

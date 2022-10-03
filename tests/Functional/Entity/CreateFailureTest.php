@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Entity;
 
 use App\Entity\CreateFailure;
+use App\Repository\CreateFailureRepository;
 use App\Tests\Functional\AbstractEntityTest;
 use App\Tests\Services\EntityRemover;
 use webignition\ObjectReflector\ObjectReflector;
@@ -43,7 +44,10 @@ class CreateFailureTest extends AbstractEntityTest
 
         $this->entityManager->clear();
 
-        $retrievedEntity = $this->entityManager->find(CreateFailure::class, self::MACHINE_ID);
+        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
+        \assert($createFailureRepository instanceof CreateFailureRepository);
+
+        $retrievedEntity = $createFailureRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(CreateFailure::class, $retrievedEntity);
         self::assertSame([], ObjectReflector::getProperty($retrievedEntity, 'context'));
     }
