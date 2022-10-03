@@ -9,7 +9,6 @@ use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -18,7 +17,6 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 class DeleteMachineHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private MachineStore $machineStore,
         private RemoteMachineRemover $remoteMachineRemover,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
@@ -38,7 +36,7 @@ class DeleteMachineHandler implements MessageHandlerInterface
         }
 
         $machine->setState(Machine::STATE_DELETE_REQUESTED);
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         try {
             $this->remoteMachineRemover->remove($machineId);
