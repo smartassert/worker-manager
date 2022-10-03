@@ -6,12 +6,12 @@ namespace App\Tests\Unit\EventListener\Messenger;
 
 use App\EventListener\Messenger\MachineRequestFailureHandler;
 use App\Message\GetMachine;
+use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Services\Entity\Store\MachineStore;
 use App\Services\MessageHandlerExceptionFinder;
 use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Services\MockMachineStore;
+use App\Tests\Mock\Repository\MockMachineRepository;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -28,7 +28,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $event = $this->createEvent();
         $event->setForRetry();
 
-        $handler = $this->createHandler(\Mockery::mock(MachineStore::class));
+        $handler = $this->createHandler(\Mockery::mock(MachineRepository::class));
         $handler->onMessageFailed($event);
 
         self::expectNotToPerformAssertions();
@@ -38,7 +38,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     {
         $event = $this->createEvent();
 
-        $handler = $this->createHandler(\Mockery::mock(MachineStore::class));
+        $handler = $this->createHandler(\Mockery::mock(MachineRepository::class));
         $handler->onMessageFailed($event);
 
         self::expectNotToPerformAssertions();
@@ -52,7 +52,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         ));
 
         $handler = $this->createHandler(
-            (new MockMachineStore())
+            (new MockMachineRepository())
                 ->withFindCall(self::MACHINE_ID, null)
                 ->getMock()
         );
@@ -70,15 +70,15 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     }
 
     private function createHandler(
-        MachineStore $machineStore,
+        MachineRepository $machineRepository,
         ?LoggerInterface $logger = null
     ): MachineRequestFailureHandler {
         return new MachineRequestFailureHandler(
-            $machineStore,
             \Mockery::mock(CreateFailureFactory::class),
             \Mockery::mock(MessageHandlerExceptionFinder::class),
             \Mockery::mock(MessageHandlerExceptionStackFactory::class),
-            $logger instanceof LoggerInterface ? $logger : \Mockery::mock(LoggerInterface::class)
+            $logger instanceof LoggerInterface ? $logger : \Mockery::mock(LoggerInterface::class),
+            $machineRepository,
         );
     }
 }

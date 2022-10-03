@@ -16,7 +16,7 @@ use App\Message\RemoteMachineMessageInterface;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineRepository;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\EntityRemover;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -31,7 +31,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     private const MACHINE_ID = 'id';
 
     private EventDispatcherInterface $eventDispatcher;
-    private MachineStore $machineStore;
+    private MachineRepository $machineRepository;
 
     protected function setUp(): void
     {
@@ -41,9 +41,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         \assert($eventDispatcher instanceof EventDispatcherInterface);
         $this->eventDispatcher = $eventDispatcher;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-        $this->machineStore = $machineStore;
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machineRepository = $machineRepository;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -51,7 +51,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             $entityRemover->removeAllForEntity(CreateFailure::class);
         }
 
-        $machineStore->store(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID));
     }
 
     /**
@@ -70,7 +70,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         $this->eventDispatcher->dispatch($event);
 
-        $machine = $this->machineStore->find(self::MACHINE_ID);
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
 
         self::assertSame($expectedMachineState, $machine->getState());
@@ -137,7 +137,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         $this->eventDispatcher->dispatch($event);
 
-        $machine = $this->machineStore->find(self::MACHINE_ID);
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
 
         self::assertSame($expectedMachineState, $machine->getState());

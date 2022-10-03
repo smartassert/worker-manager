@@ -4,25 +4,20 @@ namespace App\Services;
 
 use App\Entity\Machine;
 use App\Model\RemoteMachineInterface;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineRepository;
 
 class MachineUpdater
 {
     public function __construct(
-        private MachineStore $machineStore,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
-    public function updateFromRemoteMachine(
-        Machine $machine,
-        RemoteMachineInterface $remoteMachine
-    ): Machine {
-        $remoteMachineState = $remoteMachine->getState();
-        $remoteMachineState = $remoteMachineState ?? Machine::STATE_CREATE_REQUESTED;
-
-        $machine->setState($remoteMachineState);
+    public function updateFromRemoteMachine(Machine $machine, RemoteMachineInterface $remoteMachine): Machine
+    {
+        $machine->setState($remoteMachine->getState() ?? Machine::STATE_CREATE_REQUESTED);
         $machine->setIpAddresses($remoteMachine->getIpAddresses());
-        $this->machineStore->store($machine);
+        $this->machineRepository->add($machine);
 
         return $machine;
     }

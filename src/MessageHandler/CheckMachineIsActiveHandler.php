@@ -6,21 +6,21 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Message\CheckMachineIsActive;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class CheckMachineIsActiveHandler implements MessageHandlerInterface
 {
     public function __construct(
-        private MachineStore $machineStore,
         private MachineRequestDispatcher $machineRequestDispatcher,
+        private readonly MachineRepository $machineRepository,
     ) {
     }
 
     public function __invoke(CheckMachineIsActive $message): void
     {
-        $machine = $this->machineStore->find($message->getMachineId());
+        $machine = $this->machineRepository->find($message->getMachineId());
         if (!$machine instanceof Machine) {
             return;
         }
