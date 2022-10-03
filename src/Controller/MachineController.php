@@ -34,11 +34,18 @@ class MachineController
     public function create(string $id, MachineProviderStore $machineProviderStore): Response
     {
         $machine = $this->machineRepository->find($id);
-        if ($machine instanceof Machine && !in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
-            return BadMachineCreateRequestResponse::createIdTakenResponse();
+        if ($machine instanceof Machine) {
+            if (!in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
+                return BadMachineCreateRequestResponse::createIdTakenResponse();
+            }
+        } else {
+            $machine = new Machine($id);
         }
 
-        $this->machineStore->store(new Machine($id));
+        $machine->setState(Machine::STATE_CREATE_RECEIVED);
+
+        $this->machineRepository->add($machine);
+
         $machineProviderStore->store(new MachineProvider($id, ProviderInterface::NAME_DIGITALOCEAN));
         $this->machineRequestDispatcher->dispatch(
             $this->machineRequestFactory->createFindThenCreate($id)

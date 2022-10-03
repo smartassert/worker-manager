@@ -68,6 +68,11 @@ class MachineTest extends AbstractMachineTest
         $machine = $this->entityManager->find(Machine::class, self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
         self::assertSame(self::MACHINE_ID, $machine->getId());
+        self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
+
+        if ($existingMachine instanceof Machine) {
+            self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
+        }
 
         $machineProvider = $this->entityManager->find(MachineProvider::class, self::MACHINE_ID);
         self::assertInstanceOf(MachineProvider::class, $machineProvider);
@@ -92,8 +97,18 @@ class MachineTest extends AbstractMachineTest
             'existing machine state: find/not-found' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_NOT_FOUND),
             ],
-            'existing machine state: create/failed' => [
+            'existing machine state: create/failed, no ip addresses' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED),
+            ],
+            'existing machine state: create/failed, has ip addresses' => [
+                'existingMachine' => new Machine(
+                    self::MACHINE_ID,
+                    Machine::STATE_CREATE_FAILED,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                ),
             ],
         ];
     }
