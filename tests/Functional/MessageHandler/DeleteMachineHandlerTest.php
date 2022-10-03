@@ -12,7 +12,7 @@ use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Model\MachineActionInterface;
-use App\Services\Entity\Store\MachineStore;
+use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -57,17 +57,15 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineNameFactory = $machineNameFactory;
 
-        $machineStore = self::getContainer()->get(MachineStore::class);
-        \assert($machineStore instanceof MachineStore);
-
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
         }
 
-        $this->machine = new Machine(self::MACHINE_ID);
-        $this->machine->setState(Machine::STATE_DELETE_RECEIVED);
-        $machineStore->store($this->machine);
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+        $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_DELETE_RECEIVED);
+        $machineRepository->add($this->machine);
     }
 
     public function testInvokeSuccess(): void
