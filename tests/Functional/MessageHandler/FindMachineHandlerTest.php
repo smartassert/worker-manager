@@ -15,8 +15,8 @@ use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
+use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -39,7 +39,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private FindMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
-    private MachineProviderStore $machineProviderStore;
+    private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
     private MachineRepository $machineRepository;
@@ -60,9 +60,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
 
-        $machineProviderStore = self::getContainer()->get(MachineProviderStore::class);
-        \assert($machineProviderStore instanceof MachineProviderStore);
-        $this->machineProviderStore = $machineProviderStore;
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        $this->machineProviderRepository = $machineProviderRepository;
 
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
@@ -75,6 +75,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
+            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 
@@ -105,7 +106,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineRepository->add($machine);
 
         if ($machineProvider instanceof MachineProvider) {
-            $this->machineProviderStore->store($machineProvider);
+            $this->machineProviderRepository->add($machineProvider);
         }
 
         $message = $this->createMachineRequestFactory()->createFind(
@@ -118,7 +119,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $this->machineRepository->find(self::MACHINE_ID));
-        self::assertEquals($expectedMachineProvider, $this->machineProviderStore->find(self::MACHINE_ID));
+        self::assertEquals($expectedMachineProvider, $this->machineProviderRepository->find(self::MACHINE_ID));
 
         $this->messengerAsserter->assertQueueCount($expectedQueueCount);
         self::assertCount($expectedQueueCount, $expectedQueuedMessages);
@@ -263,7 +264,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ($this->handler)(new FindMachine('id0', $machineId));
 
         self::assertNull($this->machineRepository->find($machineId));
-        self::assertNull($this->machineProviderStore->find($machineId));
+        self::assertNull($this->machineProviderRepository->find($machineId));
     }
 
     /**
@@ -275,7 +276,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
-        $this->machineProviderStore->store($machineProvider);
+        $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 

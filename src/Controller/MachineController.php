@@ -7,9 +7,9 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
+use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
-use App\Services\Entity\Store\MachineProviderStore;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,7 +29,7 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
-    public function create(string $id, MachineProviderStore $machineProviderStore): Response
+    public function create(string $id, MachineProviderRepository $machineProviderRepository): Response
     {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
@@ -41,10 +41,16 @@ class MachineController
         }
 
         $machine->setState(Machine::STATE_CREATE_RECEIVED);
-
         $this->machineRepository->add($machine);
 
-        $machineProviderStore->store(new MachineProvider($id, ProviderInterface::NAME_DIGITALOCEAN));
+        $machineProvider = $machineProviderRepository->find($id);
+        if ($machineProvider instanceof MachineProvider) {
+            $machineProvider->setName(ProviderInterface::NAME_DIGITALOCEAN);
+        } else {
+            $machineProvider = new MachineProvider($id, ProviderInterface::NAME_DIGITALOCEAN);
+        }
+        $machineProviderRepository->add($machineProvider);
+
         $this->machineRequestDispatcher->dispatch(
             $this->machineRequestFactory->createFindThenCreate($id)
         );
