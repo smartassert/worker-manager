@@ -71,7 +71,7 @@ class MessengerAsserter
 
         TestCase::assertArrayHasKey($typeIndex, $stamps);
 
-        $typeStamps = $stamps[$typeIndex] ?? [];
+        $typeStamps = $stamps[$typeIndex];
         $actualStamp = $typeStamps[$expectedStampIndex] ?? null;
 
         TestCase::assertEquals($expectedStamp, $actualStamp);
