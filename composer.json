@@ -15,7 +15,7 @@
         "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/health-check-bundle": "^2.0",
-        "smartassert/users-security-bundle": "^0.4.0",
+        "smartassert/users-security-bundle": "^2.3",
         "symfony/console": "6.1.*",
         "symfony/doctrine-messenger": "6.1.*",
         "symfony/dotenv": "6.1.*",
@@ -38,6 +38,7 @@
         "phpstan/phpstan-symfony": "^1.2",
         "phpunit/phpunit": "^9.5",
         "smartassert/symfony-test-client": "^0.1.0",
+        "smartassert/users-client": "*",
         "squizlabs/php_codesniffer": "dev-master",
         "symfony/browser-kit": "6.1.*",
         "symfony/maker-bundle": "^1.29",
@@ -121,8 +122,8 @@
             "@test-unit",
             "@test-functional"
         ],
-        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service foo-users-service users-http",
-        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service foo-users-service users-http",
+        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service users-http",
+        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service users-http",
         "functional-teardown": "docker-compose -f ./tests/docker/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",
@@ -132,10 +133,10 @@
             "@users-setup"
         ],
         "users-db-setup": [
-            "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console doctrine:database:create --if-not-exists",
-            "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration"
+            "docker-compose -f tests/docker/docker-compose.yml exec -T users-service php bin/console doctrine:database:create --if-not-exists",
+            "docker-compose -f tests/docker/docker-compose.yml exec -T users-service php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration"
         ],
-        "users-generate-jwt-keys": "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction",
+        "users-generate-jwt-keys": "docker-compose -f tests/docker/docker-compose.yml exec -T users-service php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction",
         "users-create-user": [
             "curl --header 'Authorization: primary_admin_token' --data 'email=user@example.com&password=password' http://localhost:9080/admin/user/create",
             ""

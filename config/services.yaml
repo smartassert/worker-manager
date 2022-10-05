@@ -12,6 +12,7 @@ parameters:
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
+    users_security_bundle_base_url: '%env(AUTHENTICATION_BASE_URL)%'
     users_security_bundle_public_pattern: '(^/$)|(^/health-check$)'
     users_security_bundle_secured_pattern: '/machine$'
     users_security_bundle_access_control_path: '^/'
@@ -50,12 +51,19 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    GuzzleHttp\Psr7\HttpFactory: ~
+
+    Psr\Http\Message\RequestFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\StreamFactoryInterface:
+        alias: GuzzleHttp\Psr7\HttpFactory
+
+    SmartAssert\ServiceClient\RequestFactory: ~
+
     GuzzleHttp\HandlerStack:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
-
-    Psr\Http\Message\RequestFactoryInterface:
-        class: GuzzleHttp\Psr7\HttpFactory
 
     Psr\Http\Client\ClientInterface:
         class: GuzzleHttp\Client

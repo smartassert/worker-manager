@@ -11,7 +11,7 @@ abstract class AbstractMachineTest extends AbstractApplicationTest
     protected function makeValidCreateRequest(string $machineId): ResponseInterface
     {
         return $this->getApplicationClient()->makeMachineCreateRequest(
-            $this->authenticationConfiguration->validToken,
+            $this->authenticationConfiguration->getValidApiToken(),
             $machineId
         );
     }
@@ -19,7 +19,7 @@ abstract class AbstractMachineTest extends AbstractApplicationTest
     protected function makeValidStatusRequest(string $machineId): ResponseInterface
     {
         return $this->getApplicationClient()->makeMachineStatusRequest(
-            $this->authenticationConfiguration->validToken,
+            $this->authenticationConfiguration->getValidApiToken(),
             $machineId
         );
     }
@@ -27,7 +27,7 @@ abstract class AbstractMachineTest extends AbstractApplicationTest
     protected function makeValidDeleteRequest(string $machineId): ResponseInterface
     {
         return $this->getApplicationClient()->makeMachineDeleteRequest(
-            $this->authenticationConfiguration->validToken,
+            $this->authenticationConfiguration->getValidApiToken(),
             $machineId
         );
     }

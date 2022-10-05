@@ -9,21 +9,8 @@ services:
       - "5432:5432"
 
   users-service:
-    image: caddy:2.4.5-alpine
-    container_name: users-service
-    restart: unless-stopped
-    environment:
-      VALID_TOKEN: ${VALID_AUTHENTICATION_TOKEN:-valid-token}
-      INVALID_TOKEN: ${INVALID_AUTHENTICATION_TOKEN:-invalid-token}
-      USER_ID: ${AUTHENTICATED_USER_ID:-01FWKGED9E2NZZR5HP21HS2YYT}
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./caddy-users-service/Caddyfile:/etc/caddy/Caddyfile
-
-  foo-users-service:
     image: ghcr.io/smartassert/users:0.8
-    container_name: foo-users-service
+    container_name: users-service
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/users?serverVersion=12&charset=utf8
       JWT_PASSPHRASE: non-empty-string
@@ -40,7 +27,7 @@ services:
     ports:
       - "9080:80"
     links:
-      - foo-users-service:app
+      - users-service:app
     volumes:
       - ./caddy-users/caddy/index.php:/app/public/index.php
       - ./caddy-users/caddy/Caddyfile:/etc/caddy/Caddyfile
