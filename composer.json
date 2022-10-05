@@ -121,8 +121,8 @@
             "@test-unit",
             "@test-functional"
         ],
-        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service",
-        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service",
+        "functional-start": "docker-compose -f ./tests/docker/docker-compose.yml up -d postgres users-service foo-users-service users-http",
+        "functional-status": "docker-compose -f ./tests/docker/docker-compose.yml ps postgres users-service foo-users-service users-http",
         "functional-teardown": "docker-compose -f ./tests/docker/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",

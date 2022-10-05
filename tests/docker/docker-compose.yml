@@ -21,6 +21,30 @@ services:
     volumes:
       - ./caddy-users-service/Caddyfile:/etc/caddy/Caddyfile
 
+  foo-users-service:
+    image: ghcr.io/smartassert/users:0.8
+    container_name: foo-users-service
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/users?serverVersion=12&charset=utf8
+      JWT_PASSPHRASE: non-empty-string
+      PRIMARY_ADMIN_TOKEN: primary_admin_token
+      SECONDARY_ADMIN_TOKEN: secondary_admin_token
+      IS_READY: 1
+    depends_on:
+      - postgres
+
+  users-http:
+    image: caddy:2.4.5-alpine
+    container_name: users-http
+    restart: unless-stopped
+    ports:
+      - "9080:80"
+    links:
+      - foo-users-service:app
+    volumes:
+      - ./caddy-users/caddy/index.php:/app/public/index.php
+      - ./caddy-users/caddy/Caddyfile:/etc/caddy/Caddyfile
+
   nginx:
     build:
       context: ./nginx
