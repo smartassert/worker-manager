@@ -27,6 +27,7 @@ use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -76,6 +77,13 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             $entityRemover->removeAllForEntity(Machine::class);
             $entityRemover->removeAllForEntity(MachineProvider::class);
         }
+    }
+
+    public function testHandlerExistsInContainerAndIsAMessageHandler(): void
+    {
+        $handler = self::getContainer()->get(GetMachineHandler::class);
+        self::assertInstanceOf(GetMachineHandler::class, $handler);
+        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
     }
 
     /**
