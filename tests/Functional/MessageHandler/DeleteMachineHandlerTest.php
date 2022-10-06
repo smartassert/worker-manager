@@ -17,7 +17,6 @@ use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -31,7 +30,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private const MACHINE_ID = 'id';
 
-    private MessengerAsserter $messengerAsserter;
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
@@ -40,10 +38,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     protected function setUp(): void
     {
         parent::setUp();
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-        $this->messengerAsserter = $messengerAsserter;
 
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
@@ -77,7 +71,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     public function testInvokeSuccess(): void
     {
-        $this->messengerAsserter->assertQueueIsEmpty();
         self::assertSame(Machine::STATE_DELETE_RECEIVED, $this->machine->getState());
 
         $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
