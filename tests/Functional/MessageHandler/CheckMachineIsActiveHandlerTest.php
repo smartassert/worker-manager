@@ -9,7 +9,6 @@ use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -21,8 +20,6 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
     private const MACHINE_ID = 'id';
 
-    private CheckMachineIsActiveHandler $handler;
-    private MessengerAsserter $messengerAsserter;
     private MachineRepository $machineRepository;
     private Machine $machine;
     private TestMachineRequestFactory $machineRequestFactory;
@@ -31,17 +28,9 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $handler = self::getContainer()->get(CheckMachineIsActiveHandler::class);
-        \assert($handler instanceof CheckMachineIsActiveHandler);
-        $this->handler = $handler;
-
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-        $this->messengerAsserter = $messengerAsserter;
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
         \assert($machineRequestFactory instanceof TestMachineRequestFactory);
@@ -160,11 +149,15 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
     public function testHandleMachineDoesNotExist(): void
     {
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+
         $message = $this->machineRequestFactory->createCheckIsActive('invalid machine id');
 
-        ($this->handler)($message);
-
-        $this->messengerAsserter->assertQueueIsEmpty();
+        ($handler)($message);
     }
 
     private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): CheckMachineIsActiveHandler
