@@ -103,7 +103,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         ;
 
         $handler = $this->createHandler($machineRequestDispatcher);
-
         ($handler)($message);
 
         self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
@@ -111,12 +110,12 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     public function testInvokeMachineEntityMissing(): void
     {
-        $this->messengerAsserter->assertQueueIsEmpty();
-        $machineId = 'invalid machine id';
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
 
-        ($this->handler)(new DeleteMachine('id0', $machineId));
-
-        $this->messengerAsserter->assertQueueIsEmpty();
+        $handler = $this->createHandler($machineRequestDispatcher);
+        ($handler)(new DeleteMachine('id0', 'invalid machine id'));
     }
 
     /**
