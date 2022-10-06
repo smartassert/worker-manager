@@ -18,13 +18,13 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
-use App\Services\MachineRequestFactory;
+use App\Services\MachineRequestDispatcher;
+use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
-use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
@@ -45,6 +45,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
     private MachineProviderRepository $machineProviderRepository;
+    private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
@@ -78,6 +79,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
+
+        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
+        $this->machineRequestFactory = $machineRequestFactory;
     }
 
     public function testHandlerExistsInContainerAndIsAMessageHandler(): void
@@ -113,26 +118,23 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $expectedDropletEntity);
 
-        $requestIdFactory = new SequentialRequestIdFactory();
-        $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory)
-        );
+        $message = $this->machineRequestFactory->createCreate(self::MACHINE_ID);
+        $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
-        $message = $machineRequestFactory->createCreate(self::MACHINE_ID);
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher
+            ->shouldReceive('dispatchCollection')
+            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
+                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
 
-        ($this->handler)($message);
+                return true;
+            })
+        ;
 
-        $requestIdFactory->reset(1);
-
-        $expectedRequest = $machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
+        $handler = $this->createHandler($machineRequestDispatcher);
+        ($handler)($message);
 
         $expectedRemoteMachine = new RemoteMachine($expectedDropletEntity);
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-
-        $messengerAsserter->assertQueueCount(1);
-        $messengerAsserter->assertMessageAtPositionEquals(0, $expectedRequest);
 
         self::assertSame($expectedRemoteMachine->getState(), $this->machine->getState());
         self::assertSame(
@@ -251,5 +253,25 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
         ];
+    }
+
+    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): CreateMachineHandler
+    {
+        $machineManager = self::getContainer()->get(MachineManager::class);
+        \assert($machineManager instanceof MachineManager);
+
+        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
+        \assert($machineUpdater instanceof MachineUpdater);
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+
+        return new CreateMachineHandler(
+            $machineManager,
+            $machineRequestDispatcher,
+            $machineUpdater,
+            $machineRepository,
+            $this->machineProviderRepository,
+        );
     }
 }
