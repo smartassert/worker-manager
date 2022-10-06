@@ -9,17 +9,28 @@ services:
       - "5432:5432"
 
   users-service:
-    image: caddy:2.4.5-alpine
+    image: ghcr.io/smartassert/users:0.8
     container_name: users-service
-    restart: unless-stopped
     environment:
-      VALID_TOKEN: ${VALID_AUTHENTICATION_TOKEN:-valid-token}
-      INVALID_TOKEN: ${INVALID_AUTHENTICATION_TOKEN:-invalid-token}
-      USER_ID: ${AUTHENTICATED_USER_ID:-01FWKGED9E2NZZR5HP21HS2YYT}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/users?serverVersion=12&charset=utf8
+      JWT_PASSPHRASE: non-empty-string
+      PRIMARY_ADMIN_TOKEN: primary_admin_token
+      SECONDARY_ADMIN_TOKEN: secondary_admin_token
+      IS_READY: 1
+    depends_on:
+      - postgres
+
+  users-http:
+    image: caddy:2.4.5-alpine
+    container_name: users-http
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "9080:80"
+    links:
+      - users-service:app
     volumes:
-      - ./caddy-users-service/Caddyfile:/etc/caddy/Caddyfile
+      - ./http-config/caddy/index.php:/app/public/index.php
+      - ./http-config/caddy/Caddyfile:/etc/caddy/Caddyfile
 
   nginx:
     build:
@@ -39,7 +50,7 @@ services:
         MESSENGER_TRANSPORT_DSN: doctrine://default
         DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
-        AUTHENTICATION_BASE_URL: http://users-service
+        AUTHENTICATION_BASE_URL: http://users-http
     container_name: smartassert-worker-manager
     depends_on:
       - postgres

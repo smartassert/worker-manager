@@ -16,4 +16,5 @@
     <file>src/</file>
     <file>tests/</file>
 
+    <exclude-pattern>tests/build/*</exclude-pattern>
 </ruleset>
