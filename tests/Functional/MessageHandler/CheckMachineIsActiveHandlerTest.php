@@ -8,7 +8,6 @@ use App\Entity\Machine;
 use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Repository\MachineRepository;
-use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
@@ -26,6 +25,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     private MessengerAsserter $messengerAsserter;
     private MachineRepository $machineRepository;
     private Machine $machine;
+    private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
@@ -42,6 +42,10 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
         $this->messengerAsserter = $messengerAsserter;
+
+        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
+        $this->machineRequestFactory = $machineRequestFactory;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -62,13 +66,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $this->machine->setState($state);
         $this->machineRepository->add($this->machine);
 
-        $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory(
-                new SequentialRequestIdFactory()
-            )
-        );
-
-        ($this->handler)($machineRequestFactory->createCheckIsActive(self::MACHINE_ID));
+        ($this->handler)($this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID));
 
         $this->messengerAsserter->assertQueueIsEmpty();
     }
@@ -111,11 +109,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $this->machineRepository->add($this->machine);
 
         $requestIdFactory = new SequentialRequestIdFactory();
-        $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory),
-        );
 
-        $request = $machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
+        $request = $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
 
         ($this->handler)($request);
 
@@ -149,12 +144,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 
     public function testHandleMachineDoesNotExist(): void
     {
-        $requestIdFactory = new SequentialRequestIdFactory();
-        $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory),
-        );
-
-        $message = $machineRequestFactory->createCheckIsActive('invalid machine id');
+        $message = $this->machineRequestFactory->createCheckIsActive('invalid machine id');
 
         ($this->handler)($message);
 
