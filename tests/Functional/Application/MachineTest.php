@@ -63,8 +63,6 @@ class MachineTest extends AbstractMachineTest
             $this->machineRepository->add($existingMachine);
         }
 
-        $this->messengerAsserter->assertQueueIsEmpty();
-
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
         $this->responseAsserter->assertMachineCreateResponse($response);
 
@@ -80,12 +78,6 @@ class MachineTest extends AbstractMachineTest
         $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(MachineProvider::class, $machineProvider);
         self::assertSame(self::MACHINE_ID, $machineProvider->getId());
-
-        $this->messengerAsserter->assertQueueCount(1);
-
-        $this->requestIdFactory->reset();
-        $expectedMessage = $this->machineRequestFactory->createFindThenCreate(self::MACHINE_ID);
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
 
     /**
