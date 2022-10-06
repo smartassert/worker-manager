@@ -106,6 +106,27 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $controller->status(self::MACHINE_ID, $createFailureRepository);
     }
 
+    public function testDeleteCallsMachineRequestDispatcher(): void
+    {
+        $expectedMachineRequest = $this->callMachineRequestFactory(function (MachineRequestFactory $factory) {
+            return $factory->createDelete(self::MACHINE_ID);
+        });
+
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher
+            ->shouldReceive('dispatch')
+            ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
+                self::assertEquals($expectedMachineRequest, $machineRequest);
+
+                return true;
+            })
+            ->andReturn(new Envelope($expectedMachineRequest))
+        ;
+
+        $controller = $this->createController($machineRequestDispatcher);
+        $controller->delete(self::MACHINE_ID);
+    }
+
     /**
      * @param callable(MachineRequestFactory $factory): MachineRequestInterface $action
      *
