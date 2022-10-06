@@ -12,11 +12,6 @@ services:
     Symfony\Component\Messenger\Transport\InMemoryTransport:
         alias: 'messenger.transport.async'
 
-    App\Tests\Services\Asserter\MessengerAsserter:
-        public: true
-        arguments:
-            $transport: '@messenger.transport.async'
-
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
 
