@@ -29,6 +29,7 @@ use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
 class FindMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -77,6 +78,13 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             $entityRemover->removeAllForEntity(Machine::class);
             $entityRemover->removeAllForEntity(MachineProvider::class);
         }
+    }
+
+    public function testHandlerExistsInContainerAndIsAMessageHandler(): void
+    {
+        $handler = self::getContainer()->get(FindMachineHandler::class);
+        self::assertInstanceOf(FindMachineHandler::class, $handler);
+        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
     }
 
     /**
