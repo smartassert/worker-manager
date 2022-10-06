@@ -109,4 +109,47 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
             ],
         ];
     }
+
+    public function testDispatchCollection(): void
+    {
+        $requestIndex = 0;
+
+        $requests = [
+            new CheckMachineIsActive('uniqueId', 'machineId'),
+            new GetMachine('uniqueId', 'machineId'),
+        ];
+
+        $stampCollections = [
+            [new DelayStamp($this->checkMachineIsActiveDispatchDelay)],
+            [],
+        ];
+
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
+            ->shouldReceive('dispatch')
+            ->withArgs(function ($passedRequest, $passedStamps) use (&$requestIndex, $requests, $stampCollections) {
+                $expectedRequest = $requests[$requestIndex] ?? null;
+                self::assertInstanceOf(MachineRequestInterface::class, $expectedRequest);
+                self::assertSame($expectedRequest, $passedRequest);
+
+                $expectedStamps = $stampCollections[$requestIndex] ?? null;
+                self::assertIsArray($expectedStamps);
+                self::assertEquals($expectedStamps, $passedStamps);
+
+                ++$requestIndex;
+
+                return true;
+            })
+            ->andReturn(new Envelope(new GetMachine('uniqueId', 'machineId')))
+        ;
+
+        ObjectReflector::setProperty(
+            $this->machineRequestDispatcher,
+            MachineRequestDispatcher::class,
+            'messageBus',
+            $messageBus
+        );
+
+        $this->machineRequestDispatcher->dispatchCollection($requests);
+    }
 }
