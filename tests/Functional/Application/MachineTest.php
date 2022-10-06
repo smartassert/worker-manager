@@ -145,8 +145,6 @@ class MachineTest extends AbstractMachineTest
             Machine::STATE_CREATE_RECEIVED,
             []
         );
-
-        $this->messengerAsserter->assertQueueIsEmpty();
     }
 
     public function testStatusWithCreateFailure(): void
