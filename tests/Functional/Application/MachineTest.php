@@ -180,8 +180,6 @@ class MachineTest extends AbstractMachineTest
                 ],
             ]
         );
-
-        $this->messengerAsserter->assertQueueIsEmpty();
     }
 
     public function testDeleteLocalMachineExists(): void
