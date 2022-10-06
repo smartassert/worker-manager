@@ -31,7 +31,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private const MACHINE_ID = 'id';
 
-    private DeleteMachineHandler $handler;
     private MessengerAsserter $messengerAsserter;
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
@@ -41,10 +40,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     protected function setUp(): void
     {
         parent::setUp();
-
-        $handler = self::getContainer()->get(DeleteMachineHandler::class);
-        \assert($handler instanceof DeleteMachineHandler);
-        $this->handler = $handler;
 
         $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
         \assert($messengerAsserter instanceof MessengerAsserter);
@@ -123,13 +118,19 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+
         $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
         $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName, $vendorException);
 
         $message = new DeleteMachine('id0', self::MACHINE_ID);
 
         try {
-            ($this->handler)($message);
+            ($handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
