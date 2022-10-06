@@ -131,12 +131,6 @@ class MachineTest extends AbstractMachineTest
             Machine::STATE_FIND_RECEIVED,
             []
         );
-
-        $this->messengerAsserter->assertQueueCount(1);
-
-        $this->requestIdFactory->reset();
-        $expectedMessage = $this->machineRequestFactory->createFindThenCheckIsActive(self::MACHINE_ID);
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
 
     public function testStatusWithoutCreateFailure(): void
