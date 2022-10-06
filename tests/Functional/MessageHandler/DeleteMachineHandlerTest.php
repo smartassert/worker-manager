@@ -9,17 +9,16 @@ use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\DeleteMachine;
-use App\Message\FindMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Model\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
-use App\Services\MachineRequestFactory;
+use App\Services\MachineRequestDispatcher;
+use App\Services\RemoteMachineRemover;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
-use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -37,6 +36,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
+    private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
@@ -67,6 +67,10 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         \assert($machineRepository instanceof MachineRepository);
         $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_DELETE_RECEIVED);
         $machineRepository->add($this->machine);
+
+        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
+        $this->machineRequestFactory = $machineRequestFactory;
     }
 
     public function testHandlerExistsInContainerAndIsAMessageHandler(): void
@@ -85,28 +89,24 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName);
 
-        $requestIdFactory = new SequentialRequestIdFactory();
-        $machineRequestFactory = new TestMachineRequestFactory(
-            new MachineRequestFactory($requestIdFactory)
-        );
+        $message = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
+        $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
-        $message = $machineRequestFactory->createDelete(self::MACHINE_ID);
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher
+            ->shouldReceive('dispatchCollection')
+            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
+                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
 
-        ($this->handler)($message);
-
-        $requestIdFactory->reset();
-
-        self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
-
-        $expectedMessage = $machineRequestFactory
-            ->createFind(self::MACHINE_ID)
-            ->withOnNotFoundState(Machine::STATE_DELETE_DELETED)
-            ->withReDispatchOnSuccess(true)
+                return true;
+            })
         ;
 
-        self::assertInstanceOf(FindMachine::class, $expectedMessage);
+        $handler = $this->createHandler($machineRequestDispatcher);
 
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
+        ($handler)($message);
+
+        self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
     }
 
     public function testInvokeMachineEntityMissing(): void
@@ -186,5 +186,16 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
         ];
+    }
+
+    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): DeleteMachineHandler
+    {
+        $remoteMachineRemover = self::getContainer()->get(RemoteMachineRemover::class);
+        \assert($remoteMachineRemover instanceof RemoteMachineRemover);
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+
+        return new DeleteMachineHandler($remoteMachineRemover, $machineRequestDispatcher, $machineRepository);
     }
 }
