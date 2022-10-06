@@ -50,7 +50,7 @@ class CreateFailure implements \JsonSerializable
     /**
      * @var array<string, int|string>
      */
-    #[ORM\Column(type: 'simple_array', nullable: true)]
+    #[ORM\Column(type: 'array', nullable: true)]
     private array $context = [];
 
     /**
