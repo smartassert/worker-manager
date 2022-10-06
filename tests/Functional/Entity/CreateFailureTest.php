@@ -8,7 +8,6 @@ use App\Entity\CreateFailure;
 use App\Repository\CreateFailureRepository;
 use App\Tests\Functional\AbstractEntityTest;
 use App\Tests\Services\EntityRemover;
-use webignition\ObjectReflector\ObjectReflector;
 
 class CreateFailureTest extends AbstractEntityTest
 {
@@ -35,10 +34,11 @@ class CreateFailureTest extends AbstractEntityTest
         self::assertCount(1, $repository->findAll());
     }
 
-    public function testRetrieveWithNullContext(): void
+    /**
+     * @dataProvider retrieveDataProvider
+     */
+    public function testRetrieve(CreateFailure $entity): void
     {
-        $entity = new CreateFailure(self::MACHINE_ID, CreateFailure::CODE_UNKNOWN, CreateFailure::REASON_UNKNOWN);
-
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -49,6 +49,32 @@ class CreateFailureTest extends AbstractEntityTest
 
         $retrievedEntity = $createFailureRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(CreateFailure::class, $retrievedEntity);
-        self::assertSame([], ObjectReflector::getProperty($retrievedEntity, 'context'));
+        self::assertSame($entity->jsonSerialize(), $retrievedEntity->jsonSerialize());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function retrieveDataProvider(): array
+    {
+        return [
+            'without context' => [
+                'entity' => new CreateFailure(
+                    self::MACHINE_ID,
+                    CreateFailure::CODE_UNKNOWN,
+                    CreateFailure::REASON_UNKNOWN
+                ),
+            ],
+            'with context' => [
+                'entity' => new CreateFailure(
+                    self::MACHINE_ID,
+                    CreateFailure::CODE_UNKNOWN,
+                    CreateFailure::REASON_UNKNOWN,
+                    [
+                        'key1' => 'value1',
+                    ]
+                ),
+            ],
+        ];
     }
 }
