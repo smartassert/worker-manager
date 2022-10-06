@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\Services;
+namespace App\Tests\Functional\Controller;
 
 use App\Controller\MachineController;
 use App\Entity\Machine;
