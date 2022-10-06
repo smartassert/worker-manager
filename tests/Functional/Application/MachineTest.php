@@ -11,11 +11,7 @@ use App\Model\MachineActionInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Services\RequestIdFactoryInterface;
 use App\Tests\Application\AbstractMachineTest;
-use App\Tests\Services\Asserter\MessengerAsserter;
-use App\Tests\Services\SequentialRequestIdFactory;
-use App\Tests\Services\TestMachineRequestFactory;
 
 class MachineTest extends AbstractMachineTest
 {
@@ -23,27 +19,12 @@ class MachineTest extends AbstractMachineTest
 
     private const MACHINE_ID = 'machine id';
 
-    private MessengerAsserter $messengerAsserter;
-    private TestMachineRequestFactory $machineRequestFactory;
-    private SequentialRequestIdFactory $requestIdFactory;
     private MachineRepository $machineRepository;
     private MachineProviderRepository $machineProviderRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-        $this->messengerAsserter = $messengerAsserter;
-
-        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
-        $this->machineRequestFactory = $machineRequestFactory;
-
-        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
-        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
-        $this->requestIdFactory = $requestIdFactory;
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
@@ -200,10 +181,5 @@ class MachineTest extends AbstractMachineTest
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
-        $this->messengerAsserter->assertQueueCount(1);
-
-        $this->requestIdFactory->reset();
-        $expectedMessage = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
-        $this->messengerAsserter->assertMessageAtPositionEquals(0, $expectedMessage);
     }
 }
