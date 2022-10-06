@@ -18,12 +18,12 @@ use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
-use App\Services\MachineRequestFactory;
+use App\Services\MachineRequestDispatcher;
+use App\Services\MachineUpdater;
+use App\Services\RemoteMachineFinder;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
-use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -38,24 +38,15 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private const MACHINE_ID = 'id';
 
-    private FindMachineHandler $handler;
-    private MessengerAsserter $messengerAsserter;
     private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
     private MachineRepository $machineRepository;
+    private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $handler = self::getContainer()->get(FindMachineHandler::class);
-        \assert($handler instanceof FindMachineHandler);
-        $this->handler = $handler;
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-        $this->messengerAsserter = $messengerAsserter;
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
@@ -72,6 +63,10 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineNameFactory = $machineNameFactory;
+
+        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
+        $this->machineRequestFactory = $machineRequestFactory;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -90,22 +85,18 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider invokeSuccessDataProvider
      *
-     * @param MachineRequestInterface[] $messageOnSuccessCollection
-     * @param MachineRequestInterface[] $messageOnFailureCollection
-     * @param DropletEntity[]           $expectedGetAllOutcome
-     * @param object[]                  $expectedQueuedMessages
+     * @param DropletEntity[] $expectedGetAllOutcome
+     * @param callable(FindMachine $message): MachineRequestInterface[] $expectedMachineRequestCollectionCreator
+     * @param callable(TestMachineRequestFactory $factory): FindMachine $messageCreator
      */
     public function testInvokeSuccess(
         Machine $machine,
         ?MachineProvider $machineProvider,
-        array $messageOnSuccessCollection,
-        array $messageOnFailureCollection,
-        bool $reDispatchOnSuccess,
         array $expectedGetAllOutcome,
         Machine $expectedMachine,
         MachineProvider $expectedMachineProvider,
-        int $expectedQueueCount,
-        array $expectedQueuedMessages,
+        callable $messageCreator,
+        callable $expectedMachineRequestCollectionCreator,
     ): void {
         $expectedMachineName = $this->machineNameFactory->create($machine->getId());
 
@@ -117,27 +108,24 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             $this->machineProviderRepository->add($machineProvider);
         }
 
-        $message = $this->createMachineRequestFactory()->createFind(
-            self::MACHINE_ID,
-            $messageOnSuccessCollection,
-            $messageOnFailureCollection
-        );
-        $message = $message->withReDispatchOnSuccess($reDispatchOnSuccess);
+        $message = $messageCreator($this->machineRequestFactory);
+        $expectedMachineRequestCollection = $expectedMachineRequestCollectionCreator($message);
 
-        ($this->handler)($message);
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher
+            ->shouldReceive('dispatchCollection')
+            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
+                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
+
+                return true;
+            })
+        ;
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+        ($handler)($message);
 
         self::assertEquals($expectedMachine, $this->machineRepository->find(self::MACHINE_ID));
         self::assertEquals($expectedMachineProvider, $this->machineProviderRepository->find(self::MACHINE_ID));
-
-        $this->messengerAsserter->assertQueueCount($expectedQueueCount);
-        self::assertCount($expectedQueueCount, $expectedQueuedMessages);
-
-        foreach ($expectedQueuedMessages as $expectedIndex => $expectedMessage) {
-            $this->messengerAsserter->assertMessageAtPositionEquals(
-                $expectedIndex,
-                $expectedMessage
-            );
-        }
     }
 
     /**
@@ -169,11 +157,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             'remote machine found and updated, no existing provider' => [
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => null,
-                'messageOnSuccessCollection' => [
-                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
-                ],
-                'messageOnFailureCollection' => [],
-                'reDispatchOnSuccess' => false,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -186,19 +169,20 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ProviderInterface::NAME_DIGITALOCEAN
                 ),
-                'expectedQueueCount' => 1,
-                'expectedQueuedMessages' => [
-                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
-                ],
+                'messageCreator' => function (TestMachineRequestFactory $factory) {
+                    return $factory->createFind(
+                        self::MACHINE_ID,
+                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        []
+                    );
+                },
+                'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
+                    return $message->getOnSuccessCollection();
+                },
             ],
             'remote machine found and updated, has existing provider' => [
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
-                'messageOnSuccessCollection' => [
-                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
-                ],
-                'messageOnFailureCollection' => [],
-                'reDispatchOnSuccess' => false,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -211,19 +195,20 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ProviderInterface::NAME_DIGITALOCEAN
                 ),
-                'expectedQueueCount' => 1,
-                'expectedQueuedMessages' => [
-                    $this->createMachineRequestFactory()->createCheckIsActive(self::MACHINE_ID),
-                ],
+                'messageCreator' => function (TestMachineRequestFactory $factory) {
+                    return $factory->createFind(
+                        self::MACHINE_ID,
+                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        []
+                    );
+                },
+                'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
+                    return $message->getOnSuccessCollection();
+                },
             ],
             'remote machine not found, create requested' => [
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
-                'messageOnSuccessCollection' => [],
-                'messageOnFailureCollection' => [
-                    $this->createMachineRequestFactory()->createCreate(self::MACHINE_ID)
-                ],
-                'reDispatchOnSuccess' => false,
                 'expectedGetAllOutcome' => [],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -233,17 +218,20 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ProviderInterface::NAME_DIGITALOCEAN
                 ),
-                'expectedQueueCount' => 1,
-                'expectedQueuedMessages' => [
-                    $this->createMachineRequestFactory()->createCreate(self::MACHINE_ID),
-                ],
+                'messageCreator' => function (TestMachineRequestFactory $factory) {
+                    return $factory->createFind(
+                        self::MACHINE_ID,
+                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        []
+                    );
+                },
+                'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
+                    return $message->getOnFailureCollection();
+                },
             ],
             'remote machine found, re-dispatch self' => [
                 'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
-                'messageOnSuccessCollection' => [],
-                'messageOnFailureCollection' => [],
-                'reDispatchOnSuccess' => true,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
@@ -256,11 +244,18 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ProviderInterface::NAME_DIGITALOCEAN
                 ),
-                'expectedQueueCount' => 1,
-                'expectedQueuedMessages' => [
-                    $this->createMachineRequestFactory()->createFind(self::MACHINE_ID)
-                        ->withReDispatchOnSuccess(true),
-                ],
+                'messageCreator' => function (TestMachineRequestFactory $factory) {
+                    $message = $factory->createFind(
+                        self::MACHINE_ID,
+                        [],
+                        []
+                    );
+
+                    return $message->withReDispatchOnSuccess(true);
+                },
+                'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
+                    return [$message];
+                },
             ],
         ];
     }
@@ -269,7 +264,13 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $machineId = 'invalid machine id';
 
-        ($this->handler)(new FindMachine('id0', $machineId));
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+
+        ($handler)(new FindMachine('id0', $machineId));
 
         self::assertNull($this->machineRepository->find($machineId));
         self::assertNull($this->machineProviderRepository->find($machineId));
@@ -290,8 +291,14 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $message = new FindMachine('id0', $machine->getId());
 
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+
         try {
-            ($this->handler)($message);
+            ($handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
@@ -349,12 +356,23 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         ];
     }
 
-    private function createMachineRequestFactory(): TestMachineRequestFactory
+    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): FindMachineHandler
     {
-        return new TestMachineRequestFactory(
-            new MachineRequestFactory(
-                new SequentialRequestIdFactory()
-            )
+        $remoteMachineFinder = self::getContainer()->get(RemoteMachineFinder::class);
+        \assert($remoteMachineFinder instanceof RemoteMachineFinder);
+
+        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
+        \assert($machineUpdater instanceof MachineUpdater);
+
+        $machineRepository = self::getContainer()->get(MachineRepository::class);
+        \assert($machineRepository instanceof MachineRepository);
+
+        return new FindMachineHandler(
+            $remoteMachineFinder,
+            $machineUpdater,
+            $machineRequestDispatcher,
+            $this->machineRepository,
+            $this->machineProviderRepository
         );
     }
 }
