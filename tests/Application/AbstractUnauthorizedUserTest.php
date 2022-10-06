@@ -15,7 +15,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     public function testMachineCreateUnauthorizedUser(callable $tokenCreator): void
     {
         $response = $this->applicationClient->makeMachineCreateRequest(
-            $tokenCreator($this->authenticationConfiguration),
+            $tokenCreator(self::$authenticationConfiguration),
             Machine::createId()
         );
 
@@ -28,7 +28,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     public function testMachineStatusUnauthorizedUser(callable $tokenCreator): void
     {
         $response = $this->applicationClient->makeMachineStatusRequest(
-            $tokenCreator($this->authenticationConfiguration),
+            $tokenCreator(self::$authenticationConfiguration),
             Machine::createId()
         );
 
@@ -41,7 +41,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     public function testMachineDeleteUnauthorizedUser(callable $tokenCreator): void
     {
         $response = $this->applicationClient->makeMachineDeleteRequest(
-            $tokenCreator($this->authenticationConfiguration),
+            $tokenCreator(self::$authenticationConfiguration),
             Machine::createId()
         );
 

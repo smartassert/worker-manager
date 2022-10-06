@@ -14,7 +14,7 @@ trait GetApplicationClientTrait
         $adapter = self::getContainer()->get(SymfonyClient::class);
         \assert($adapter instanceof SymfonyClient);
 
-        $adapter->setKernelBrowser($this->kernelBrowser);
+        $adapter->setKernelBrowser(self::$kernelBrowser);
 
         $client = self::getContainer()->get('app.tests.services.application.client.symfony');
         \assert($client instanceof Client);

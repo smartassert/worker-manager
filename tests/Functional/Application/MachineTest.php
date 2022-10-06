@@ -12,6 +12,7 @@ use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Application\AbstractMachineTest;
+use Doctrine\ORM\EntityManagerInterface;
 
 class MachineTest extends AbstractMachineTest
 {
@@ -45,6 +46,11 @@ class MachineTest extends AbstractMachineTest
         }
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        \assert($entityManager instanceof EntityManagerInterface);
+        $entityManager->close();
+
         $this->responseAsserter->assertMachineCreateResponse($response);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
