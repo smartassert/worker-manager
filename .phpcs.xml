@@ -16,5 +16,5 @@
     <file>src/</file>
     <file>tests/</file>
 
-    <exclude-pattern>tests/docker/*</exclude-pattern>
+    <exclude-pattern>tests/build/*</exclude-pattern>
 </ruleset>

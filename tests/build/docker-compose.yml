@@ -29,8 +29,8 @@ services:
     links:
       - users-service:app
     volumes:
-      - ./caddy-users/caddy/index.php:/app/public/index.php
-      - ./caddy-users/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./http-config/caddy/index.php:/app/public/index.php
+      - ./http-config/caddy/Caddyfile:/etc/caddy/Caddyfile
 
   nginx:
     build:

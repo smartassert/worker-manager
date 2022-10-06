@@ -45,7 +45,7 @@ jobs:
           VERSION: gh-action-version
         run: |
           VERSION=$VERSION composer integration-setup
-          docker-compose -f tests/docker/docker-compose.yml exec -T app touch /app/var/log/messenger.prod.log
+          docker-compose -f tests/build/docker-compose.yml exec -T app touch /app/var/log/messenger.prod.log
           sleep 10
 
       - name: Test status, machine creation, health check
@@ -56,4 +56,4 @@ jobs:
 
       - name: "Debug: output messenger log ..."
         if: ${{ always() }}
-        run: docker-compose -f tests/docker/docker-compose.yml exec -T app cat /app/var/log/messenger.prod.log
+        run: docker-compose -f tests/build/docker-compose.yml exec -T app cat /app/var/log/messenger.prod.log
