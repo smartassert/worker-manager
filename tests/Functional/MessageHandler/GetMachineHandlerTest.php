@@ -17,16 +17,20 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
+use App\Services\MachineRequestDispatcher;
+use App\Services\MachineUpdater;
+use App\Services\RemoteMachineFinder;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -36,8 +40,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     private const MACHINE_ID = 'machine id';
     private const REMOTE_ID = 123;
 
-    private GetMachineHandler $handler;
-    private MessengerAsserter $messengerAsserter;
     private MachineRepository $machineRepository;
     private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
@@ -46,14 +48,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     protected function setUp(): void
     {
         parent::setUp();
-
-        $handler = self::getContainer()->get(GetMachineHandler::class);
-        \assert($handler instanceof GetMachineHandler);
-        $this->handler = $handler;
-
-        $messengerAsserter = self::getContainer()->get(MessengerAsserter::class);
-        \assert($messengerAsserter instanceof MessengerAsserter);
-        $this->messengerAsserter = $messengerAsserter;
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
@@ -78,6 +72,13 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         }
     }
 
+    public function testHandlerExistsInContainerAndIsAMessageHandler(): void
+    {
+        $handler = self::getContainer()->get(GetMachineHandler::class);
+        self::assertInstanceOf(GetMachineHandler::class, $handler);
+        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
+    }
+
     /**
      * @param DropletEntity[] $getAllOutcome
      *
@@ -98,12 +99,20 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedMachineProvider = clone $machineProvider;
 
         $message = new GetMachine('id0', $machine->getId());
-        ($this->handler)($message);
+
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher->shouldNotReceive('dispatch');
+        $machineRequestDispatcher
+            ->shouldReceive('dispatchCollection')
+            ->with([])
+            ->andReturn([])
+        ;
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+        ($handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
         self::assertEquals($expectedMachineProvider, $machineProvider);
-
-        $this->messengerAsserter->assertQueueIsEmpty();
     }
 
     /**
@@ -214,8 +223,11 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             $unsupportedProviderException
         );
 
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $handler = $this->createHandler($machineRequestDispatcher);
+
         try {
-            ($this->handler)($message);
+            ($handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
@@ -240,8 +252,11 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
 
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $handler = $this->createHandler($machineRequestDispatcher);
+
         try {
-            ($this->handler)($message);
+            ($handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
@@ -298,5 +313,25 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
         ];
+    }
+
+    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): GetMachineHandler
+    {
+        $machineManager = self::getContainer()->get(MachineManager::class);
+        \assert($machineManager instanceof MachineManager);
+
+        $remoteMachineFinder = self::getContainer()->get(RemoteMachineFinder::class);
+        \assert($remoteMachineFinder instanceof RemoteMachineFinder);
+
+        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
+        \assert($machineUpdater instanceof MachineUpdater);
+
+        return new GetMachineHandler(
+            $machineManager,
+            $machineRequestDispatcher,
+            $machineUpdater,
+            $this->machineRepository,
+            $this->machineProviderRepository,
+        );
     }
 }
