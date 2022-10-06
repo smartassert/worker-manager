@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
-use App\Message\GetMachine;
 use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\Asserter\MessengerAsserter;
 use App\Tests\Services\EntityRemover;
-use App\Tests\Services\SequentialRequestIdFactory;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
@@ -121,20 +119,25 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
         $this->machine->setState($state);
         $this->machineRepository->add($this->machine);
 
-        $requestIdFactory = new SequentialRequestIdFactory();
-
         $request = $this->machineRequestFactory->createCheckIsActive(self::MACHINE_ID);
-
-        ($this->handler)($request);
-
-        $this->messengerAsserter->assertMessageAtPositionEquals(
-            0,
-            new GetMachine('id1', self::MACHINE_ID),
+        $expectedMachineRequestCollection = array_merge(
+            $request->getOnSuccessCollection(),
+            [$request],
         );
 
-        $this->messengerAsserter->assertMessageAtPositionEquals(1, $request);
+        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
+        $machineRequestDispatcher
+            ->shouldReceive('dispatchCollection')
+            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
+                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
 
-        $requestIdFactory->reset();
+                return true;
+            })
+        ;
+
+        $handler = $this->createHandler($machineRequestDispatcher);
+
+        ($handler)($request);
     }
 
     /**
