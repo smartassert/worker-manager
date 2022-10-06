@@ -128,7 +128,22 @@
             "@functional-start",
             "sleep 2",
             "@db-setup",
-            "@messenger-setup"
+            "@messenger-setup",
+            "@users-setup"
+        ],
+        "users-db-setup": [
+            "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console doctrine:database:create --if-not-exists",
+            "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration"
+        ],
+        "users-generate-jwt-keys": "docker-compose -f tests/docker/docker-compose.yml exec -T foo-users-service php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction",
+        "users-create-user": [
+            "curl --header 'Authorization: primary_admin_token' --data 'email=user@example.com&password=password' http://localhost:9080/admin/user/create",
+            ""
+        ],
+        "users-setup": [
+            "@users-db-setup",
+            "@users-generate-jwt-keys",
+            "@users-create-user"
         ],
         "integration-pull": "docker-compose -f tests/docker/docker-compose.yml pull",
         "integration-build": "docker-compose -f tests/docker/docker-compose.yml build app",
@@ -140,7 +155,8 @@
             "@integration-build",
             "@integration-up",
             "sleep 2",
-            "@db-setup"
+            "@db-setup",
+            "@users-setup"
         ],
         "messenger-setup": "php bin/console messenger:setup-transports",
         "messenger-listen": "php bin/console messenger:consume async -vv",
