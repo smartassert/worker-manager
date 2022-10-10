@@ -1,0 +1,13 @@
+#Ignore everything
+**
+
+# Allow specific files
+!bin/console
+!build/
+!composer.json
+!composer.lock
+!public/index.php
+!src
+!symfony.lock
+!config
+!migrations
