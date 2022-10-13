@@ -51,7 +51,7 @@ class MachineTest extends AbstractMachineTest
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->responseAsserter->assertMachineCreateResponse($response);
+        $this->responseAsserter->assertMachineCreateResponse($response, self::MACHINE_ID);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
@@ -174,7 +174,7 @@ class MachineTest extends AbstractMachineTest
         $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -183,7 +183,7 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
