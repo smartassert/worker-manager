@@ -81,14 +81,30 @@ class ResponseAsserter
         $this->assertJsonResponse($response, 200, $expectedResponseData);
     }
 
-    public function assertMachineDeleteResponse(ResponseInterface $response): void
+    public function assertMachineDeleteResponse(ResponseInterface $response, string $expectedMachineId): void
     {
-        Assert::assertSame(202, $response->getStatusCode());
+        $this->assertMachineRequestResponse($response, $expectedMachineId, 'delete');
     }
 
-    public function assertMachineCreateResponse(ResponseInterface $response): void
+    public function assertMachineCreateResponse(ResponseInterface $response, string $expectedMachineId): void
     {
-        Assert::assertSame(202, $response->getStatusCode());
+        $this->assertMachineRequestResponse($response, $expectedMachineId, 'create');
+    }
+
+    private function assertMachineRequestResponse(
+        ResponseInterface $response,
+        string $expectedMachineId,
+        string $expectedRequestedAction,
+    ): void {
+        $this->assertJsonResponse(
+            $response,
+            202,
+            [
+                'machine_id' => $expectedMachineId,
+                'requested_action' => $expectedRequestedAction,
+                'status_url' => sprintf('/%s/machine', rawurlencode($expectedMachineId))
+            ]
+        );
     }
 
     /**

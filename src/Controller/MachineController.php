@@ -10,11 +10,13 @@ use App\Repository\CreateFailureRepository;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
+use App\Response\MachineRequestResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 class MachineController
 {
@@ -25,6 +27,7 @@ class MachineController
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineRequestFactory $machineRequestFactory,
         private readonly MachineRepository $machineRepository,
+        private readonly RouterInterface $router,
     ) {
     }
 
@@ -55,7 +58,7 @@ class MachineController
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
-        return new Response('', 202);
+        return new MachineRequestResponse($id, 'create', $this->router->generate('machine-status', ['id' => $id]));
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
@@ -93,6 +96,6 @@ class MachineController
             $this->machineRequestFactory->createDelete($id)
         );
 
-        return new Response('', 202);
+        return new MachineRequestResponse($id, 'delete', $this->router->generate('machine-status', ['id' => $id]));
     }
 }
