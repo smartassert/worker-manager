@@ -102,7 +102,7 @@ class ResponseAsserter
             [
                 'machine_id' => $expectedMachineId,
                 'requested_action' => $expectedRequestedAction,
-                'status_url' => sprintf('/%s/machine', rawurlencode($expectedMachineId))
+                'status_url' => sprintf('/machine/%s', rawurlencode($expectedMachineId))
             ]
         );
     }

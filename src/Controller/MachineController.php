@@ -20,7 +20,7 @@ use Symfony\Component\Routing\RouterInterface;
 class MachineController
 {
     public const PATH_COMPONENT_ID = '{id}';
-    public const PATH_MACHINE = '/' . self::PATH_COMPONENT_ID . '/machine';
+    public const PATH_MACHINE = '/machine/' . self::PATH_COMPONENT_ID;
 
     public function __construct(
         private readonly MachineRequestDispatcher $machineRequestDispatcher,
