@@ -11,7 +11,6 @@ use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\MessageHandlerExceptionFinder;
 use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\Mock\Repository\MockMachineRepository;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -51,11 +50,18 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             self::MACHINE_ID
         ));
 
-        $handler = $this->createHandler(
-            (new MockMachineRepository())
-                ->withFindCall(self::MACHINE_ID, null)
-                ->getMock()
-        );
+        $machineRepository = \Mockery::mock(MachineRepository::class);
+        $machineRepository
+            ->shouldReceive('find')
+            ->withArgs(function (string $machineId) {
+                self::assertSame(self::MACHINE_ID, $machineId);
+
+                return true;
+            })
+            ->andReturn(null)
+        ;
+
+        $handler = $this->createHandler($machineRepository);
 
         $handler->onMessageFailed($event);
     }
