@@ -29,7 +29,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         $machineRepository = \Mockery::mock(MachineRepository::class);
         $machineRepository
-            ->shouldNotReceive('find');
+            ->shouldNotReceive('find')
+        ;
 
         $handler = $this->createHandler($machineRepository);
         $handler->onMessageFailed($event);
@@ -41,7 +42,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         $machineRepository = \Mockery::mock(MachineRepository::class);
         $machineRepository
-            ->shouldNotReceive('find');
+            ->shouldNotReceive('find')
+        ;
 
         $handler = $this->createHandler($machineRepository);
         $handler->onMessageFailed($event);
