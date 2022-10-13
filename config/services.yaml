@@ -14,7 +14,7 @@ parameters:
     version: '%env(VERSION)%'
     users_security_bundle_base_url: '%env(AUTHENTICATION_BASE_URL)%'
     users_security_bundle_public_pattern: '(^/$)|(^/health-check$)'
-    users_security_bundle_secured_pattern: '/machine$'
+    users_security_bundle_secured_pattern: '^/machine/'
     users_security_bundle_access_control_path: '^/'
     health_check_bundle_enable_status_readiness_inspector: true
     health_check_bundle_status_is_ready: '%env(bool:IS_READY)%'
