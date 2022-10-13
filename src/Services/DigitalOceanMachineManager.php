@@ -8,7 +8,7 @@ use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
-use DigitalOceanV2\Api\Droplet as DropletApi;
+use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
@@ -16,9 +16,9 @@ use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 class DigitalOceanMachineManager implements ProviderMachineManagerInterface
 {
     public function __construct(
-        private DropletApi $dropletApi,
-        private DigitalOceanExceptionFactory $exceptionFactory,
-        private Factory $dropletConfigurationFactory,
+        private readonly Client $digitalOceanClient,
+        private readonly DigitalOceanExceptionFactory $exceptionFactory,
+        private readonly Factory $dropletConfigurationFactory,
     ) {
     }
 
@@ -48,7 +48,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
                 $namesValue = $namesValue[0];
             }
 
-            $dropletEntity = $this->dropletApi->create(
+            $dropletEntity = $this->digitalOceanClient->droplet()->create(
                 $namesValue,
                 $configuration->getRegion(),
                 $configuration->getSize(),
@@ -81,7 +81,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     public function remove(string $machineId, string $name): void
     {
         try {
-            $this->dropletApi->removeTagged($name);
+            $this->digitalOceanClient->droplet()->removeTagged($name);
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,
@@ -97,7 +97,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
         try {
-            $droplets = $this->dropletApi->getAll($name);
+            $droplets = $this->digitalOceanClient->droplet()->getAll($name);
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,
