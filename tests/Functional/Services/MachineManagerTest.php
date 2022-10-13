@@ -13,18 +13,16 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
-use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
+use App\Tests\Proxy\DigitalOceanV2\ClientProxy;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Client as DigitaloceanClient;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use Psr\Http\Message\ResponseInterface;
-use webignition\ObjectReflector\ObjectReflector;
 
 class MachineManagerTest extends AbstractBaseFunctionalTest
 {
@@ -35,6 +33,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     private MachineManager $machineManager;
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
+    private ClientProxy $digitalOceanClient;
 
     protected function setUp(): void
     {
@@ -51,6 +50,10 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
+
+        $digitalOceanClient = self::getContainer()->get(ClientProxy::class);
+        \assert($digitalOceanClient instanceof ClientProxy);
+        $this->digitalOceanClient = $digitalOceanClient;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -231,20 +234,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         ResponseInterface $apiResponse,
         string $expectedExceptionClass,
     ): void {
-        $digitalOceanClient = \Mockery::mock(DigitaloceanClient::class);
-        $digitalOceanClient
-            ->shouldReceive('getLastResponse')
-            ->andReturn($apiResponse)
-        ;
-
-        $digitaloceanExceptionFactory = self::getContainer()->get(DigitalOceanExceptionFactory::class);
-        \assert($digitaloceanExceptionFactory instanceof DigitalOceanExceptionFactory);
-        ObjectReflector::setProperty(
-            $digitaloceanExceptionFactory,
-            DigitalOceanExceptionFactory::class,
-            'digitalOceanClient',
-            $digitalOceanClient
-        );
+        $this->digitalOceanClient->setLastResponse($apiResponse);
 
         try {
             $callable();

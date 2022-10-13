@@ -13,13 +13,12 @@ use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\MachineActionInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTest;
-use DigitalOceanV2\Client;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
+use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
-use webignition\ObjectReflector\ObjectReflector;
 
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
 {
@@ -33,19 +32,21 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
         parent::setUp();
 
         $factory = self::getContainer()->get(DigitalOceanExceptionFactory::class);
-        if ($factory instanceof DigitalOceanExceptionFactory) {
-            $this->factory = $factory;
-        }
+        \assert($factory instanceof DigitalOceanExceptionFactory);
+        $this->factory = $factory;
     }
 
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(VendorExceptionInterface $exception, ExceptionInterface $expectedException): void
-    {
+    public function testCreate(
+        VendorExceptionInterface $exception,
+        ?ResponseInterface $lastResponse,
+        ExceptionInterface $expectedException
+    ): void {
         self::assertEquals(
             $expectedException,
-            $this->factory->create(self::ID, MachineActionInterface::ACTION_CREATE, $exception)
+            $this->factory->create(self::ID, MachineActionInterface::ACTION_CREATE, $exception, $lastResponse)
         );
     }
 
@@ -65,66 +66,38 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
         return [
             RuntimeException::class . ' 400' => [
                 'exception' => $runtimeException400,
+                'lastResponse' => null,
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
             RuntimeException::class . ' 401' => [
                 'exception' => $runtimeException401,
+                'lastResponse' => null,
                 'expectedException' => new AuthenticationException(self::ID, self::ACTION, $runtimeException401),
             ],
             ValidationFailedException::class . ' generic' => [
                 'exception' => $genericValidationFailedException,
+                'lastResponse' => null,
                 'expectedException' => new Exception(self::ID, self::ACTION, $genericValidationFailedException),
             ],
             ValidationFailedException::class . ' droplet limit will be exceeded' => [
                 'exception' => $dropletLimitValidationFailedException,
+                'lastResponse' => null,
                 'expectedException' => new DropletLimitExceededException(
                     self::ID,
                     self::ACTION,
                     $dropletLimitValidationFailedException
                 ),
             ],
+            ApiLimitExceededException::class => [
+                'exception' => new VendorApiLimitExceededException(),
+                'lastResponse' => new Response(429, ['ratelimit-reset' => '123']),
+                'expectedException' => new ApiLimitExceededException(
+                    123,
+                    self::ID,
+                    self::ACTION,
+                    new VendorApiLimitExceededException()
+                )
+            ],
         ];
-    }
-
-    public function testCreateForApiLimitExceededException(): void
-    {
-        $resetTimestamp = 123;
-        $lastResponse = \Mockery::mock(ResponseInterface::class);
-        $lastResponse
-            ->shouldReceive('getHeaderLine')
-            ->with('RateLimit-Reset')
-            ->andReturn((string) $resetTimestamp)
-        ;
-
-        $client = \Mockery::mock(Client::class);
-        $client
-            ->shouldReceive('getLastResponse')
-            ->andReturn($lastResponse)
-        ;
-
-        ObjectReflector::setProperty(
-            $this->factory,
-            DigitalOceanExceptionFactory::class,
-            'digitalOceanClient',
-            $client
-        );
-
-        $vendorApiLimitExceedException = new VendorApiLimitExceededException();
-
-        $expectedException = new ApiLimitExceededException(
-            $resetTimestamp,
-            self::ID,
-            self::ACTION,
-            $vendorApiLimitExceedException
-        );
-
-        self::assertEquals(
-            $expectedException,
-            $this->factory->create(
-                self::ID,
-                MachineActionInterface::ACTION_CREATE,
-                $vendorApiLimitExceedException
-            )
-        );
     }
 }

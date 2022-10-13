@@ -35,6 +35,9 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
+//        var_dump($this->digitalOceanClient->droplet());
+//        exit();
+
         $configuration = $this->dropletConfigurationFactory->create();
         $configuration = $configuration->withNames([$name]);
         $configuration = $configuration->addTags([$name]);
@@ -66,7 +69,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
             throw $this->exceptionFactory->create(
                 $machineId,
                 MachineActionInterface::ACTION_CREATE,
-                $exception
+                $exception,
+                $this->digitalOceanClient->getLastResponse()
             );
         }
 
@@ -86,7 +90,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
             throw $this->exceptionFactory->create(
                 $machineId,
                 MachineActionInterface::ACTION_DELETE,
-                $exception
+                $exception,
+                $this->digitalOceanClient->getLastResponse()
             );
         }
     }
@@ -102,7 +107,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
             throw $this->exceptionFactory->create(
                 $machineId,
                 MachineActionInterface::ACTION_GET,
-                $exception
+                $exception,
+                $this->digitalOceanClient->getLastResponse()
             );
         }
 
