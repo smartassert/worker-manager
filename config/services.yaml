@@ -79,9 +79,6 @@ services:
         calls:
             - authenticate: ['%digitalocean_api_token%']
 
-    DigitalOceanV2\Api\Droplet:
-        class: DigitalOceanV2\Api\Droplet
-
     App\Services\MachineManagerStack:
         arguments:
             $machineManagers:
