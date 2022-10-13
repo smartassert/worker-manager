@@ -11,7 +11,6 @@ use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
-use DigitalOceanV2\Client;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -19,18 +18,16 @@ use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactory
 {
-    public function __construct(
-        private Client $digitalOceanClient,
-    ) {
-    }
-
     /**
      * @param MachineActionInterface::ACTION_* $action
      */
-    public function create(string $machineId, string $action, VendorExceptionInterface $exception): ExceptionInterface
-    {
+    public function create(
+        string $machineId,
+        string $action,
+        VendorExceptionInterface $exception,
+        ?ResponseInterface $lastResponse,
+    ): ExceptionInterface {
         if ($exception instanceof VendorApiLimitExceededException) {
-            $lastResponse = $this->digitalOceanClient->getLastResponse();
             if ($lastResponse instanceof ResponseInterface) {
                 return new ApiLimitExceededException(
                     (int) $lastResponse->getHeaderLine('RateLimit-Reset'),

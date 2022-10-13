@@ -18,8 +18,11 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
+    App\Tests\Proxy\DigitalOceanV2\ClientProxy:
+        public: true
+
     DigitalOceanV2\Client:
-        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
+        alias: App\Tests\Proxy\DigitalOceanV2\ClientProxy
         public: true
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
