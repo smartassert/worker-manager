@@ -23,8 +23,8 @@ class MachineController
     public const PATH_MACHINE = '/' . self::PATH_COMPONENT_ID . '/machine';
 
     public function __construct(
-        private MachineRequestDispatcher $machineRequestDispatcher,
-        private MachineRequestFactory $machineRequestFactory,
+        private readonly MachineRequestDispatcher $machineRequestDispatcher,
+        private readonly MachineRequestFactory $machineRequestFactory,
         private readonly MachineRepository $machineRepository,
         private readonly RouterInterface $router,
     ) {
