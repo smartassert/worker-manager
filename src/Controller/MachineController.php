@@ -14,7 +14,6 @@ use App\Response\MachineRequestResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -32,7 +31,7 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
-    public function create(string $id, MachineProviderRepository $machineProviderRepository): Response
+    public function create(string $id, MachineProviderRepository $machineProviderRepository): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
@@ -62,7 +61,7 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
-    public function status(string $id, CreateFailureRepository $createFailureRepository): Response
+    public function status(string $id, CreateFailureRepository $createFailureRepository): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
@@ -85,7 +84,7 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
-    public function delete(string $id): Response
+    public function delete(string $id): MachineRequestResponse
     {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
