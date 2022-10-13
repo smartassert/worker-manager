@@ -27,20 +27,24 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $event = $this->createEvent();
         $event->setForRetry();
 
-        $handler = $this->createHandler(\Mockery::mock(MachineRepository::class));
-        $handler->onMessageFailed($event);
+        $machineRepository = \Mockery::mock(MachineRepository::class);
+        $machineRepository
+            ->shouldNotReceive('find');
 
-        self::expectNotToPerformAssertions();
+        $handler = $this->createHandler($machineRepository);
+        $handler->onMessageFailed($event);
     }
 
     public function testOnMessageFailedForNonMachineRequestInterfaceMessage(): void
     {
         $event = $this->createEvent();
 
-        $handler = $this->createHandler(\Mockery::mock(MachineRepository::class));
-        $handler->onMessageFailed($event);
+        $machineRepository = \Mockery::mock(MachineRepository::class);
+        $machineRepository
+            ->shouldNotReceive('find');
 
-        self::expectNotToPerformAssertions();
+        $handler = $this->createHandler($machineRepository);
+        $handler->onMessageFailed($event);
     }
 
     public function testOnMessageFailedMachineDoesNotExist(): void
