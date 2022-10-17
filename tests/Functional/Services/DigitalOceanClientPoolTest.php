@@ -7,7 +7,6 @@ namespace App\Tests\Functional\Services;
 use App\Exception\NoDigitalOceanClientException;
 use App\Services\DigitalOceanClientPool;
 use App\Tests\AbstractBaseFunctionalTest;
-use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use DigitalOceanV2\Api\Droplet;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -15,34 +14,12 @@ use Psr\Log\LoggerInterface;
 
 class DigitalOceanClientPoolTest extends AbstractBaseFunctionalTest
 {
-    use RemoteRequestThrowsExceptionDataProviderTrait;
-
-    private DigitalOceanClientPool $digitalOceanClientPool;
-
-    protected function setUp(): void
+    public function testServiceExistsInContainer(): void
     {
-        parent::setUp();
-
-        $digitalOceanClientPool = self::getContainer()->get(DigitalOceanClientPool::class);
-        \assert($digitalOceanClientPool instanceof DigitalOceanClientPool);
-        $this->digitalOceanClientPool = $digitalOceanClientPool;
-    }
-
-    public function testClientConfiguration(): void
-    {
-        $clientIds = $this->digitalOceanClientPool->getClientServiceIds();
-        self::assertSame(
-            [
-                'app.digitalocean.client.primary',
-                'app.digitalocean.client.secondary',
-            ],
-            $clientIds,
+        self::assertInstanceOf(
+            DigitalOceanClientPool::class,
+            self::getContainer()->get(DigitalOceanClientPool::class)
         );
-
-        foreach ($clientIds as $clientId) {
-            $client = self::getContainer()->get($clientId);
-            self::assertInstanceOf(Client::class, $client);
-        }
     }
 
     /**
@@ -55,7 +32,7 @@ class DigitalOceanClientPoolTest extends AbstractBaseFunctionalTest
         $logger = self::getContainer()->get(LoggerInterface::class);
         \assert($logger instanceof LoggerInterface);
 
-        $clientPool = new DigitalOceanClientPool([$clients], $logger);
+        $clientPool = new DigitalOceanClientPool($clients, $logger);
 
         self::expectException(NoDigitalOceanClientException::class);
 
@@ -99,13 +76,13 @@ class DigitalOceanClientPoolTest extends AbstractBaseFunctionalTest
             ],
             'single client, unable to authenticate' => [
                 'clients' => [
-                    $nonAuthenticatingClient1,
+                    'non-authenticating-1' => $nonAuthenticatingClient1,
                 ],
             ],
             'two clients, neither able to authenticate' => [
                 'clients' => [
-                    $nonAuthenticatingClient1,
-                    $nonAuthenticatingClient2,
+                    'non-authenticating-1' => $nonAuthenticatingClient1,
+                    'non-authenticating-2' => $nonAuthenticatingClient2,
                 ],
             ],
         ];
@@ -121,7 +98,7 @@ class DigitalOceanClientPoolTest extends AbstractBaseFunctionalTest
         $logger = self::getContainer()->get(LoggerInterface::class);
         \assert($logger instanceof LoggerInterface);
 
-        $clientPool = new DigitalOceanClientPool([$clients], $logger);
+        $clientPool = new DigitalOceanClientPool($clients, $logger);
 
         self::assertSame($expected, $clientPool->get());
     }
@@ -173,15 +150,15 @@ class DigitalOceanClientPoolTest extends AbstractBaseFunctionalTest
         return [
             'single client, authenticated' => [
                 'clients' => [
-                    $authenticatingClient,
+                    'authenticating' => $authenticatingClient,
                 ],
                 'expected' => $authenticatingClient,
             ],
             'multiple clients, authenticated eventually' => [
                 'clients' => [
-                    $nonAuthenticatingClient1,
-                    $nonAuthenticatingClient2,
-                    $authenticatingClient,
+                    'non-authenticating-1' => $nonAuthenticatingClient1,
+                    'non-authenticating-2' => $nonAuthenticatingClient2,
+                    'authenticating' => $authenticatingClient,
                 ],
                 'expected' => $authenticatingClient,
             ],

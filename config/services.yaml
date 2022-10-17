@@ -78,20 +78,18 @@ services:
         factory: ['@App\Services\DigitalOceanClientFactory', 'create']
         arguments:
             $apiToken: '%digitalocean_api_token%'
-        tags:
-            - { name: 'app.digitalocean.client' }
 
     app.digitalocean.client.secondary:
         class: DigitalOceanV2\Client
         factory: ['@App\Services\DigitalOceanClientFactory', 'create']
         arguments:
             $apiToken: '%digitalocean_api_token%'
-        tags:
-            - { name: 'app.digitalocean.client' }
 
     App\Services\DigitalOceanClientPool:
         arguments:
-            $taggedClients: [!tagged_iterator { tag: 'app.digitalocean.client', index_by: 'key' }]
+            $clients:
+                primary: '@app.digitalocean.client.primary'
+                secondary: '@app.digitalocean.client.secondary'
 
     DigitalOceanV2\Client:
         class: DigitalOceanV2\Client

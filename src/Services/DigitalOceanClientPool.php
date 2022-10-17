@@ -16,31 +16,21 @@ class DigitalOceanClientPool
     private readonly array $clients;
 
     /**
-     * @param array<int, iterable<non-empty-string, Client>> $taggedClients
+     * @param array<non-empty-string, Client> $clients
      */
     public function __construct(
-        array $taggedClients,
+        array $clients,
         private readonly LoggerInterface $logger,
     ) {
-        $clients = [];
+        $filteredClients = [];
 
-        foreach ($taggedClients as $clientCollection) {
-            foreach ($clientCollection as $key => $value) {
-                if ($value instanceof Client) {
-                    $clients[$key] = $value;
-                }
+        foreach ($clients as $name => $client) {
+            if ($client instanceof Client && '' !== trim($name)) {
+                $filteredClients[$name] = $client;
             }
         }
 
-        $this->clients = $clients;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getClientServiceIds(): array
-    {
-        return array_keys($this->clients);
+        $this->clients = $filteredClients;
     }
 
     /**
@@ -49,23 +39,21 @@ class DigitalOceanClientPool
     public function get(): Client
     {
         foreach ($this->clients as $clientId => $client) {
-            if ($client instanceof Client) {
-                try {
-                    $client->droplet()->getById(0);
+            try {
+                $client->droplet()->getById(0);
 
+                return $client;
+            } catch (ExceptionInterface $exception) {
+                if ($exception instanceof RuntimeException && 404 === $exception->getCode()) {
                     return $client;
-                } catch (ExceptionInterface $exception) {
-                    if ($exception instanceof RuntimeException && 404 === $exception->getCode()) {
-                        return $client;
-                    }
-
-                    $this->logger->error(
-                        $exception->getMessage(),
-                        [
-                            'client-id' => $clientId,
-                        ]
-                    );
                 }
+
+                $this->logger->error(
+                    $exception->getMessage(),
+                    [
+                        'client-id' => $clientId,
+                    ]
+                );
             }
         }
 
