@@ -71,13 +71,31 @@ services:
             $config:
                 handler: '@GuzzleHttp\HandlerStack'
 
+    App\Services\DigitalOceanClientFactory: ~
+
+    app.digitalocean.client.primary:
+        class: DigitalOceanV2\Client
+        factory: ['@App\Services\DigitalOceanClientFactory', 'create']
+        arguments:
+            $apiToken: '%digitalocean_api_token%'
+        tags:
+            - { name: 'app.digitalocean.client' }
+
+    app.digitalocean.client.secondary:
+        class: DigitalOceanV2\Client
+        factory: ['@App\Services\DigitalOceanClientFactory', 'create']
+        arguments:
+            $apiToken: '%digitalocean_api_token%'
+        tags:
+            - { name: 'app.digitalocean.client' }
+
+    App\Services\DigitalOceanClientPool:
+        arguments:
+            $taggedClients: [!tagged_iterator { tag: 'app.digitalocean.client', index_by: 'key' }]
+
     DigitalOceanV2\Client:
         class: DigitalOceanV2\Client
-        factory: ['DigitalOceanV2\Client', 'createWithHttpClient']
-        arguments:
-            $httpClient: '@Psr\Http\Client\ClientInterface'
-        calls:
-            - authenticate: ['%digitalocean_api_token%']
+        factory: ['@App\Services\DigitalOceanClientPool', 'get']
 
     App\Services\MachineManagerStack:
         arguments:

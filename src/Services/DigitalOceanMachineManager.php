@@ -35,9 +35,6 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
-//        var_dump($this->digitalOceanClient->droplet());
-//        exit();
-
         $configuration = $this->dropletConfigurationFactory->create();
         $configuration = $configuration->withNames([$name]);
         $configuration = $configuration->addTags([$name]);

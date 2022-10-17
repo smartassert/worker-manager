@@ -18,15 +18,20 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    App\Tests\Proxy\DigitalOceanV2\ClientProxy:
-        public: true
+    app.digitalocean.client.primary:
+        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
+        tags:
+            - { name: 'app.digitalocean.client' }
 
-    DigitalOceanV2\Client:
-        alias: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-        public: true
+    app.digitalocean.client.secondary:
+        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
+        tags:
+            - { name: 'app.digitalocean.client' }
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
         public: true
+        calls:
+            - prepareGetByIdZeroCall: []
 
     GuzzleHttp\Psr7\HttpFactory:
 

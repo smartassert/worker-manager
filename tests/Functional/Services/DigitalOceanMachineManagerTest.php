@@ -17,6 +17,7 @@ use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Proxy\DigitalOceanV2\ClientProxy;
 use App\Tests\Services\EntityRemover;
+use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use Psr\Http\Message\ResponseInterface;
@@ -31,7 +32,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     private Machine $machine;
     private string $machineName;
     private DropletApiProxy $dropletApiProxy;
-    private ClientProxy $digitalOceanClient;
+    private Client $digitalOceanClient;
 
     protected function setUp(): void
     {
@@ -49,8 +50,8 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
         \assert($dropletApiProxy instanceof DropletApiProxy);
         $this->dropletApiProxy = $dropletApiProxy;
 
-        $digitalOceanClient = self::getContainer()->get(ClientProxy::class);
-        \assert($digitalOceanClient instanceof ClientProxy);
+        $digitalOceanClient = self::getContainer()->get(Client::class);
+        \assert($digitalOceanClient instanceof Client);
         $this->digitalOceanClient = $digitalOceanClient;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
@@ -231,7 +232,9 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
         ResponseInterface $apiResponse,
         string $expectedExceptionClass,
     ): void {
-        $this->digitalOceanClient->setLastResponse($apiResponse);
+        if ($this->digitalOceanClient instanceof ClientProxy) {
+            $this->digitalOceanClient->setLastResponse($apiResponse);
+        }
 
         try {
             $callable();
