@@ -6,6 +6,7 @@ ARG APP_ENV=prod
 ARG DATABASE_URL=postgresql://database_user:database_password@0.0.0.0:5432/database_name?serverVersion=12&charset=utf8
 ARG MACHINE_NAME_PREFIX=dev
 ARG PRIMARY_DIGITALOCEAN_API_TOKEN=primary_digitalocean_api_token
+ARG SECONDARY_DIGITALOCEAN_API_TOKEN=secondary_digitalocean_api_token
 ARG DIGITALOCEAN_REGION=lon1
 ARG DIGITALOCEAN_SIZE=s-1vcpu-1gb
 ARG WORKER_IMAGE=ubuntu-20-04-x64
