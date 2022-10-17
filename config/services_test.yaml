@@ -18,15 +18,8 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    app.digitalocean.client.primary:
+    DigitalOceanV2\Client:
         class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-        tags:
-            - { name: 'app.digitalocean.client' }
-
-    app.digitalocean.client.secondary:
-        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-        tags:
-            - { name: 'app.digitalocean.client' }
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
         public: true
