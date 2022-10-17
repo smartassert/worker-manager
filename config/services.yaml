@@ -5,7 +5,6 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     machine_name_prefix: '%env(MACHINE_NAME_PREFIX)%'
-    digitalocean_api_token: '%env(DIGITALOCEAN_API_TOKEN)%'
     digitalocean_droplet_region: '%env(DIGITALOCEAN_REGION)%'
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
@@ -77,13 +76,13 @@ services:
         class: DigitalOceanV2\Client
         factory: ['@App\Services\DigitalOceanClientFactory', 'create']
         arguments:
-            $apiToken: '%digitalocean_api_token%'
+            $apiToken: '%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%'
 
     app.digitalocean.client.secondary:
         class: DigitalOceanV2\Client
         factory: ['@App\Services\DigitalOceanClientFactory', 'create']
         arguments:
-            $apiToken: '%digitalocean_api_token%'
+            $apiToken: '%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%'
 
     App\Services\DigitalOceanClientPool:
         arguments:
