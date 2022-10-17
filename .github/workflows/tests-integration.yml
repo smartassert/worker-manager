@@ -41,7 +41,8 @@ jobs:
 
       - name: Setup integration environment
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
+          PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
+          SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           VERSION: gh-action-version
         run: |
           VERSION=$VERSION composer integration-setup
@@ -50,7 +51,8 @@ jobs:
 
       - name: Test status, machine creation, health check
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
+          PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
+          SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           EXPECTED_VERSION: gh-action-version
         run: composer test-integration
 

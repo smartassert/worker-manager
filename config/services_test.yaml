@@ -18,15 +18,13 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    App\Tests\Proxy\DigitalOceanV2\ClientProxy:
-        public: true
-
     DigitalOceanV2\Client:
-        alias: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-        public: true
+        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
         public: true
+        calls:
+            - prepareGetByIdZeroCall: []
 
     GuzzleHttp\Psr7\HttpFactory:
 

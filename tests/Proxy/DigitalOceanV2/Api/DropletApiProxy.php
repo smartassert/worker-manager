@@ -7,6 +7,7 @@ namespace App\Tests\Proxy\DigitalOceanV2\Api;
 use DigitalOceanV2\Api\Droplet;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\MockInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
@@ -21,6 +22,11 @@ class DropletApiProxy extends Droplet
         parent::__construct(\Mockery::mock(Client::class));
 
         $this->mock = \Mockery::mock(Droplet::class);
+    }
+
+    public function prepareGetByIdZeroCall(): self
+    {
+        return $this->withGetByIdCall(0, new RuntimeException('The resource you requested could not be found.', 404));
     }
 
     public function withGetByIdCall(int $id, object $outcome): self

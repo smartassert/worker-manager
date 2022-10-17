@@ -5,7 +5,6 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     machine_name_prefix: '%env(MACHINE_NAME_PREFIX)%'
-    digitalocean_api_token: '%env(DIGITALOCEAN_API_TOKEN)%'
     digitalocean_droplet_region: '%env(DIGITALOCEAN_REGION)%'
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
@@ -71,13 +70,15 @@ services:
             $config:
                 handler: '@GuzzleHttp\HandlerStack'
 
+    App\Services\DigitalOceanClientFactory:
+        arguments:
+            $apiTokens:
+                primary: '%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%'
+                secondary: '%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%'
+
     DigitalOceanV2\Client:
         class: DigitalOceanV2\Client
-        factory: ['DigitalOceanV2\Client', 'createWithHttpClient']
-        arguments:
-            $httpClient: '@Psr\Http\Client\ClientInterface'
-        calls:
-            - authenticate: ['%digitalocean_api_token%']
+        factory: ['@App\Services\DigitalOceanClientFactory', 'create']
 
     App\Services\MachineManagerStack:
         arguments:
