@@ -189,6 +189,7 @@ class MachineTest extends AbstractMachineTest
         $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
+
         $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID);
     }
 

@@ -10,12 +10,10 @@ use App\Repository\CreateFailureRepository;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
-use App\Response\MachineRequestResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\RouterInterface;
 
 class MachineController
 {
@@ -26,7 +24,6 @@ class MachineController
         private readonly MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRequestFactory $machineRequestFactory,
         private readonly MachineRepository $machineRepository,
-        private readonly RouterInterface $router,
     ) {
     }
 
@@ -84,17 +81,21 @@ class MachineController
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
-    public function delete(string $id): MachineRequestResponse
+    public function delete(string $id): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
-        if (!$machine instanceof Machine) {
-            $this->machineRepository->add(new Machine($id, Machine::STATE_DELETE_RECEIVED));
+        if ($machine instanceof Machine) {
+            $machine->setState(Machine::STATE_DELETE_RECEIVED);
+        } else {
+            $machine = new Machine($id, Machine::STATE_DELETE_RECEIVED);
         }
+
+        $this->machineRepository->add($machine);
 
         $this->machineRequestDispatcher->dispatch(
             $this->machineRequestFactory->createDelete($id)
         );
 
-        return new MachineRequestResponse($id, 'delete', $this->router->generate('machine-status', ['id' => $id]));
+        return new JsonResponse($machine, 202);
     }
 }

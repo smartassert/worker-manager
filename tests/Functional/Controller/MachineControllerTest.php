@@ -19,7 +19,6 @@ use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Routing\RouterInterface;
 
 class MachineControllerTest extends AbstractBaseFunctionalTest
 {
@@ -155,9 +154,6 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        $router = self::getContainer()->get(RouterInterface::class);
-        \assert($router instanceof RouterInterface);
-
-        return new MachineController($machineRequestDispatcher, $machineRequestFactory, $machineRepository, $router);
+        return new MachineController($machineRequestDispatcher, $machineRequestFactory, $machineRepository);
     }
 }

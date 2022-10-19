@@ -83,7 +83,7 @@ class ResponseAsserter
 
     public function assertMachineDeleteResponse(ResponseInterface $response, string $expectedMachineId): void
     {
-        $this->assertMachineRequestResponse($response, $expectedMachineId, 'delete');
+        $this->assertMachineResponse($response, $expectedMachineId, 'delete/received', []);
     }
 
     /**
@@ -113,22 +113,6 @@ class ResponseAsserter
                 'id' => $expectedMachineId,
                 'state' => $expectedState,
                 'ip_addresses' => $expectedIpAddresses,
-            ]
-        );
-    }
-
-    private function assertMachineRequestResponse(
-        ResponseInterface $response,
-        string $expectedMachineId,
-        string $expectedRequestedAction,
-    ): void {
-        $this->assertJsonResponse(
-            $response,
-            202,
-            [
-                'machine_id' => $expectedMachineId,
-                'requested_action' => $expectedRequestedAction,
-                'status_url' => sprintf('/machine/%s', rawurlencode($expectedMachineId))
             ]
         );
     }
