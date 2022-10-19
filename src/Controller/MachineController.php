@@ -83,12 +83,11 @@ class MachineController
     public function delete(string $id): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
-        if ($machine instanceof Machine) {
-            $machine->setState(Machine::STATE_DELETE_RECEIVED);
-        } else {
-            $machine = new Machine($id, Machine::STATE_DELETE_RECEIVED);
+        if (!$machine instanceof Machine) {
+            $machine = new Machine($id);
         }
 
+        $machine->setState(Machine::STATE_DELETE_RECEIVED);
         $this->machineRepository->add($machine);
 
         $this->machineRequestDispatcher->dispatch(
