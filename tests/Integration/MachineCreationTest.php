@@ -30,7 +30,7 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $response,
             $this->machineId,
-            []
+            null
         );
 
         $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);

@@ -87,49 +87,60 @@ class ResponseAsserter
     }
 
     /**
-     * @param string[] $expectedIpAddresses
+     * @param null|string[] $expectedIpAddresses
      */
     public function assertMachineCreateResponse(
         ResponseInterface $response,
         string $expectedMachineId,
-        array $expectedIpAddresses
+        ?array $expectedIpAddresses
     ): void {
         $this->assertMachineResponse($response, $expectedMachineId, 'create/received', $expectedIpAddresses);
     }
 
     /**
-     * @param string[] $expectedIpAddresses
+     * @param null|string[] $expectedIpAddresses
      */
     public function assertMachineResponse(
         ResponseInterface $response,
         string $expectedMachineId,
         string $expectedState,
-        array $expectedIpAddresses
+        ?array $expectedIpAddresses
     ): void {
-        $this->assertJsonResponse(
-            $response,
-            202,
-            [
-                'id' => $expectedMachineId,
-                'state' => $expectedState,
-                'ip_addresses' => $expectedIpAddresses,
-            ]
-        );
+        $expectedResponseData = [
+            'id' => $expectedMachineId,
+            'state' => $expectedState,
+        ];
+
+        if (is_array($expectedIpAddresses)) {
+            $expectedResponseData['ip_addresses'] = $expectedIpAddresses;
+            $excludedKeys = [];
+        } else {
+            $excludedKeys = ['ip_addresses'];
+        }
+
+        $this->assertJsonResponse($response, 202, $expectedResponseData, $excludedKeys);
     }
 
     /**
      * @param array<mixed> $expectedResponseData
+     * @param string[]     $excludedKeys
      */
     private function assertJsonResponse(
         ResponseInterface $response,
         int $expectedStatusCode,
-        array $expectedResponseData
+        array $expectedResponseData,
+        array $excludedKeys = [],
     ): void {
         Assert::assertSame($expectedStatusCode, $response->getStatusCode());
         Assert::assertSame('application/json', $response->getHeaderLine('content-type'));
 
         $responseData = json_decode($response->getBody()->getContents(), true);
         Assert::assertIsArray($responseData);
+
+        foreach ($excludedKeys as $key) {
+            unset($responseData[$key], $expectedResponseData[$key]);
+        }
+
         Assert::assertEquals($expectedResponseData, $responseData);
     }
 }
