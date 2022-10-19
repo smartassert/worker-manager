@@ -57,7 +57,7 @@ class MachineController
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
-        return new MachineRequestResponse($id, 'create', $this->router->generate('machine-status', ['id' => $id]));
+        return new JsonResponse($machine, 202);
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]

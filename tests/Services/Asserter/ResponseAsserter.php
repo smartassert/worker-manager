@@ -86,9 +86,35 @@ class ResponseAsserter
         $this->assertMachineRequestResponse($response, $expectedMachineId, 'delete');
     }
 
-    public function assertMachineCreateResponse(ResponseInterface $response, string $expectedMachineId): void
-    {
-        $this->assertMachineRequestResponse($response, $expectedMachineId, 'create');
+    /**
+     * @param string[] $expectedIpAddresses
+     */
+    public function assertMachineCreateResponse(
+        ResponseInterface $response,
+        string $expectedMachineId,
+        array $expectedIpAddresses
+    ): void {
+        $this->assertMachineResponse($response, $expectedMachineId, 'create/received', $expectedIpAddresses);
+    }
+
+    /**
+     * @param string[] $expectedIpAddresses
+     */
+    public function assertMachineResponse(
+        ResponseInterface $response,
+        string $expectedMachineId,
+        string $expectedState,
+        array $expectedIpAddresses
+    ): void {
+        $this->assertJsonResponse(
+            $response,
+            202,
+            [
+                'id' => $expectedMachineId,
+                'state' => $expectedState,
+                'ip_addresses' => $expectedIpAddresses,
+            ]
+        );
     }
 
     private function assertMachineRequestResponse(

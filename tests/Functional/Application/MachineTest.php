@@ -38,9 +38,13 @@ class MachineTest extends AbstractMachineTest
 
     /**
      * @dataProvider createSuccessDataProvider
+     *
+     * @param string[] $expectedResponseIpAddresses
      */
-    public function testCreateSuccess(?Machine $existingMachine): void
-    {
+    public function testCreateSuccess(
+        ?Machine $existingMachine,
+        array $expectedResponseIpAddresses,
+    ): void {
         if ($existingMachine instanceof Machine) {
             $this->machineRepository->add($existingMachine);
         }
@@ -51,7 +55,11 @@ class MachineTest extends AbstractMachineTest
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->responseAsserter->assertMachineCreateResponse($response, self::MACHINE_ID);
+        $this->responseAsserter->assertMachineCreateResponse(
+            $response,
+            self::MACHINE_ID,
+            $expectedResponseIpAddresses
+        );
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
@@ -75,12 +83,15 @@ class MachineTest extends AbstractMachineTest
         return [
             'no existing machine' => [
                 'existingMachine' => null,
+                'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: find/not-found' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_NOT_FOUND),
+                'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, no ip addresses' => [
                 'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED),
+                'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, has ip addresses' => [
                 'existingMachine' => new Machine(
@@ -91,6 +102,10 @@ class MachineTest extends AbstractMachineTest
                         '10.0.0.1',
                     ]
                 ),
+                'expectedResponseIpAddresses' => [
+                    '127.0.0.1',
+                    '10.0.0.1',
+                ],
             ],
         ];
     }
