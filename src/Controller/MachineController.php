@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Model\FailedCreationMachine;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Repository\MachineProviderRepository;
@@ -70,14 +71,12 @@ class MachineController
             );
         }
 
-        $responseData = $machine->jsonSerialize();
-
         $createFailure = $createFailureRepository->find($id);
         if ($createFailure instanceof CreateFailure) {
-            $responseData['create_failure'] = $createFailure->jsonSerialize();
+            $machine = new FailedCreationMachine($machine, $createFailure);
         }
 
-        return new JsonResponse($responseData);
+        return new JsonResponse($machine);
     }
 
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
