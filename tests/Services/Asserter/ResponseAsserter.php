@@ -81,9 +81,15 @@ class ResponseAsserter
         $this->assertJsonResponse($response, 200, $expectedResponseData);
     }
 
-    public function assertMachineDeleteResponse(ResponseInterface $response, string $expectedMachineId): void
-    {
-        $this->assertMachineResponse($response, $expectedMachineId, 'delete/received', []);
+    /**
+     * @param null|string[] $expectedIpAddresses
+     */
+    public function assertMachineDeleteResponse(
+        ResponseInterface $response,
+        string $expectedMachineId,
+        ?array $expectedIpAddresses
+    ): void {
+        $this->assertMachineResponse($response, $expectedMachineId, 'delete/received', $expectedIpAddresses);
     }
 
     /**

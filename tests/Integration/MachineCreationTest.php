@@ -109,7 +109,7 @@ class MachineCreationTest extends AbstractMachineTest
     private function deleteMachine(): void
     {
         $response = $this->makeValidDeleteRequest($this->machineId);
-        $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId);
+        $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId, null);
     }
 
     /**

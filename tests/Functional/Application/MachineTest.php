@@ -190,7 +190,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, []);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -199,7 +199,7 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, []);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
