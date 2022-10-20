@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-class Machine
+class Machine implements \JsonSerializable
 {
     public const STATE_UNKNOWN = 'unknown';
     public const STATE_FIND_RECEIVED = 'find/received';
