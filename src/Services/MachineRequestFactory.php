@@ -25,7 +25,7 @@ class MachineRequestFactory
             [
                 $this->createCreate($machineId),
             ]
-        );
+        )->withOnNotFoundState(MachineState::CREATE_RECEIVED);
     }
 
     public function createDelete(string $machineId): DeleteMachine
