@@ -20,8 +20,7 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
-      - name: Set worker image
-        id: worker_image
+      - name: Set env.worker_image
         env:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.worker_image }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.worker_image }}
@@ -33,13 +32,13 @@ jobs:
           fi
 
           echo -n "$WORKER_IMAGE" > ./worker_image
-          echo "::set-output name=value::$WORKER_IMAGE"
+          echo "worker_image=$WORKER_IMAGE" >> "$GITHUB_ENV"
 
       - name: Commit
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic worker image update: ${{ steps.worker_image.outputs.value }}"
+          commit_message: "Automatic worker image update: ${{ env.worker_image }}"
 
       - name: Trigger workflow
         if: ${{ steps.commit.outputs.changes_detected == 'true' }}

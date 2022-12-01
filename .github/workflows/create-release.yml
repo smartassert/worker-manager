@@ -27,19 +27,17 @@ jobs:
         with:
           ref: ${{ github.event.inputs.commit_hash }}
 
-      - name: Set should_release
-        id: should_release
-        run: |
+      - name: Set env.should_release
+        run: |          
           SHOULD_RELEASE="${{ github.event.inputs.should_release }}"
 
           if [ "$SHOULD_RELEASE" != "true" ]; then
             SHOULD_RELEASE="false"
           fi
 
-          echo "::set-output name=value::$SHOULD_RELEASE"
+          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_ENV"
 
-      - name: Set release tag
-        id: release_tag
+      - name: Set env.release_tag
         run: |
           RELEASE_TAG=$(./ci/scripts/create-version-label.sh)
           TAG_EXISTENCE_COUNT=$(git tag | grep "$RELEASE_TAG" -c | cat)
@@ -50,10 +48,9 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=value::$RELEASE_TAG"
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_ENV"
 
-      - name: Read worker image
-        id: worker_image
+      - name: Set env.worker_image
         run: |
           WORKER_IMAGE=$(cat ./worker_image)
           if [ "" = "$WORKER_IMAGE" ]; then
@@ -61,21 +58,21 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=value::$WORKER_IMAGE"
+          echo "worker_image=$WORKER_IMAGE" >> "$GITHUB_ENV"
 
       - name: Verify setup
         run: |
           echo "commit_hash: ${{ github.event.inputs.commit_hash }}"
-          echo "should_release: ${{ steps.should_release.outputs.value }}"
-          echo "release_tag: ${{ steps.release_tag.outputs.value }}"
-          echo "worker_image: ${{ steps.worker_image.outputs.value }}"
+          echo "should_release: ${{ env.should_release }}"
+          echo "release_tag: ${{ env.release_tag }}"
+          echo "worker_image: ${{ env.worker_image }}"
 
       - name: Create release
-        if: ${{ steps.should_release.outputs.value == 'true' }}
+        if: ${{ env.should_release == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ steps.release_tag.outputs.value }}
+          TAG: ${{ env.release_tag }}
           TARGET: ${{ github.event.inputs.commit_hash }}
-          TITLE: "Automatic release ${{ steps.release_tag.outputs.value }}"
-          NOTES: "Worker image ${{ steps.worker_image.outputs.value }}"
+          TITLE: "Automatic release ${{ env.release_tag }}"
+          NOTES: "Worker image ${{ env.worker_image }}"
         run: gh release create "$TAG" --target "$TARGET" --title "$TITLE" --notes "$NOTES"
