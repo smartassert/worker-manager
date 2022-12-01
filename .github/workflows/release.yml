@@ -17,21 +17,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set version
-        id: version
+      - name: Set env.service_version
         env:
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          [[ -n "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
+          [[ -n "$RELEASE_TAG_NAME" ]] && echo "service_version=$RELEASE_TAG_NAME" >> "$GITHUB_ENV" || echo "service_version=master" >> "$GITHUB_ENV"
 
-      - name: Read worker image
+      - name: Set env.worker_image
         id: build_config
-        run: echo "::set-output name=value::$(cat ./worker_image)"
+        run: echo "worker_image=$(cat ./worker_image)" >> "$GITHUB_ENV"
 
       - name: Examine build config
         run: |
-          echo WORKER_IMAGE ${{ steps.build_config.outputs.value }}
-          echo VERSION ${{ steps.version.outputs.value }}
+          echo WORKER_IMAGE ${{ env.worker_image }}
+          echo VERSION ${{ env.service_version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -47,14 +46,14 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/smartassert/worker-manager:${{ steps.version.outputs.value }}
+          tags: ghcr.io/smartassert/worker-manager:${{ env.service_version }}
           build-args: |
-            VERSION=${{ steps.version.outputs.value }}
-            WORKER_IMAGE=${{ steps.build_config.outputs.value }}
+            VERSION=${{ env.service_version }}
+            WORKER_IMAGE=${{ env.worker_image }}
 
       - name: Trigger deploy workflow
         if: ${{ github.event_name == 'release' }}
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
         run:
-          gh workflow run deploy.yml -f worker_manager_version="${{ steps.version.outputs.value }}"
+          gh workflow run deploy.yml -f worker_manager_version="${{ env.service_version }}"
