@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Application;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
 use App\Repository\MachineProviderRepository;
@@ -64,7 +65,7 @@ class MachineTest extends AbstractMachineTest
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
         self::assertSame(self::MACHINE_ID, $machine->getId());
-        self::assertSame(Machine::STATE_CREATE_RECEIVED, $machine->getState());
+        self::assertSame(MachineState::CREATE_RECEIVED, $machine->getState());
 
         if ($existingMachine instanceof Machine) {
             self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
@@ -86,17 +87,17 @@ class MachineTest extends AbstractMachineTest
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: find/not-found' => [
-                'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_NOT_FOUND),
+                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::FIND_NOT_FOUND),
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, no ip addresses' => [
-                'existingMachine' => new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED),
+                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED),
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, has ip addresses' => [
                 'existingMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_CREATE_FAILED,
+                    MachineState::CREATE_FAILED,
                     [
                         '127.0.0.1',
                         '10.0.0.1',
@@ -130,7 +131,7 @@ class MachineTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineStatusResponse(
             $response,
             self::MACHINE_ID,
-            Machine::STATE_FIND_RECEIVED,
+            MachineState::FIND_RECEIVED,
             []
         );
     }
@@ -144,14 +145,14 @@ class MachineTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineStatusResponse(
             $response,
             self::MACHINE_ID,
-            Machine::STATE_CREATE_RECEIVED,
+            MachineState::CREATE_RECEIVED,
             []
         );
     }
 
     public function testStatusWithCreateFailure(): void
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_FAILED);
+        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED);
 
         $this->machineRepository->add($machine);
 
@@ -172,7 +173,7 @@ class MachineTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineStatusResponse(
             $response,
             self::MACHINE_ID,
-            Machine::STATE_CREATE_FAILED,
+            MachineState::CREATE_FAILED,
             [],
             [
                 'code' => 2,

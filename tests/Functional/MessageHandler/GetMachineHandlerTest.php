@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
@@ -170,15 +171,15 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'machine' => new Machine(self::MACHINE_ID),
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED
+                    MachineState::UP_STARTED
                 ),
             ],
             'updated within initial ip addresses' => [
                 'getAllOutcome' => [$upNewDropletEntity],
-                'machine' => new Machine(self::MACHINE_ID, Machine::STATE_UP_STARTED),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::UP_STARTED),
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED,
+                    MachineState::UP_STARTED,
                     $ipAddresses
                 ),
             ],
@@ -186,12 +187,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'getAllOutcome' => [$upActiveDropletEntity],
                 'machine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED,
+                    MachineState::UP_STARTED,
                     $ipAddresses
                 ),
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_ACTIVE,
+                    MachineState::UP_ACTIVE,
                     $ipAddresses
                 ),
             ],
@@ -200,7 +201,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
     public function testInvokeUnsupportedProvider(): void
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $invalidProvider = 'invalid';
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         ObjectReflector::setProperty(
@@ -241,7 +242,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);

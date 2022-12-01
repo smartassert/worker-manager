@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-use App\Entity\Machine;
+use App\Enum\MachineState;
 
 interface RemoteMachineInterface
 {
@@ -19,7 +19,7 @@ interface RemoteMachineInterface
     public function getIpAddresses(): array;
 
     /**
-     * @return null|Machine::STATE_UP_ACTIVE|Machine::STATE_UP_STARTED
+     * @return null|MachineState::UP_ACTIVE|MachineState::UP_STARTED
      */
-    public function getState(): ?string;
+    public function getState(): null | MachineState;
 }

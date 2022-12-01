@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Services;
 
-use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
@@ -35,7 +35,7 @@ class MachineRequestFactoryTest extends TestCase
 
         self::assertInstanceOf(FindMachine::class, $request);
         self::assertSame([], $request->getOnSuccessCollection());
-        self::assertSame(Machine::STATE_FIND_NOT_FOUND, $request->getOnNotFoundState());
+        self::assertSame(MachineState::FIND_NOT_FOUND, $request->getOnNotFoundState());
 
         $expectedGetMachineRequest = new GetMachine('id2', self::MACHINE_ID);
 
@@ -65,7 +65,7 @@ class MachineRequestFactoryTest extends TestCase
         self::assertInstanceOf(DeleteMachine::class, $request);
 
         $expectedFindMachineRequest = new FindMachine('id0', self::MACHINE_ID);
-        $expectedFindMachineRequest = $expectedFindMachineRequest->withOnNotFoundState(Machine::STATE_DELETE_DELETED);
+        $expectedFindMachineRequest = $expectedFindMachineRequest->withOnNotFoundState(MachineState::DELETE_DELETED);
         $expectedFindMachineRequest = $expectedFindMachineRequest->withReDispatchOnSuccess(true);
 
         self::assertEquals([$expectedFindMachineRequest], $request->getOnSuccessCollection());

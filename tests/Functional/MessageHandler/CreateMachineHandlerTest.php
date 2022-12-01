@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -73,7 +74,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_CREATE_RECEIVED);
+        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $machineRepository->add($this->machine);
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
@@ -174,7 +175,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_CREATE_REQUESTED, $this->machine->getState());
+        self::assertSame(MachineState::CREATE_REQUESTED, $this->machine->getState());
     }
 
     /**
@@ -193,7 +194,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_CREATE_REQUESTED, $this->machine->getState());
+        self::assertSame(MachineState::CREATE_REQUESTED, $this->machine->getState());
     }
 
     /**

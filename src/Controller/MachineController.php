@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Model\FailedCreationMachine;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
@@ -33,14 +34,14 @@ class MachineController
     {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
-            if (!in_array($machine->getState(), Machine::RESETTABLE_STATES)) {
+            if (!in_array($machine->getState(), MachineState::RESETTABLE_STATES)) {
                 return BadMachineCreateRequestResponse::createIdTakenResponse();
             }
         } else {
             $machine = new Machine($id);
         }
 
-        $machine->setState(Machine::STATE_CREATE_RECEIVED);
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $this->machineRepository->add($machine);
 
         $machineProvider = $machineProviderRepository->find($id);
@@ -63,7 +64,7 @@ class MachineController
     {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($id, Machine::STATE_FIND_RECEIVED);
+            $machine = new Machine($id, MachineState::FIND_RECEIVED);
             $this->machineRepository->add($machine);
 
             $this->machineRequestDispatcher->dispatch(
@@ -87,7 +88,7 @@ class MachineController
             $machine = new Machine($id);
         }
 
-        $machine->setState(Machine::STATE_DELETE_RECEIVED);
+        $machine->setState(MachineState::DELETE_RECEIVED);
         $this->machineRepository->add($machine);
 
         $this->machineRequestDispatcher->dispatch(

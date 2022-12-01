@@ -6,6 +6,7 @@ namespace App\Tests\Functional\EventSubscriber\Messenger;
 
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
@@ -59,7 +60,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testHandleCreateMachineWorkerMessageFailedEvent(
         \Throwable $throwable,
-        string $expectedMachineState,
+        MachineState $expectedMachineState,
         CreateFailure $expectedCreateFailure
     ): void {
         $envelope = new Envelope(
@@ -94,7 +95,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     MachineActionInterface::ACTION_GET,
                     new \Exception()
                 ),
-                'expectedMachineState' => Machine::STATE_CREATE_FAILED,
+                'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_API_LIMIT_EXCEEDED,
@@ -106,7 +107,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             ],
             'unsupported provider' => [
                 'throwable' => new UnsupportedProviderException(ProviderInterface::NAME_DIGITALOCEAN),
-                'expectedMachineState' => Machine::STATE_CREATE_FAILED,
+                'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_UNSUPPORTED_PROVIDER,
@@ -115,7 +116,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             ],
             'unknown exception' => [
                 'throwable' => new \Exception('Unknown exception'),
-                'expectedMachineState' => Machine::STATE_CREATE_FAILED,
+                'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_UNKNOWN,
@@ -130,7 +131,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testHandleWorkerMessageFailedEvent(
         RemoteMachineMessageInterface $message,
-        string $expectedMachineState,
+        MachineState $expectedMachineState,
     ): void {
         $envelope = new Envelope($message);
         $event = new WorkerMessageFailedEvent($envelope, 'receiver name not relevant', new \Exception());
@@ -151,15 +152,15 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         return [
             DeleteMachine::class => [
                 'message' => new DeleteMachine('unique id', self::MACHINE_ID),
-                'expectedMachineState' => Machine::STATE_DELETE_FAILED,
+                'expectedMachineState' => MachineState::DELETE_FAILED,
             ],
             FindMachine::class => [
                 'message' => new FindMachine('unique id', self::MACHINE_ID),
-                'expectedMachineState' => Machine::STATE_FIND_NOT_FINDABLE,
+                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
             ],
             GetMachine::class => [
                 'message' => new GetMachine('unique id', self::MACHINE_ID),
-                'expectedMachineState' => Machine::STATE_FIND_NOT_FOUND,
+                'expectedMachineState' => MachineState::FIND_NOT_FOUND,
             ],
         ];
     }

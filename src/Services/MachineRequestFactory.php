@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
@@ -32,7 +32,7 @@ class MachineRequestFactory
     {
         $findRequest = $this
             ->createFind($machineId)
-            ->withOnNotFoundState(Machine::STATE_DELETE_DELETED)
+            ->withOnNotFoundState(MachineState::DELETE_DELETED)
             ->withReDispatchOnSuccess(true)
         ;
 

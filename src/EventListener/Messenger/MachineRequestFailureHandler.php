@@ -3,6 +3,7 @@
 namespace App\EventListener\Messenger;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
@@ -61,20 +62,20 @@ class MachineRequestFailureHandler implements EventSubscriberInterface
         }
 
         if ($message instanceof CreateMachine) {
-            $machine->setState(Machine::STATE_CREATE_FAILED);
+            $machine->setState(MachineState::CREATE_FAILED);
             $this->createFailureFactory->create($machine->getId(), $messageHandlerException);
         }
 
         if ($message instanceof DeleteMachine) {
-            $machine->setState(Machine::STATE_DELETE_FAILED);
+            $machine->setState(MachineState::DELETE_FAILED);
         }
 
         if ($message instanceof FindMachine) {
-            $machine->setState(Machine::STATE_FIND_NOT_FINDABLE);
+            $machine->setState(MachineState::FIND_NOT_FINDABLE);
         }
 
         if ($message instanceof GetMachine) {
-            $machine->setState(Machine::STATE_FIND_NOT_FOUND);
+            $machine->setState(MachineState::FIND_NOT_FOUND);
         }
 
         $this->machineRepository->add($machine);

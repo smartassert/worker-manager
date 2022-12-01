@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Message;
 
-use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Model\MachineActionInterface;
 
 class FindMachine extends AbstractRemoteMachineRequest
 {
-    /**
-     * @var Machine::STATE_*
-     */
-    private string $onNotFoundState = Machine::STATE_FIND_NOT_FOUND;
+    private MachineState $onNotFoundState = MachineState::FIND_NOT_FOUND;
     private bool $reDispatchOnSuccess = false;
 
     public function getAction(): string
@@ -20,10 +17,7 @@ class FindMachine extends AbstractRemoteMachineRequest
         return MachineActionInterface::ACTION_FIND;
     }
 
-    /**
-     * @param Machine::STATE_* $onNotFoundState
-     */
-    public function withOnNotFoundState(string $onNotFoundState): self
+    public function withOnNotFoundState(MachineState $onNotFoundState): self
     {
         $new = clone $this;
         $new->onNotFoundState = $onNotFoundState;
@@ -31,10 +25,7 @@ class FindMachine extends AbstractRemoteMachineRequest
         return $new;
     }
 
-    /**
-     * @return Machine::STATE_*
-     */
-    public function getOnNotFoundState(): string
+    public function getOnNotFoundState(): MachineState
     {
         return $this->onNotFoundState;
     }

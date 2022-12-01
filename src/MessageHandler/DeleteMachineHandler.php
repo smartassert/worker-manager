@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
@@ -35,7 +36,7 @@ class DeleteMachineHandler implements MessageHandlerInterface
             return;
         }
 
-        $machine->setState(Machine::STATE_DELETE_REQUESTED);
+        $machine->setState(MachineState::DELETE_REQUESTED);
         $this->machineRepository->add($machine);
 
         try {

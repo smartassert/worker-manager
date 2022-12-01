@@ -6,6 +6,7 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
@@ -41,7 +42,7 @@ class FindMachineHandler implements MessageHandlerInterface
             return;
         }
 
-        $machine->setState(Machine::STATE_FIND_FINDING);
+        $machine->setState(MachineState::FIND_FINDING);
         $this->machineRepository->add($machine);
 
         try {
