@@ -60,12 +60,7 @@ class AuthenticationConfiguration
     private function getFrontendToken(): RefreshableToken
     {
         if (!isset($this->frontendToken)) {
-            $frontendToken = $this->usersClient->createFrontendToken($this->userEmail, $this->userPassword);
-            if (null === $frontendToken) {
-                throw new \RuntimeException('Frontend token is null');
-            }
-
-            $this->frontendToken = $frontendToken;
+            $this->frontendToken = $this->usersClient->createFrontendToken($this->userEmail, $this->userPassword);
         }
 
         return $this->frontendToken;
