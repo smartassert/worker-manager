@@ -132,16 +132,4 @@ class Machine implements \JsonSerializable
             'ip_addresses' => $this->ip_addresses,
         ];
     }
-
-    public function merge(Machine $machine): self
-    {
-        $this->state = $machine->getState();
-
-        $ipAddresses = $machine->getIpAddresses();
-        if ([] !== $ipAddresses) {
-            $this->ip_addresses = $machine->getIpAddresses();
-        }
-
-        return $this;
-    }
 }
