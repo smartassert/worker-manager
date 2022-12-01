@@ -35,7 +35,7 @@ class MachineRequestFactoryTest extends TestCase
 
         self::assertInstanceOf(FindMachine::class, $request);
         self::assertSame([], $request->getOnSuccessCollection());
-        self::assertSame(MachineState::FIND_NOT_FOUND, $request->getOnNotFoundState());
+        self::assertSame(MachineState::CREATE_RECEIVED, $request->getOnNotFoundState());
 
         $expectedGetMachineRequest = new GetMachine('id2', self::MACHINE_ID);
 
