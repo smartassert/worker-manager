@@ -115,12 +115,6 @@ class Machine implements \JsonSerializable
         $this->ip_addresses = $ipAddresses;
     }
 
-    public function reset(): void
-    {
-        $this->state = self::STATE_CREATE_RECEIVED;
-        $this->ip_addresses = [];
-    }
-
     /**
      * @return array<mixed>
      */
