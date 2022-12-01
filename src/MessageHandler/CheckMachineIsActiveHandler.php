@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Message\CheckMachineIsActive;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
@@ -28,8 +29,8 @@ class CheckMachineIsActiveHandler implements MessageHandlerInterface
         $state = $machine->getState();
 
         if (
-            in_array($state, Machine::END_STATES)
-            || !in_array($state, Machine::PRE_ACTIVE_STATES)
+            in_array($state, MachineState::END_STATES)
+            || !in_array($state, MachineState::PRE_ACTIVE_STATES)
         ) {
             return;
         }

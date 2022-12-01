@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -155,12 +156,12 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         return [
             'remote machine found and updated, no existing provider' => [
-                'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED),
                 'machineProvider' => null,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED,
+                    MachineState::UP_STARTED,
                     [
                         '10.0.0.1',
                     ]
@@ -181,12 +182,12 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
             ],
             'remote machine found and updated, has existing provider' => [
-                'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED,
+                    MachineState::UP_STARTED,
                     [
                         '10.0.0.1',
                     ]
@@ -207,12 +208,12 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
             ],
             'remote machine not found, create requested' => [
-                'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
                 'expectedGetAllOutcome' => [],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_FIND_NOT_FOUND
+                    MachineState::FIND_NOT_FOUND
                 ),
                 'expectedMachineProvider' => new MachineProvider(
                     self::MACHINE_ID,
@@ -230,12 +231,12 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
             ],
             'remote machine found, re-dispatch self' => [
-                'machine' => new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED),
                 'machineProvider' => $nonDigitalOceanMachineProvider,
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => new Machine(
                     self::MACHINE_ID,
-                    Machine::STATE_UP_STARTED,
+                    MachineState::UP_STARTED,
                     [
                         '10.0.0.1',
                     ]
@@ -281,7 +282,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $machine = new Machine(self::MACHINE_ID, Machine::STATE_FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
@@ -304,7 +305,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_FIND_FINDING, $machine->getState());
+        self::assertSame(MachineState::FIND_FINDING, $machine->getState());
     }
 
     /**

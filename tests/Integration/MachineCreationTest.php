@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use App\Entity\Machine as MachineEntity;
+use App\Enum\MachineState;
 use App\Tests\Application\AbstractMachineTest;
 use App\Tests\Model\Machine;
 
@@ -33,9 +33,9 @@ class MachineCreationTest extends AbstractMachineTest
             null
         );
 
-        $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
+        $this->assertEventualMachineState(MachineState::UP_ACTIVE);
         $this->deleteMachine();
-        $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
+        $this->assertEventualMachineState(MachineState::DELETE_DELETED);
     }
 
     public function testStatusForMissingLocalMachine(): void
@@ -57,27 +57,32 @@ class MachineCreationTest extends AbstractMachineTest
         $statusResponse = $this->makeValidStatusRequest($this->machineId);
         self::assertSame(200, $statusResponse->getStatusCode());
 
+        /**
+         * @var MachineState[] $expectedStates
+         */
         $expectedStates = [
-            MachineEntity::STATE_FIND_RECEIVED,
-            MachineEntity::STATE_FIND_FINDING,
+            MachineState::FIND_RECEIVED,
+            MachineState::FIND_FINDING,
         ];
+
+        $expectedStatesAsStrings = [];
+        foreach ($expectedStates as $expectedState) {
+            $expectedStatesAsStrings[] = $expectedState->value;
+        }
 
         $state = $this->getMachine()->getState();
 
         self::assertTrue(
             in_array($state, $expectedStates),
-            'Machine state not ' . implode(', ', $expectedStates) . ': ' . $state
+            'Machine state not ' . implode(', ', $expectedStatesAsStrings) . ': ' . $state->value
         );
 
-        $this->assertEventualMachineState(MachineEntity::STATE_UP_ACTIVE);
+        $this->assertEventualMachineState(MachineState::UP_ACTIVE);
         $this->deleteMachine();
-        $this->assertEventualMachineState(MachineEntity::STATE_DELETE_DELETED);
+        $this->assertEventualMachineState(MachineState::DELETE_DELETED);
     }
 
-    /**
-     * @param MachineEntity::STATE_* $stopState
-     */
-    private function waitUntilMachineStateIs(string $stopState): bool
+    private function waitUntilMachineStateIs(MachineState $stopState): bool
     {
         $duration = 0;
         $maxDuration = self::MAX_DURATION_IN_SECONDS * self::MICROSECONDS_PER_SECOND;
@@ -112,17 +117,14 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId, null);
     }
 
-    /**
-     * @param MachineEntity::STATE_* $state
-     */
-    private function assertEventualMachineState(string $state): void
+    private function assertEventualMachineState(MachineState $state): void
     {
         $waitResult = $this->waitUntilMachineStateIs($state);
         if (false === $waitResult) {
             $this->fail(sprintf(
                 'Timed out waiting for expected machine state. Expected: %s, actual: %s',
-                $state,
-                $this->getMachine()->getState()
+                $state->value,
+                $this->getMachine()->getState()->value
             ));
         }
 

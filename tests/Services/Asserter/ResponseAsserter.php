@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Services\Asserter;
 
+use App\Enum\MachineState;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
 
@@ -62,7 +63,7 @@ class ResponseAsserter
     public function assertMachineStatusResponse(
         ResponseInterface $response,
         string $expectedMachineId,
-        string $expectedStatus,
+        MachineState $expectedStatus,
         ?array $expectedIpAddresses,
         ?array $expectedCreateFailureData = null
     ): void {
@@ -88,7 +89,13 @@ class ResponseAsserter
         string $expectedMachineId,
         ?array $expectedIpAddresses
     ): void {
-        $this->assertMachineResponse($response, 202, $expectedMachineId, 'delete/received', $expectedIpAddresses);
+        $this->assertMachineResponse(
+            $response,
+            202,
+            $expectedMachineId,
+            MachineState::DELETE_RECEIVED,
+            $expectedIpAddresses
+        );
     }
 
     /**
@@ -99,7 +106,13 @@ class ResponseAsserter
         string $expectedMachineId,
         ?array $expectedIpAddresses
     ): void {
-        $this->assertMachineResponse($response, 202, $expectedMachineId, 'create/received', $expectedIpAddresses);
+        $this->assertMachineResponse(
+            $response,
+            202,
+            $expectedMachineId,
+            MachineState::CREATE_RECEIVED,
+            $expectedIpAddresses
+        );
     }
 
     /**
@@ -110,13 +123,13 @@ class ResponseAsserter
         ResponseInterface $response,
         int $expectedStatusCode,
         string $expectedMachineId,
-        string $expectedState,
+        MachineState $expectedState,
         ?array $expectedIpAddresses,
         ?array $expectedAdditionalData = null,
     ): void {
         $expectedResponseData = [
             'id' => $expectedMachineId,
-            'state' => $expectedState,
+            'state' => $expectedState->value,
         ];
 
         if (is_array($expectedIpAddresses)) {

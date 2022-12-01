@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -54,7 +55,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, Machine::STATE_DELETE_RECEIVED);
+        $this->machine = new Machine(self::MACHINE_ID, MachineState::DELETE_RECEIVED);
         $machineRepository->add($this->machine);
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
@@ -71,7 +72,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     public function testInvokeSuccess(): void
     {
-        self::assertSame(Machine::STATE_DELETE_RECEIVED, $this->machine->getState());
+        self::assertSame(MachineState::DELETE_RECEIVED, $this->machine->getState());
 
         $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
 
@@ -93,7 +94,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
         $handler = $this->createHandler($machineRequestDispatcher);
         ($handler)($message);
 
-        self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
+        self::assertSame(MachineState::DELETE_REQUESTED, $this->machine->getState());
     }
 
     public function testInvokeMachineEntityMissing(): void
@@ -129,7 +130,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
             self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(Machine::STATE_DELETE_REQUESTED, $this->machine->getState());
+        self::assertSame(MachineState::DELETE_REQUESTED, $this->machine->getState());
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
@@ -43,7 +44,7 @@ class CreateMachineHandler implements MessageHandlerInterface
             return;
         }
 
-        $machine->setState(Machine::STATE_CREATE_REQUESTED);
+        $machine->setState(MachineState::CREATE_REQUESTED);
         $this->machineRepository->add($machine);
 
         try {
