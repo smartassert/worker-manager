@@ -30,6 +30,7 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $response,
             $this->machineId,
+            false,
             null
         );
 
@@ -44,6 +45,7 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $createResponse,
             $this->machineId,
+            false,
             []
         );
 
@@ -114,7 +116,7 @@ class MachineCreationTest extends AbstractMachineTest
     private function deleteMachine(): void
     {
         $response = $this->makeValidDeleteRequest($this->machineId);
-        $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId, null);
+        $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId, false, null);
     }
 
     private function assertEventualMachineState(MachineState $state): void

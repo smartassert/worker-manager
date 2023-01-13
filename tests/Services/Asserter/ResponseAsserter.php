@@ -63,7 +63,8 @@ class ResponseAsserter
     public function assertMachineStatusResponse(
         ResponseInterface $response,
         string $expectedMachineId,
-        MachineState $expectedStatus,
+        MachineState $expectedState,
+        bool $expectedHasEndState,
         ?array $expectedIpAddresses,
         ?array $expectedCreateFailureData = null
     ): void {
@@ -75,7 +76,8 @@ class ResponseAsserter
             $response,
             200,
             $expectedMachineId,
-            $expectedStatus,
+            $expectedState,
+            $expectedHasEndState,
             $expectedIpAddresses,
             $expectedAdditionalData
         );
@@ -87,6 +89,7 @@ class ResponseAsserter
     public function assertMachineDeleteResponse(
         ResponseInterface $response,
         string $expectedMachineId,
+        bool $expectedHasEndState,
         ?array $expectedIpAddresses
     ): void {
         $this->assertMachineResponse(
@@ -94,6 +97,7 @@ class ResponseAsserter
             202,
             $expectedMachineId,
             MachineState::DELETE_RECEIVED,
+            $expectedHasEndState,
             $expectedIpAddresses
         );
     }
@@ -104,6 +108,7 @@ class ResponseAsserter
     public function assertMachineCreateResponse(
         ResponseInterface $response,
         string $expectedMachineId,
+        bool $expectedHasEndState,
         ?array $expectedIpAddresses
     ): void {
         $this->assertMachineResponse(
@@ -111,6 +116,7 @@ class ResponseAsserter
             202,
             $expectedMachineId,
             MachineState::CREATE_RECEIVED,
+            $expectedHasEndState,
             $expectedIpAddresses
         );
     }
@@ -124,12 +130,14 @@ class ResponseAsserter
         int $expectedStatusCode,
         string $expectedMachineId,
         MachineState $expectedState,
+        bool $expectedHasEndState,
         ?array $expectedIpAddresses,
         ?array $expectedAdditionalData = null,
     ): void {
         $expectedResponseData = [
             'id' => $expectedMachineId,
             'state' => $expectedState->value,
+            'has_end_state' => $expectedHasEndState,
         ];
 
         if (is_array($expectedIpAddresses)) {

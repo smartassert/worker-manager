@@ -59,6 +59,7 @@ class MachineTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $response,
             self::MACHINE_ID,
+            false,
             $expectedResponseIpAddresses
         );
 
@@ -132,6 +133,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::FIND_RECEIVED,
+            false,
             []
         );
     }
@@ -146,6 +148,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_RECEIVED,
+            false,
             []
         );
     }
@@ -174,6 +177,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_FAILED,
+            true,
             [],
             [
                 'code' => 2,
@@ -191,7 +195,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, []);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -200,7 +204,7 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, []);
+        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
