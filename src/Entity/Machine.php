@@ -73,14 +73,15 @@ class Machine implements \JsonSerializable
     }
 
     /**
-     * @return array<mixed>
+     * @return array{id: string, state: non-empty-string, ip_addresses: string[], has_end_state: bool}
      */
     public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
-            'state' => $this->state,
+            'state' => $this->state->value,
             'ip_addresses' => $this->ip_addresses,
+            'has_end_state' => in_array($this->state, MachineState::END_STATES)
         ];
     }
 }
