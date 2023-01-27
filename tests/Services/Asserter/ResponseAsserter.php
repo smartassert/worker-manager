@@ -10,20 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 
 class ResponseAsserter
 {
-    public function assertHealthCheckResponse(ResponseInterface $response): void
-    {
-        $this->assertJsonResponse(
-            $response,
-            200,
-            [
-                'database_connection' => true,
-                'database_entities' => true,
-                'message_queue' => true,
-                'machine_provider_digital_ocean' => true,
-            ]
-        );
-    }
-
     public function assertStatusResponse(
         ResponseInterface $response,
         string $expectedVersion,
@@ -156,7 +142,7 @@ class ResponseAsserter
      * @param array<mixed> $expectedResponseData
      * @param string[]     $excludedKeys
      */
-    private function assertJsonResponse(
+    public function assertJsonResponse(
         ResponseInterface $response,
         int $expectedStatusCode,
         array $expectedResponseData,
