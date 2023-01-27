@@ -10,21 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 
 class ResponseAsserter
 {
-    public function assertStatusResponse(
-        ResponseInterface $response,
-        string $expectedVersion,
-        bool $expectedReady
-    ): void {
-        $this->assertJsonResponse(
-            $response,
-            200,
-            [
-                'version' => $expectedVersion,
-                'ready' => $expectedReady,
-            ]
-        );
-    }
-
     /**
      * @param array<mixed> $expectedResponseData
      */
