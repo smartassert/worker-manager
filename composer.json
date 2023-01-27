@@ -92,25 +92,25 @@
         ],
         "cs-fixer-dry-run": "docker run --rm $(if [ ! -z \"${NO_TTY}\" ]; then echo \"\"; else echo \"-t\"; fi) -w=/app -v ${PWD}:/app oskarstark/php-cs-fixer-ga:latest --allow-risky=yes --dry-run --verbose --show-progress none",
         "cs-fixer-fix": "docker run --rm $(if [ ! -z \"${NO_TTY}\" ]; then echo \"\"; else echo \"-t\"; fi) -w=/app -v ${PWD}:/app oskarstark/php-cs-fixer-ga:latest --allow-risky=yes --diff",
-        "cs-phpcs": "./vendor/bin/phpcs",
+        "cs-phpcs": "XDEBUG_MODE=off ./vendor/bin/phpcs",
         "cs": [
             "@cs-fixer-dry-run",
             "@cs-phpcs"
         ],
-        "static-analysis": "./vendor/bin/phpstan analyse --ansi",
-        "test-unit": "./vendor/bin/phpunit --colors=always tests/Unit",
-        "test-functional": "./vendor/bin/phpunit --colors=always tests/Functional",
+        "static-analysis": "XDEBUG_MODE=off ./vendor/bin/phpstan analyse --ansi",
+        "test-unit": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Unit",
+        "test-functional": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Functional",
         "test-integration-unauthorized-user": [
-            "./vendor/bin/phpunit tests/Integration/UnauthorizedUserTest.php"
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/UnauthorizedUserTest.php"
         ],
         "test-integration-machine-creation": [
-            "./vendor/bin/phpunit tests/Integration/MachineCreationTest.php"
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/MachineCreationTest.php"
         ],
         "test-integration-health-check": [
-            "./vendor/bin/phpunit tests/Integration/HealthCheckTest.php"
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/HealthCheckTest.php"
         ],
         "test-integration-status": [
-            "./vendor/bin/phpunit tests/Integration/StatusTest.php"
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/StatusTest.php"
         ],
         "test-integration": [
             "@test-integration-unauthorized-user",
