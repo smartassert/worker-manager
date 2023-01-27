@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 class MachineResponseAsserter
 {
     public function __construct(
-        private readonly ResponseAsserter $responseAsserter,
+        private readonly JsonResponseAsserter $jsonResponseAsserter,
     ) {
     }
 
@@ -114,7 +114,7 @@ class MachineResponseAsserter
             $expectedResponseData = array_merge($expectedResponseData, $expectedAdditionalData);
         }
 
-        $this->responseAsserter->assertJsonResponse(
+        $this->jsonResponseAsserter->assertJsonResponse(
             $response,
             $expectedStatusCode,
             $expectedResponseData,

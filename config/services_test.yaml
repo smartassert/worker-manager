@@ -84,7 +84,7 @@ services:
             $userEmail: 'user@example.com'
             $userPassword: 'password'
 
-    App\Tests\Services\Asserter\ResponseAsserter:
+    App\Tests\Services\Asserter\JsonResponseAsserter:
         public: true
 
     App\Tests\Services\Asserter\MachineResponseAsserter:

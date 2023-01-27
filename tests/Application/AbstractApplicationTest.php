@@ -8,7 +8,7 @@ use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Tests\Services\ApplicationClient\Client;
-use App\Tests\Services\Asserter\ResponseAsserter;
+use App\Tests\Services\Asserter\JsonResponseAsserter;
 use App\Tests\Services\AuthenticationConfiguration;
 use App\Tests\Services\EntityRemover;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -16,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 abstract class AbstractApplicationTest extends WebTestCase
 {
-    protected ResponseAsserter $responseAsserter;
+    protected JsonResponseAsserter $jsonResponseAsserter;
     protected static AuthenticationConfiguration $authenticationConfiguration;
     protected static KernelBrowser $kernelBrowser;
     protected Client $applicationClient;
@@ -38,9 +38,9 @@ abstract class AbstractApplicationTest extends WebTestCase
 
         $this->applicationClient = $this->getApplicationClient();
 
-        $responseAsserter = self::getContainer()->get(ResponseAsserter::class);
-        \assert($responseAsserter instanceof ResponseAsserter);
-        $this->responseAsserter = $responseAsserter;
+        $jsonResponseAsserter = self::getContainer()->get(JsonResponseAsserter::class);
+        \assert($jsonResponseAsserter instanceof JsonResponseAsserter);
+        $this->jsonResponseAsserter = $jsonResponseAsserter;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {

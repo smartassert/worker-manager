@@ -117,7 +117,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertJsonResponse(
+        $this->jsonResponseAsserter->assertJsonResponse(
             $response,
             400,
             [

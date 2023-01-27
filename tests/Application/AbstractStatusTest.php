@@ -8,7 +8,7 @@ abstract class AbstractStatusTest extends AbstractApplicationTest
 {
     public function testGetStatus(): void
     {
-        $this->responseAsserter->assertJsonResponse(
+        $this->jsonResponseAsserter->assertJsonResponse(
             $this->applicationClient->makeGetStatusRequest(),
             200,
             [
