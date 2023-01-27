@@ -12,25 +12,6 @@ class ResponseAsserter
 {
     /**
      * @param null|string[] $expectedIpAddresses
-     */
-    public function assertMachineCreateResponse(
-        ResponseInterface $response,
-        string $expectedMachineId,
-        ?array $expectedIpAddresses
-    ): void {
-        $this->assertMachineResponse(
-            $response,
-            202,
-            $expectedMachineId,
-            MachineState::CREATE_RECEIVED,
-            false,
-            false,
-            $expectedIpAddresses
-        );
-    }
-
-    /**
-     * @param null|string[] $expectedIpAddresses
      * @param array<mixed>  $expectedAdditionalData
      */
     public function assertMachineResponse(

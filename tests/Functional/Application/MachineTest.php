@@ -56,7 +56,7 @@ class MachineTest extends AbstractMachineTest
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->responseAsserter->assertMachineCreateResponse(
+        $this->machineResponseAsserter->assertCreateResponse(
             $response,
             self::MACHINE_ID,
             $expectedResponseIpAddresses
