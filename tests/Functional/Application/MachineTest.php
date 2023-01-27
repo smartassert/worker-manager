@@ -56,7 +56,7 @@ class MachineTest extends AbstractMachineTest
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->responseAsserter->assertMachineCreateResponse(
+        $this->machineResponseAsserter->assertCreateResponse(
             $response,
             self::MACHINE_ID,
             $expectedResponseIpAddresses
@@ -117,18 +117,22 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineCreateBadRequestResponse($response, [
-            'type' => 'machine-create-request',
-            'message' => 'id taken',
-            'code' => 100,
-        ]);
+        $this->jsonResponseAsserter->assertJsonResponse(
+            $response,
+            400,
+            [
+                'type' => 'machine-create-request',
+                'message' => 'id taken',
+                'code' => 100,
+            ]
+        );
     }
 
     public function testStatusMachineNotFound(): void
     {
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineStatusResponse(
+        $this->machineResponseAsserter->assertStatusResponse(
             $response,
             self::MACHINE_ID,
             MachineState::FIND_RECEIVED,
@@ -144,7 +148,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineStatusResponse(
+        $this->machineResponseAsserter->assertStatusResponse(
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_RECEIVED,
@@ -174,7 +178,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineStatusResponse(
+        $this->machineResponseAsserter->assertStatusResponse(
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_FAILED,
@@ -199,7 +203,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineStatusResponse(
+        $this->machineResponseAsserter->assertStatusResponse(
             $response,
             self::MACHINE_ID,
             MachineState::UP_ACTIVE,
@@ -215,7 +219,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -224,7 +228,7 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);

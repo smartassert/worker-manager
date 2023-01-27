@@ -6,6 +6,8 @@ namespace App\Tests\Application;
 
 use App\Tests\Model\Machine;
 use App\Tests\Services\AuthenticationConfiguration;
+use PHPUnit\Framework\Assert;
+use Psr\Http\Message\ResponseInterface;
 
 abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
 {
@@ -19,7 +21,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
             Machine::createId()
         );
 
-        $this->responseAsserter->assertUnauthorizedResponse($response);
+        $this->assertUnauthorizedResponse($response);
     }
 
     /**
@@ -32,7 +34,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
             Machine::createId()
         );
 
-        $this->responseAsserter->assertUnauthorizedResponse($response);
+        $this->assertUnauthorizedResponse($response);
     }
 
     /**
@@ -45,7 +47,7 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
             Machine::createId()
         );
 
-        $this->responseAsserter->assertUnauthorizedResponse($response);
+        $this->assertUnauthorizedResponse($response);
     }
 
     /**
@@ -70,5 +72,11 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
                 }
             ],
         ];
+    }
+
+    private function assertUnauthorizedResponse(ResponseInterface $response): void
+    {
+        Assert::assertSame(401, $response->getStatusCode());
+        Assert::assertSame('', $response->getBody()->getContents());
     }
 }

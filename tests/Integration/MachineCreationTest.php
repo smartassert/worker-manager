@@ -27,7 +27,7 @@ class MachineCreationTest extends AbstractMachineTest
     public function testCreateRemoteMachine(): void
     {
         $response = $this->makeValidCreateRequest($this->machineId);
-        $this->responseAsserter->assertMachineCreateResponse(
+        $this->machineResponseAsserter->assertCreateResponse(
             $response,
             $this->machineId,
             null
@@ -41,7 +41,7 @@ class MachineCreationTest extends AbstractMachineTest
     public function testStatusForMissingLocalMachine(): void
     {
         $createResponse = $this->makeValidCreateRequest($this->machineId);
-        $this->responseAsserter->assertMachineCreateResponse(
+        $this->machineResponseAsserter->assertCreateResponse(
             $createResponse,
             $this->machineId,
             []
@@ -114,7 +114,7 @@ class MachineCreationTest extends AbstractMachineTest
     private function deleteMachine(): void
     {
         $response = $this->makeValidDeleteRequest($this->machineId);
-        $this->responseAsserter->assertMachineDeleteResponse($response, $this->machineId, false, null);
+        $this->machineResponseAsserter->assertDeleteResponse($response, $this->machineId, false, null);
     }
 
     private function assertEventualMachineState(MachineState $state): void

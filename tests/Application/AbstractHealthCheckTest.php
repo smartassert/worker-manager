@@ -10,8 +10,15 @@ abstract class AbstractHealthCheckTest extends AbstractApplicationTest
     {
         $this->getHealthCheckSetup();
 
-        $this->responseAsserter->assertHealthCheckResponse(
-            $this->applicationClient->makeGetHealthCheckRequest()
+        $this->jsonResponseAsserter->assertJsonResponse(
+            $this->applicationClient->makeGetHealthCheckRequest(),
+            200,
+            [
+                'database_connection' => true,
+                'database_entities' => true,
+                'message_queue' => true,
+                'machine_provider_digital_ocean' => true,
+            ]
         );
     }
 
