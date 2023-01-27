@@ -5,21 +5,54 @@ declare(strict_types=1);
 namespace App\Tests\Services\Asserter;
 
 use App\Enum\MachineState;
-use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
 
-class ResponseAsserter
+class MachineResponseAsserter
 {
+    public function __construct(
+        private readonly ResponseAsserter $responseAsserter,
+    ) {
+    }
+
+    /**
+     * @param null|string[]     $expectedIpAddresses
+     * @param null|array<mixed> $expectedCreateFailureData
+     */
+    public function assertStatusResponse(
+        ResponseInterface $response,
+        string $expectedMachineId,
+        MachineState $expectedState,
+        bool $expectedHasEndState,
+        bool $expectedHasActiveState,
+        ?array $expectedIpAddresses,
+        ?array $expectedCreateFailureData = null
+    ): void {
+        $expectedAdditionalData = null === $expectedCreateFailureData
+            ? null :
+            ['create_failure' => $expectedCreateFailureData];
+
+        $this->assertResponse(
+            $response,
+            200,
+            $expectedMachineId,
+            $expectedState,
+            $expectedHasEndState,
+            $expectedHasActiveState,
+            $expectedIpAddresses,
+            $expectedAdditionalData
+        );
+    }
+
     /**
      * @param null|string[] $expectedIpAddresses
      */
-    public function assertMachineDeleteResponse(
+    public function assertDeleteResponse(
         ResponseInterface $response,
         string $expectedMachineId,
         bool $expectedHasEndState,
         ?array $expectedIpAddresses
     ): void {
-        $this->assertMachineResponse(
+        $this->assertResponse(
             $response,
             202,
             $expectedMachineId,
@@ -33,12 +66,12 @@ class ResponseAsserter
     /**
      * @param null|string[] $expectedIpAddresses
      */
-    public function assertMachineCreateResponse(
+    public function assertCreateResponse(
         ResponseInterface $response,
         string $expectedMachineId,
         ?array $expectedIpAddresses
     ): void {
-        $this->assertMachineResponse(
+        $this->assertResponse(
             $response,
             202,
             $expectedMachineId,
@@ -53,7 +86,7 @@ class ResponseAsserter
      * @param null|string[] $expectedIpAddresses
      * @param array<mixed>  $expectedAdditionalData
      */
-    public function assertMachineResponse(
+    public function assertResponse(
         ResponseInterface $response,
         int $expectedStatusCode,
         string $expectedMachineId,
@@ -81,29 +114,11 @@ class ResponseAsserter
             $expectedResponseData = array_merge($expectedResponseData, $expectedAdditionalData);
         }
 
-        $this->assertJsonResponse($response, $expectedStatusCode, $expectedResponseData, $excludedKeys);
-    }
-
-    /**
-     * @param array<mixed> $expectedResponseData
-     * @param string[]     $excludedKeys
-     */
-    public function assertJsonResponse(
-        ResponseInterface $response,
-        int $expectedStatusCode,
-        array $expectedResponseData,
-        array $excludedKeys = [],
-    ): void {
-        Assert::assertSame($expectedStatusCode, $response->getStatusCode());
-        Assert::assertSame('application/json', $response->getHeaderLine('content-type'));
-
-        $responseData = json_decode($response->getBody()->getContents(), true);
-        Assert::assertIsArray($responseData);
-
-        foreach ($excludedKeys as $key) {
-            unset($responseData[$key], $expectedResponseData[$key]);
-        }
-
-        Assert::assertEquals($expectedResponseData, $responseData);
+        $this->responseAsserter->assertJsonResponse(
+            $response,
+            $expectedStatusCode,
+            $expectedResponseData,
+            $excludedKeys
+        );
     }
 }

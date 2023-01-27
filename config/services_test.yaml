@@ -86,3 +86,6 @@ services:
 
     App\Tests\Services\Asserter\ResponseAsserter:
         public: true
+
+    App\Tests\Services\Asserter\MachineResponseAsserter:
+        public: true
