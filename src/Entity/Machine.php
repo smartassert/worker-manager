@@ -5,6 +5,15 @@ namespace App\Entity;
 use App\Enum\MachineState;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * @phpstan-type SerializedMachine array{
+ *   id: string,
+ *   state: non-empty-string,
+ *   ip_addresses: string[],
+ *   has_end_state: bool,
+ *   has_active_state: bool
+ * }
+ */
 #[ORM\Entity]
 class Machine implements \JsonSerializable
 {
@@ -73,7 +82,7 @@ class Machine implements \JsonSerializable
     }
 
     /**
-     * @return array{id: string, state: non-empty-string, ip_addresses: string[], has_end_state: bool}
+     * @return SerializedMachine
      */
     public function jsonSerialize(): array
     {
@@ -81,7 +90,8 @@ class Machine implements \JsonSerializable
             'id' => $this->id,
             'state' => $this->state->value,
             'ip_addresses' => $this->ip_addresses,
-            'has_end_state' => in_array($this->state, MachineState::END_STATES)
+            'has_end_state' => in_array($this->state, MachineState::END_STATES),
+            'has_active_state' => MachineState::UP_ACTIVE === $this->state,
         ];
     }
 }

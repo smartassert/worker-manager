@@ -59,7 +59,6 @@ class MachineTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $response,
             self::MACHINE_ID,
-            false,
             $expectedResponseIpAddresses
         );
 
@@ -134,6 +133,7 @@ class MachineTest extends AbstractMachineTest
             self::MACHINE_ID,
             MachineState::FIND_RECEIVED,
             false,
+            false,
             []
         );
     }
@@ -148,6 +148,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_RECEIVED,
+            false,
             false,
             []
         );
@@ -178,6 +179,7 @@ class MachineTest extends AbstractMachineTest
             self::MACHINE_ID,
             MachineState::CREATE_FAILED,
             true,
+            false,
             [],
             [
                 'code' => 2,
@@ -186,6 +188,24 @@ class MachineTest extends AbstractMachineTest
                     'reset-timestamp' => 123,
                 ],
             ]
+        );
+    }
+
+    public function testStatusHasActiveState(): void
+    {
+        $machine = new Machine(self::MACHINE_ID, MachineState::UP_ACTIVE);
+
+        $this->machineRepository->add($machine);
+
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
+
+        $this->responseAsserter->assertMachineStatusResponse(
+            $response,
+            self::MACHINE_ID,
+            MachineState::UP_ACTIVE,
+            false,
+            true,
+            []
         );
     }
 
