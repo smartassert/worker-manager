@@ -13,7 +13,6 @@ use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Application\AbstractMachineTest;
-use App\Tests\Services\Asserter\MachineResponseAsserter;
 use Doctrine\ORM\EntityManagerInterface;
 
 class MachineTest extends AbstractMachineTest
@@ -24,7 +23,6 @@ class MachineTest extends AbstractMachineTest
 
     private MachineRepository $machineRepository;
     private MachineProviderRepository $machineProviderRepository;
-    private MachineResponseAsserter $machineResponseAsserter;
 
     protected function setUp(): void
     {
@@ -37,10 +35,6 @@ class MachineTest extends AbstractMachineTest
         $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
         \assert($machineProviderRepository instanceof MachineProviderRepository);
         $this->machineProviderRepository = $machineProviderRepository;
-
-        $machineResponseAsserter = self::getContainer()->get(MachineResponseAsserter::class);
-        \assert($machineResponseAsserter instanceof MachineResponseAsserter);
-        $this->machineResponseAsserter = $machineResponseAsserter;
     }
 
     /**
@@ -225,7 +219,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -234,7 +228,7 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->responseAsserter->assertMachineDeleteResponse($response, self::MACHINE_ID, false, []);
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
