@@ -11,16 +11,6 @@ use Psr\Http\Message\ResponseInterface;
 class ResponseAsserter
 {
     /**
-     * @param array<mixed> $expectedResponseData
-     */
-    public function assertMachineCreateBadRequestResponse(
-        ResponseInterface $response,
-        array $expectedResponseData
-    ): void {
-        $this->assertJsonResponse($response, 400, $expectedResponseData);
-    }
-
-    /**
      * @param null|string[]     $expectedIpAddresses
      * @param null|array<mixed> $expectedCreateFailureData
      */

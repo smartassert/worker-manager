@@ -117,11 +117,15 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $this->responseAsserter->assertMachineCreateBadRequestResponse($response, [
-            'type' => 'machine-create-request',
-            'message' => 'id taken',
-            'code' => 100,
-        ]);
+        $this->responseAsserter->assertJsonResponse(
+            $response,
+            400,
+            [
+                'type' => 'machine-create-request',
+                'message' => 'id taken',
+                'code' => 100,
+            ]
+        );
     }
 
     public function testStatusMachineNotFound(): void
