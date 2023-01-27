@@ -10,7 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
  *   id: string,
  *   state: non-empty-string,
  *   ip_addresses: string[],
- *   has_end_state: bool
+ *   has_end_state: bool,
+ *   has_active_state: bool
  * }
  */
 #[ORM\Entity]

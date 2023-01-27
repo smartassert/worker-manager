@@ -65,6 +65,7 @@ class ResponseAsserter
         string $expectedMachineId,
         MachineState $expectedState,
         bool $expectedHasEndState,
+        bool $expectedHasActiveState,
         ?array $expectedIpAddresses,
         ?array $expectedCreateFailureData = null
     ): void {
@@ -78,6 +79,7 @@ class ResponseAsserter
             $expectedMachineId,
             $expectedState,
             $expectedHasEndState,
+            $expectedHasActiveState,
             $expectedIpAddresses,
             $expectedAdditionalData
         );
@@ -98,6 +100,7 @@ class ResponseAsserter
             $expectedMachineId,
             MachineState::DELETE_RECEIVED,
             $expectedHasEndState,
+            false,
             $expectedIpAddresses
         );
     }
@@ -108,7 +111,6 @@ class ResponseAsserter
     public function assertMachineCreateResponse(
         ResponseInterface $response,
         string $expectedMachineId,
-        bool $expectedHasEndState,
         ?array $expectedIpAddresses
     ): void {
         $this->assertMachineResponse(
@@ -116,7 +118,8 @@ class ResponseAsserter
             202,
             $expectedMachineId,
             MachineState::CREATE_RECEIVED,
-            $expectedHasEndState,
+            false,
+            false,
             $expectedIpAddresses
         );
     }
@@ -131,6 +134,7 @@ class ResponseAsserter
         string $expectedMachineId,
         MachineState $expectedState,
         bool $expectedHasEndState,
+        bool $expectedHasActiveState,
         ?array $expectedIpAddresses,
         ?array $expectedAdditionalData = null,
     ): void {
@@ -138,6 +142,7 @@ class ResponseAsserter
             'id' => $expectedMachineId,
             'state' => $expectedState->value,
             'has_end_state' => $expectedHasEndState,
+            'has_active_state' => $expectedHasActiveState,
         ];
 
         if (is_array($expectedIpAddresses)) {

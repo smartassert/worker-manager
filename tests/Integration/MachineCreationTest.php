@@ -30,7 +30,6 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $response,
             $this->machineId,
-            false,
             null
         );
 
@@ -45,7 +44,6 @@ class MachineCreationTest extends AbstractMachineTest
         $this->responseAsserter->assertMachineCreateResponse(
             $createResponse,
             $this->machineId,
-            false,
             []
         );
 
