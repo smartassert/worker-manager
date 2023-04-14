@@ -22,6 +22,7 @@ class MachineResponseAsserter
         ResponseInterface $response,
         string $expectedMachineId,
         MachineState $expectedState,
+        bool $expectedHasPreActiveState,
         bool $expectedHasEndState,
         bool $expectedHasActiveState,
         ?array $expectedIpAddresses,
@@ -36,6 +37,7 @@ class MachineResponseAsserter
             200,
             $expectedMachineId,
             $expectedState,
+            $expectedHasPreActiveState,
             $expectedHasEndState,
             $expectedHasActiveState,
             $expectedIpAddresses,
@@ -57,6 +59,7 @@ class MachineResponseAsserter
             202,
             $expectedMachineId,
             MachineState::DELETE_RECEIVED,
+            false,
             $expectedHasEndState,
             false,
             $expectedIpAddresses
@@ -76,6 +79,7 @@ class MachineResponseAsserter
             202,
             $expectedMachineId,
             MachineState::CREATE_RECEIVED,
+            true,
             false,
             false,
             $expectedIpAddresses
@@ -91,6 +95,7 @@ class MachineResponseAsserter
         int $expectedStatusCode,
         string $expectedMachineId,
         MachineState $expectedState,
+        bool $expectedHasPreActiveState,
         bool $expectedHasEndState,
         bool $expectedHasActiveState,
         ?array $expectedIpAddresses,
@@ -99,6 +104,7 @@ class MachineResponseAsserter
         $expectedResponseData = [
             'id' => $expectedMachineId,
             'state' => $expectedState->value,
+            'has_pre_active_state' => $expectedHasPreActiveState,
             'has_end_state' => $expectedHasEndState,
             'has_active_state' => $expectedHasActiveState,
         ];

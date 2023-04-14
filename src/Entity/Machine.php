@@ -90,6 +90,7 @@ class Machine implements \JsonSerializable
             'id' => $this->id,
             'state' => $this->state->value,
             'ip_addresses' => $this->ip_addresses,
+            'has_pre_active_state' => in_array($this->state, MachineState::PRE_ACTIVE_STATES),
             'has_end_state' => in_array($this->state, MachineState::END_STATES),
             'has_active_state' => MachineState::UP_ACTIVE === $this->state,
         ];
