@@ -31,8 +31,8 @@ use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -90,7 +90,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $handler = self::getContainer()->get(CreateMachineHandler::class);
         self::assertInstanceOf(CreateMachineHandler::class, $handler);
-        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
+        self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
     }
 
     public function testInvokeSuccess(): void

@@ -13,7 +13,7 @@ use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
 {
@@ -50,7 +50,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
     {
         $handler = self::getContainer()->get(CheckMachineIsActiveHandler::class);
         self::assertInstanceOf(CheckMachineIsActiveHandler::class, $handler);
-        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
+        self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
     }
 
     /**
