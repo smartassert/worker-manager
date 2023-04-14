@@ -22,8 +22,8 @@ use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 {
@@ -67,7 +67,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $handler = self::getContainer()->get(DeleteMachineHandler::class);
         self::assertInstanceOf(DeleteMachineHandler::class, $handler);
-        self::assertInstanceOf(MessageHandlerInterface::class, $handler);
+        self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
     }
 
     public function testInvokeSuccess(): void

@@ -9,9 +9,10 @@ use App\Enum\MachineState;
 use App\Message\CheckMachineIsActive;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-class CheckMachineIsActiveHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class CheckMachineIsActiveHandler
 {
     public function __construct(
         private MachineRequestDispatcher $machineRequestDispatcher,

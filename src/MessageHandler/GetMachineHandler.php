@@ -14,10 +14,11 @@ use App\Repository\MachineRepository;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class GetMachineHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class GetMachineHandler
 {
     public function __construct(
         private MachineManager $machineManager,

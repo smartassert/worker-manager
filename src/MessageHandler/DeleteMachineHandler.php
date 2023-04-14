@@ -12,10 +12,11 @@ use App\Message\DeleteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Services\RemoteMachineRemover;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class DeleteMachineHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class DeleteMachineHandler
 {
     public function __construct(
         private RemoteMachineRemover $remoteMachineRemover,

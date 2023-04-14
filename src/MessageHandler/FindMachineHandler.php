@@ -16,10 +16,11 @@ use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Services\RemoteMachineFinder;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class FindMachineHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class FindMachineHandler
 {
     public function __construct(
         private RemoteMachineFinder $remoteMachineFinder,
