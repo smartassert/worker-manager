@@ -138,6 +138,7 @@ class MachineTest extends AbstractMachineTest
             MachineState::FIND_RECEIVED,
             false,
             false,
+            false,
             []
         );
     }
@@ -152,6 +153,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_RECEIVED,
+            true,
             false,
             false,
             []
@@ -182,6 +184,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_FAILED,
+            false,
             true,
             false,
             [],
@@ -207,6 +210,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::UP_ACTIVE,
+            false,
             false,
             true,
             []
