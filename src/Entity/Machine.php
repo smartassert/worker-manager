@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -10,8 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *   id: string,
  *   state: non-empty-string,
  *   ip_addresses: string[],
- *   has_end_state: bool,
- *   has_active_state: bool
+ *   state_category: non-empty-string
  * }
  */
 #[ORM\Entity]
@@ -90,9 +90,32 @@ class Machine implements \JsonSerializable
             'id' => $this->id,
             'state' => $this->state->value,
             'ip_addresses' => $this->ip_addresses,
-            'has_pre_active_state' => in_array($this->state, MachineState::PRE_ACTIVE_STATES),
-            'has_end_state' => in_array($this->state, MachineState::END_STATES),
-            'has_active_state' => MachineState::UP_ACTIVE === $this->state,
+            'state_category' => $this->getStateCategory()->value,
         ];
+    }
+
+    private function getStateCategory(): MachineStateCategory
+    {
+        if (in_array($this->state, MachineState::FINDING_STATES)) {
+            return MachineStateCategory::FINDING;
+        }
+
+        if (in_array($this->state, MachineState::PRE_ACTIVE_STATES)) {
+            return MachineStateCategory::PRE_ACTIVE;
+        }
+
+        if (MachineState::UP_ACTIVE === $this->state) {
+            return MachineStateCategory::ACTIVE;
+        }
+
+        if (in_array($this->state, MachineState::ENDING_STATES)) {
+            return MachineStateCategory::ENDING;
+        }
+
+        if (in_array($this->state, MachineState::END_STATES)) {
+            return MachineStateCategory::END;
+        }
+
+        return MachineStateCategory::UNKNOWN;
     }
 }

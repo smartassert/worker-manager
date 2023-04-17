@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Application;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Model\MachineActionInterface;
 use App\Repository\MachineProviderRepository;
@@ -136,9 +137,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::FIND_RECEIVED,
-            false,
-            false,
-            false,
+            MachineStateCategory::FINDING,
             []
         );
     }
@@ -153,9 +152,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_RECEIVED,
-            true,
-            false,
-            false,
+            MachineStateCategory::PRE_ACTIVE,
             []
         );
     }
@@ -184,9 +181,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::CREATE_FAILED,
-            false,
-            true,
-            false,
+            MachineStateCategory::END,
             [],
             [
                 'code' => 2,
@@ -210,9 +205,7 @@ class MachineTest extends AbstractMachineTest
             $response,
             self::MACHINE_ID,
             MachineState::UP_ACTIVE,
-            false,
-            false,
-            true,
+            MachineStateCategory::ACTIVE,
             []
         );
     }
@@ -223,7 +216,7 @@ class MachineTest extends AbstractMachineTest
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -232,7 +225,8 @@ class MachineTest extends AbstractMachineTest
         self::assertNull($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, false, []);
+
+        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);

@@ -37,4 +37,14 @@ enum MachineState: string
         self::FIND_NOT_FOUND,
         self::CREATE_FAILED,
     ];
+
+    public const FINDING_STATES = [
+        self::FIND_RECEIVED,
+        self::FIND_FINDING,
+    ];
+
+    public const ENDING_STATES = [
+        self::DELETE_RECEIVED,
+        self::DELETE_REQUESTED,
+    ];
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Services\Asserter;
 
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use Psr\Http\Message\ResponseInterface;
 
 class MachineResponseAsserter
@@ -22,9 +23,7 @@ class MachineResponseAsserter
         ResponseInterface $response,
         string $expectedMachineId,
         MachineState $expectedState,
-        bool $expectedHasPreActiveState,
-        bool $expectedHasEndState,
-        bool $expectedHasActiveState,
+        MachineStateCategory $expectedStateCategory,
         ?array $expectedIpAddresses,
         ?array $expectedCreateFailureData = null
     ): void {
@@ -37,9 +36,7 @@ class MachineResponseAsserter
             200,
             $expectedMachineId,
             $expectedState,
-            $expectedHasPreActiveState,
-            $expectedHasEndState,
-            $expectedHasActiveState,
+            $expectedStateCategory,
             $expectedIpAddresses,
             $expectedAdditionalData
         );
@@ -51,17 +48,14 @@ class MachineResponseAsserter
     public function assertDeleteResponse(
         ResponseInterface $response,
         string $expectedMachineId,
-        bool $expectedHasEndState,
-        ?array $expectedIpAddresses
+        ?array $expectedIpAddresses,
     ): void {
         $this->assertResponse(
             $response,
             202,
             $expectedMachineId,
             MachineState::DELETE_RECEIVED,
-            false,
-            $expectedHasEndState,
-            false,
+            MachineStateCategory::ENDING,
             $expectedIpAddresses
         );
     }
@@ -79,9 +73,7 @@ class MachineResponseAsserter
             202,
             $expectedMachineId,
             MachineState::CREATE_RECEIVED,
-            true,
-            false,
-            false,
+            MachineStateCategory::PRE_ACTIVE,
             $expectedIpAddresses
         );
     }
@@ -95,18 +87,14 @@ class MachineResponseAsserter
         int $expectedStatusCode,
         string $expectedMachineId,
         MachineState $expectedState,
-        bool $expectedHasPreActiveState,
-        bool $expectedHasEndState,
-        bool $expectedHasActiveState,
+        MachineStateCategory $expectedStateCategory,
         ?array $expectedIpAddresses,
         ?array $expectedAdditionalData = null,
     ): void {
         $expectedResponseData = [
             'id' => $expectedMachineId,
             'state' => $expectedState->value,
-            'has_pre_active_state' => $expectedHasPreActiveState,
-            'has_end_state' => $expectedHasEndState,
-            'has_active_state' => $expectedHasActiveState,
+            'state_category' => $expectedStateCategory->value,
         ];
 
         if (is_array($expectedIpAddresses)) {
