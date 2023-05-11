@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\ExceptionFactory\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Model\MachineActionInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
@@ -23,7 +23,7 @@ use Psr\Http\Message\ResponseInterface;
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
 {
     private const ID = 'resource_id';
-    private const ACTION = MachineActionInterface::ACTION_CREATE;
+    private const ACTION = MachineAction::CREATE;
 
     private DigitalOceanExceptionFactory $factory;
 
@@ -46,7 +46,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
     ): void {
         self::assertEquals(
             $expectedException,
-            $this->factory->create(self::ID, MachineActionInterface::ACTION_CREATE, $exception, $lastResponse)
+            $this->factory->create(self::ID, MachineAction::CREATE, $exception, $lastResponse)
         );
     }
 

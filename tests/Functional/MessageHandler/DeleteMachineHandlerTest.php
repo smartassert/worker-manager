@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
-use App\Model\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
@@ -142,7 +142,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_DELETE,
+            MachineAction::DELETE,
             $http401Exception
         );
 
@@ -150,7 +150,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $serviceUnavailableException = new HttpException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_DELETE,
+            MachineAction::DELETE,
             $http503Exception
         );
 

@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Exception\UnsupportedProviderException;
-use App\Model\MachineActionInterface as Action;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 
@@ -40,7 +40,7 @@ class MachineManager extends AbstractMachineManager
         } catch (\Throwable $exception) {
             throw $exception instanceof ExceptionInterface
                 ? $exception
-                : $this->exceptionFactory->create($machineId, Action::ACTION_CREATE, $exception);
+                : $this->exceptionFactory->create($machineId, MachineAction::CREATE, $exception);
         }
     }
 
@@ -68,7 +68,7 @@ class MachineManager extends AbstractMachineManager
         } catch (\Throwable $exception) {
             throw $exception instanceof ExceptionInterface
                 ? $exception
-                : $this->exceptionFactory->create($machineId, Action::ACTION_GET, $exception);
+                : $this->exceptionFactory->create($machineId, MachineAction::GET, $exception);
         }
 
         throw new ProviderMachineNotFoundException($machineProvider->getId(), $machineProvider->getName());
@@ -94,7 +94,7 @@ class MachineManager extends AbstractMachineManager
         } catch (\Throwable $exception) {
             throw $exception instanceof ExceptionInterface
                 ? $exception
-                : $this->exceptionFactory->create($machineId, Action::ACTION_DELETE, $exception);
+                : $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
         }
     }
 }

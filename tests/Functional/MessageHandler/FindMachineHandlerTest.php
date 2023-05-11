@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\AuthenticationException;
@@ -14,7 +15,6 @@ use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
 use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
@@ -317,7 +317,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $http401Exception
         );
 
@@ -325,7 +325,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $serviceUnavailableException = new HttpException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $http503Exception
         );
 

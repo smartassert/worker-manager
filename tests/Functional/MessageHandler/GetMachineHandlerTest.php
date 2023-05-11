@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -14,7 +15,6 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
@@ -274,7 +274,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $http401Exception = new RuntimeException('Unauthorized', 401);
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $http401Exception
         );
 
@@ -282,7 +282,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $unknownRemoteMachineException = new UnknownRemoteMachineException(
             ProviderInterface::NAME_DIGITALOCEAN,
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $http404Exception,
         );
 
@@ -309,7 +309,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'vendorException' => $http503Exception,
                 'expectedException' => new HttpException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     $http503Exception
                 ),
             ],

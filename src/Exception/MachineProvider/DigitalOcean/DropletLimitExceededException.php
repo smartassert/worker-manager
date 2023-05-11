@@ -2,6 +2,7 @@
 
 namespace App\Exception\MachineProvider\DigitalOcean;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
@@ -16,7 +17,7 @@ class DropletLimitExceededException extends Exception implements
 
     public function __construct(
         string $machineId,
-        string $action,
+        MachineAction $action,
         \Throwable $remoteException
     ) {
         parent::__construct(

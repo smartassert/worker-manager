@@ -2,14 +2,11 @@
 
 namespace App\Exception\MachineProvider;
 
-use App\Model\MachineActionInterface;
+use App\Enum\MachineAction;
 
 interface ExceptionInterface extends \Throwable
 {
     public function getRemoteException(): \Throwable;
 
-    /**
-     * @return MachineActionInterface::ACTION_*
-     */
-    public function getAction(): string;
+    public function getAction(): MachineAction;
 }

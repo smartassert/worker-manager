@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Exception\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\RecoverableDeciderExceptionInterface;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -38,7 +38,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
                 'exception' => new UnknownRemoteMachineException(
                     ProviderInterface::NAME_DIGITALOCEAN,
                     '',
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new \Exception()
                 ),
                 'expected' => false,
@@ -47,7 +47,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
                 'exception' => new UnknownRemoteMachineException(
                     ProviderInterface::NAME_DIGITALOCEAN,
                     '',
-                    MachineActionInterface::ACTION_FIND,
+                    MachineAction::FIND,
                     new \Exception()
                 ),
                 'expected' => true,

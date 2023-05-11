@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Services\MachineNameFactory;
 use App\Services\RemoteMachineFinder;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -61,7 +61,7 @@ class RemoteMachineFinderTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withGetAllCall($this->machineName, $http503Exception);
 
         $expectedExceptionStack = [
-            new HttpException(self::MACHINE_ID, MachineActionInterface::ACTION_GET, $http503Exception),
+            new HttpException(self::MACHINE_ID, MachineAction::GET, $http503Exception),
         ];
 
         try {

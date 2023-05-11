@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Exception\MachineProvider\DigitalOcean;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
-use App\Model\MachineActionInterface;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +24,7 @@ class DropletLimitExceededExceptionTest extends TestCase
 
         $this->exception = new DropletLimitExceededException(
             'machine id',
-            MachineActionInterface::ACTION_CREATE,
+            MachineAction::CREATE,
             $providerException
         );
     }

@@ -2,17 +2,14 @@
 
 namespace App\Exception\MachineProvider;
 
-use App\Model\MachineActionInterface;
+use App\Enum\MachineAction;
 
 class CurlException extends Exception implements CurlExceptionInterface
 {
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
     public function __construct(
         private int $curlCode,
         string $machineId,
-        string $action,
+        MachineAction $action,
         \Throwable $remoteException
     ) {
         parent::__construct($machineId, $action, $remoteException);

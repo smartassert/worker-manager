@@ -6,10 +6,10 @@ namespace App\Tests\Functional\Application;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Model\MachineActionInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
@@ -170,7 +170,7 @@ class MachineTest extends AbstractMachineTest
             new ApiLimitExceededException(
                 123,
                 self::MACHINE_ID,
-                MachineActionInterface::ACTION_GET,
+                MachineAction::GET,
                 new \Exception()
             )
         );

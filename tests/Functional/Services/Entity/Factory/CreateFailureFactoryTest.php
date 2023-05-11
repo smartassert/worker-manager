@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\Entity\Factory;
 
 use App\Entity\CreateFailure;
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
@@ -18,7 +19,6 @@ use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
@@ -82,7 +82,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new \Exception()
                 ),
                 'expectedCreateFailure' => new CreateFailure(
@@ -97,7 +97,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
             AuthenticationExceptionInterface::class => [
                 'throwable' => new AuthenticationException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new \Exception(),
                 ),
                 'expectedCreateFailure' => new CreateFailure(
@@ -110,7 +110,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
                 'throwable' => new CurlException(
                     7,
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new \Exception()
                 ),
                 'expectedCreateFailure' => new CreateFailure(
@@ -125,7 +125,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
             HttpExceptionInterface::class => [
                 'throwable' => new HttpException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new RuntimeException('', 500)
                 ),
                 'expectedCreateFailure' => new CreateFailure(
@@ -140,7 +140,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
             UnprocessableRequestExceptionInterface::class => [
                 'throwable' => new DropletLimitExceededException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new ValidationFailedException(
                         'creating this/these droplet(s) will exceed your droplet limit',
                         422
@@ -158,7 +158,7 @@ class CreateFailureFactoryTest extends AbstractEntityTest
             UnknownExceptionInterface::class => [
                 'throwable' => new UnknownException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_CREATE,
+                    MachineAction::CREATE,
                     new \Exception()
                 ),
                 'expectedCreateFailure' => new CreateFailure(

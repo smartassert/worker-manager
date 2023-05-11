@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\ExceptionFactory\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Model\MachineActionInterface;
 use App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use GuzzleHttp\Exception\ConnectException;
@@ -15,7 +15,7 @@ use Psr\Http\Message\RequestInterface;
 class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTest
 {
     private const ID = 'resource_id';
-    private const ACTION = MachineActionInterface::ACTION_CREATE;
+    private const ACTION = MachineAction::CREATE;
 
     private GuzzleExceptionFactory $factory;
 
@@ -42,7 +42,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTest
     {
         self::assertEquals(
             $expectedException,
-            $this->factory->create(self::ID, MachineActionInterface::ACTION_CREATE, $exception)
+            $this->factory->create(self::ID, MachineAction::CREATE, $exception)
         );
     }
 
@@ -80,7 +80,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTest
         self::assertNull(
             $this->factory->create(
                 self::ID,
-                MachineActionInterface::ACTION_GET,
+                MachineAction::GET,
                 new \Exception()
             )
         );

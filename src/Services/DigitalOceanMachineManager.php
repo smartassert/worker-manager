@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
@@ -65,7 +65,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,
-                MachineActionInterface::ACTION_CREATE,
+                MachineAction::CREATE,
                 $exception,
                 $this->digitalOceanClient->getLastResponse()
             );
@@ -86,7 +86,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,
-                MachineActionInterface::ACTION_DELETE,
+                MachineAction::DELETE,
                 $exception,
                 $this->digitalOceanClient->getLastResponse()
             );
@@ -103,7 +103,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         } catch (VendorExceptionInterface $exception) {
             throw $this->exceptionFactory->create(
                 $machineId,
-                MachineActionInterface::ACTION_GET,
+                MachineAction::GET,
                 $exception,
                 $this->digitalOceanClient->getLastResponse()
             );

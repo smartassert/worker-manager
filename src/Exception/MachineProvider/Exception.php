@@ -2,24 +2,21 @@
 
 namespace App\Exception\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\AbstractMachineException;
-use App\Model\MachineActionInterface;
 
 class Exception extends AbstractMachineException implements ExceptionInterface
 {
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
     public function __construct(
         string $machineId,
-        private string $action,
+        private MachineAction $action,
         private \Throwable $remoteException,
         int $code = 0
     ) {
         parent::__construct($machineId, self::createMessage($machineId, $action), $code, $remoteException);
     }
 
-    public function getAction(): string
+    public function getAction(): MachineAction
     {
         return $this->action;
     }
@@ -29,7 +26,7 @@ class Exception extends AbstractMachineException implements ExceptionInterface
         return $this->remoteException;
     }
 
-    private static function createMessage(string $machineId, string $action): string
+    private static function createMessage(string $machineId, MachineAction $action): string
     {
         $className = '';
         $classNameParts = explode('\\', static::class);
@@ -40,7 +37,7 @@ class Exception extends AbstractMachineException implements ExceptionInterface
         return sprintf(
             '%s Unable to perform action "%s" for resource "%s"',
             $className,
-            $action,
+            $action->value,
             $machineId
         );
     }

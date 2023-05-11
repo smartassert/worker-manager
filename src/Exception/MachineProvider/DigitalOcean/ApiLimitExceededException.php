@@ -2,19 +2,16 @@
 
 namespace App\Exception\MachineProvider\DigitalOcean;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\Exception;
-use App\Model\MachineActionInterface;
 
 class ApiLimitExceededException extends Exception implements ApiLimitExceptionInterface
 {
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
     public function __construct(
         private int $resetTimestamp,
         string $machineId,
-        string $action,
+        MachineAction $action,
         \Throwable $remoteException
     ) {
         parent::__construct($machineId, $action, $remoteException);
