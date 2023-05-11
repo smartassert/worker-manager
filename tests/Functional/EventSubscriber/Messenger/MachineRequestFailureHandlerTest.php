@@ -13,7 +13,6 @@ use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
-use App\Message\RemoteMachineMessageInterface;
 use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
@@ -129,10 +128,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider handleWorkerMessageFailedEventDataProvider
      */
-    public function testHandleWorkerMessageFailedEvent(
-        RemoteMachineMessageInterface $message,
-        MachineState $expectedMachineState,
-    ): void {
+    public function testHandleWorkerMessageFailedEvent(object $message, MachineState $expectedMachineState): void
+    {
         $envelope = new Envelope($message);
         $event = new WorkerMessageFailedEvent($envelope, 'receiver name not relevant', new \Exception());
 
