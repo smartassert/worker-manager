@@ -2,19 +2,16 @@
 
 namespace App\Exception\MachineProvider\DigitalOcean;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\HttpExceptionInterface;
-use App\Model\MachineActionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 
 class HttpException extends Exception implements HttpExceptionInterface
 {
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
     public function __construct(
         string $machineId,
-        string $action,
+        MachineAction $action,
         RuntimeException $remoteException
     ) {
         parent::__construct($machineId, $action, $remoteException);

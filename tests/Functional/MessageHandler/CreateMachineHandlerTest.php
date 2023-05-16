@@ -6,6 +6,7 @@ namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -15,7 +16,6 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
@@ -204,14 +204,14 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_CREATE,
+            MachineAction::CREATE,
             new VendorRuntimeException('Unauthorized', 401)
         );
 
         $unknownRemoteMachineException = new UnknownRemoteMachineException(
             ProviderInterface::NAME_DIGITALOCEAN,
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_CREATE,
+            MachineAction::CREATE,
             new ResourceNotFoundException('Not Found', 404),
         );
 
@@ -220,7 +220,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $apiLimitExceededException = new ApiLimitExceededException(
             $rateLimitReset,
             self::MACHINE_ID,
-            MachineActionInterface::ACTION_CREATE,
+            MachineAction::CREATE,
             new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
         );
 
@@ -249,7 +249,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 'vendorException' => new VendorRuntimeException('Service Unavailable', 503),
                 'expectedException' => new HttpException(
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_CREATE,
+                    MachineAction::CREATE,
                     new VendorRuntimeException('Service Unavailable', 503)
                 ),
             ],

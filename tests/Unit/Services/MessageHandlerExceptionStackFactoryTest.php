@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Services;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineProvider\Exception;
-use App\Model\MachineActionInterface;
 use App\Services\MessageHandlerExceptionStackFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +34,7 @@ class MessageHandlerExceptionStackFactoryTest extends TestCase
 
         $machineProviderException = new Exception(
             'machine_id',
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $remoteException
         );
 

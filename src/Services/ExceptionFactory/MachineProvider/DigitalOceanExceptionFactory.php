@@ -2,6 +2,7 @@
 
 namespace App\Services\ExceptionFactory\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
@@ -9,7 +10,6 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
@@ -18,12 +18,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactory
 {
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
     public function create(
         string $machineId,
-        string $action,
+        MachineAction $action,
         VendorExceptionInterface $exception,
         ?ResponseInterface $lastResponse,
     ): ExceptionInterface {

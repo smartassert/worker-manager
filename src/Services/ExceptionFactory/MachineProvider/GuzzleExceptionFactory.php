@@ -2,9 +2,9 @@
 
 namespace App\Services\ExceptionFactory\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Model\MachineActionInterface;
 use GuzzleHttp\Exception\ConnectException;
 
 class GuzzleExceptionFactory implements ExceptionFactoryInterface
@@ -17,10 +17,7 @@ class GuzzleExceptionFactory implements ExceptionFactoryInterface
         return $exception instanceof ConnectException;
     }
 
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
-    public function create(string $resourceId, string $action, \Throwable $exception): ?ExceptionInterface
+    public function create(string $resourceId, MachineAction $action, \Throwable $exception): ?ExceptionInterface
     {
         if (!$exception instanceof ConnectException) {
             return null;

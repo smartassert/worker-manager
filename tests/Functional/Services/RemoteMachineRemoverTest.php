@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Model\MachineActionInterface;
 use App\Services\MachineNameFactory;
 use App\Services\RemoteMachineRemover;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -73,7 +73,7 @@ class RemoteMachineRemoverTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $httpException);
 
         $expectedExceptionStack = [
-            new HttpException(self::MACHINE_ID, MachineActionInterface::ACTION_DELETE, $httpException),
+            new HttpException(self::MACHINE_ID, MachineAction::DELETE, $httpException),
         ];
 
         try {

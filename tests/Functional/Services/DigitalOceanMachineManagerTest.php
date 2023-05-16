@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services;
 
 use App\Entity\Machine;
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\DigitalOceanMachineManager;
 use App\Services\MachineNameFactory;
@@ -107,7 +107,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
                 $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
                 $this->machineManager->create(self::MACHINE_ID, $this->machineName);
             },
-            MachineActionInterface::ACTION_CREATE,
+            MachineAction::CREATE,
             $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
@@ -184,7 +184,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
                 $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
                 $this->machineManager->get(self::MACHINE_ID, $this->machineName);
             },
-            MachineActionInterface::ACTION_GET,
+            MachineAction::GET,
             $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
@@ -214,7 +214,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
                 $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
                 $this->machineManager->remove(self::MACHINE_ID, $this->machineName);
             },
-            MachineActionInterface::ACTION_DELETE,
+            MachineAction::DELETE,
             $dropletApiException,
             $apiResponse,
             $expectedExceptionClass,
@@ -222,12 +222,11 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @param MachineActionInterface::ACTION_* $action
-     * @param class-string                     $expectedExceptionClass
+     * @param class-string $expectedExceptionClass
      */
     private function doActionThrowsExceptionTest(
         callable $callable,
-        string $action,
+        MachineAction $action,
         \Exception $dropletApiException,
         ResponseInterface $apiResponse,
         string $expectedExceptionClass,

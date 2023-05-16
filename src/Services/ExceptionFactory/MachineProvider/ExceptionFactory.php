@@ -2,9 +2,9 @@
 
 namespace App\Services\ExceptionFactory\MachineProvider;
 
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownException;
-use App\Model\MachineActionInterface;
 
 class ExceptionFactory
 {
@@ -23,10 +23,7 @@ class ExceptionFactory
         });
     }
 
-    /**
-     * @param MachineActionInterface::ACTION_* $action
-     */
-    public function create(string $resourceId, string $action, \Throwable $exception): ExceptionInterface
+    public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
     {
         foreach ($this->factories as $factory) {
             if ($factory->handles($exception)) {

@@ -6,6 +6,7 @@ namespace App\Tests\Functional\EventSubscriber\Messenger;
 
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\UnsupportedProviderException;
@@ -13,7 +14,6 @@ use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
-use App\Model\MachineActionInterface;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Repository\MachineRepository;
@@ -91,7 +91,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
-                    MachineActionInterface::ACTION_GET,
+                    MachineAction::GET,
                     new \Exception()
                 ),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
