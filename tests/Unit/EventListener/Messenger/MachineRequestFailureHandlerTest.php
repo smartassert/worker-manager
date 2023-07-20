@@ -10,13 +10,13 @@ use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Services\MessageHandlerExceptionFinder;
 use App\Services\MessageHandlerExceptionStackFactory;
-use App\Tests\AbstractBaseFunctionalTest;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 
-class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
+class MachineRequestFailureHandlerTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
