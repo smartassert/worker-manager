@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Entity;
 
 use App\Entity\Machine;
-use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
-class MachineTest extends AbstractEntityTest
+class MachineTest extends AbstractEntityTestCase
 {
     protected function setUp(): void
     {
