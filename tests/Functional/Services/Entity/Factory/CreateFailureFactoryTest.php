@@ -22,12 +22,12 @@ use App\Exception\UnsupportedProviderException;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
-class CreateFailureFactoryTest extends AbstractEntityTest
+class CreateFailureFactoryTest extends AbstractEntityTestCase
 {
     private CreateFailureFactory $factory;
 

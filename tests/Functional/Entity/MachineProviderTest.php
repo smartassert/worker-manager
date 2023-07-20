@@ -6,10 +6,10 @@ namespace App\Tests\Functional\Entity;
 
 use App\Entity\MachineProvider;
 use App\Model\ProviderInterface;
-use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
-class MachineProviderTest extends AbstractEntityTest
+class MachineProviderTest extends AbstractEntityTestCase
 {
     protected function setUp(): void
     {

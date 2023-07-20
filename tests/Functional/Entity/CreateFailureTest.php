@@ -6,10 +6,10 @@ namespace App\Tests\Functional\Entity;
 
 use App\Entity\CreateFailure;
 use App\Repository\CreateFailureRepository;
-use App\Tests\Functional\AbstractEntityTest;
+use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
-class CreateFailureTest extends AbstractEntityTest
+class CreateFailureTest extends AbstractEntityTestCase
 {
     protected function setUp(): void
     {
