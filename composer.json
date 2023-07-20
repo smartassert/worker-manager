@@ -40,7 +40,7 @@
         "smartassert/symfony-test-client": "^0.1.0",
         "smartassert/users-client": "*",
         "squizlabs/php_codesniffer": "dev-master",
-        "symfony/browser-kit": "6.2.*",
+        "symfony/browser-kit": "6.3.*",
         "symfony/maker-bundle": "^1.29",
         "symfony/phpunit-bridge": "^6.0",
         "webignition/object-reflector": "^1.0"
