@@ -21,7 +21,7 @@
         "symfony/dotenv": "6.3.*",
         "symfony/flex": "^2.1",
         "symfony/framework-bundle": "6.2.*",
-        "symfony/messenger": "6.2.*",
+        "symfony/messenger": "6.3.*",
         "symfony/monolog-bundle": "^3.6",
         "symfony/proxy-manager-bridge": "6.2.*",
         "symfony/security-bundle": "6.2.*",
@@ -174,7 +174,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "6.2.*"
+            "require": "6.3.*"
         }
     }
 }
