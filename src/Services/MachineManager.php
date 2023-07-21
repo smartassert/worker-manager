@@ -12,12 +12,15 @@ use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 
 class MachineManager extends AbstractMachineManager
 {
+    /**
+     * @param ProviderMachineManagerInterface[] $providerMachineManagers
+     */
     public function __construct(
-        MachineManagerStack $machineManagerStack,
+        iterable $providerMachineManagers,
         MachineNameFactory $machineNameFactory,
         private ExceptionFactory $exceptionFactory,
     ) {
-        parent::__construct($machineManagerStack, $machineNameFactory);
+        parent::__construct($providerMachineManagers, $machineNameFactory);
     }
 
     /**

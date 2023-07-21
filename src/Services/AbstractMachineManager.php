@@ -6,8 +6,11 @@ use App\Entity\MachineProvider;
 
 abstract class AbstractMachineManager
 {
+    /**
+     * @param ProviderMachineManagerInterface[] $providerMachineManagers
+     */
     public function __construct(
-        protected MachineManagerStack $machineManagerStack,
+        protected iterable $providerMachineManagers,
         private MachineNameFactory $machineNameFactory,
     ) {
     }
@@ -21,9 +24,11 @@ abstract class AbstractMachineManager
     {
         $providerName = $machineProvider->getName();
 
-        foreach ($this->machineManagerStack->getManagers() as $machineManager) {
-            if ($machineManager->getType() === $providerName) {
-                return $machineManager;
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
+                if ($machineManager->getType() === $providerName) {
+                    return $machineManager;
+                }
             }
         }
 
