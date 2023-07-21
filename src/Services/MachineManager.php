@@ -33,7 +33,6 @@ readonly class MachineManager
     public function create(MachineProvider $machineProvider): RemoteMachineInterface
     {
         $machineId = $machineProvider->getId();
-        $machineName = $this->createMachineName($machineId);
 
         $provider = $this->findProvider($machineProvider);
         if (null === $provider) {
@@ -41,7 +40,7 @@ readonly class MachineManager
         }
 
         try {
-            return $provider->create($machineId, $machineName);
+            return $provider->create($machineId, $this->machineNameFactory->create($machineId));
         } catch (\Throwable $exception) {
             throw $exception instanceof ExceptionInterface
                 ? $exception
@@ -58,7 +57,6 @@ readonly class MachineManager
     public function get(MachineProvider $machineProvider): RemoteMachineInterface
     {
         $machineId = $machineProvider->getId();
-        $machineName = $this->createMachineName($machineId);
 
         $provider = $this->findProvider($machineProvider);
         if (null === $provider) {
@@ -66,7 +64,7 @@ readonly class MachineManager
         }
 
         try {
-            $machine = $provider->get($machineId, $machineName);
+            $machine = $provider->get($machineId, $this->machineNameFactory->create($machineId));
             if ($machine instanceof RemoteMachineInterface) {
                 return $machine;
             }
@@ -85,13 +83,11 @@ readonly class MachineManager
      */
     public function remove(string $machineId): void
     {
-        $machineName = $this->createMachineName($machineId);
-
         $exceptionStack = [];
         foreach ($this->providerMachineManagers as $machineManager) {
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
-                    $machineManager->remove($machineId, $machineName);
+                    $machineManager->remove($machineId, $this->machineNameFactory->create($machineId));
                 } catch (ExceptionInterface $exception) {
                     if (!$exception instanceof UnknownRemoteMachineExceptionInterface) {
                         $exceptionStack[] = $exception;
@@ -111,13 +107,11 @@ readonly class MachineManager
      */
     public function find(string $machineId): ?RemoteMachineInterface
     {
-        $machineName = $this->createMachineName($machineId);
-
         $exceptionStack = [];
         foreach ($this->providerMachineManagers as $machineManager) {
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
-                    $remoteMachine = $machineManager->get($machineId, $machineName);
+                    $remoteMachine = $machineManager->get($machineId, $this->machineNameFactory->create($machineId));
 
                     if ($remoteMachine instanceof RemoteMachineInterface) {
                         return $remoteMachine;
@@ -133,11 +127,6 @@ readonly class MachineManager
         }
 
         return null;
-    }
-
-    private function createMachineName(string $machineId): string
-    {
-        return $this->machineNameFactory->create($machineId);
     }
 
     private function findProvider(MachineProvider $machineProvider): ?ProviderMachineManagerInterface
