@@ -13,9 +13,9 @@ use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
-use App\Services\RemoteMachineFinder;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -23,7 +23,7 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 class FindMachineHandler
 {
     public function __construct(
-        private RemoteMachineFinder $remoteMachineFinder,
+        private MachineManager $machineManager,
         private MachineUpdater $machineUpdater,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
@@ -47,7 +47,7 @@ class FindMachineHandler
         $this->machineRepository->add($machine);
 
         try {
-            $remoteMachine = $this->remoteMachineFinder->find($machineId);
+            $remoteMachine = $this->machineManager->find($machineId);
 
             if ($remoteMachine instanceof RemoteMachineInterface) {
                 $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);

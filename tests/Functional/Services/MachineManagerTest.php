@@ -243,6 +243,45 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         }
     }
 
+    public function testFindSuccess(): void
+    {
+        $dropletEntity = new DropletEntity([
+            'id' => 123,
+            'status' => RemoteMachine::STATE_NEW,
+        ]);
+
+        $this->dropletApiProxy->withGetAllCall($this->machineName, [$dropletEntity]);
+
+        $remoteMachine = $this->machineManager->find(self::MACHINE_ID);
+
+        self::assertEquals(new RemoteMachine($dropletEntity), $remoteMachine);
+    }
+
+    public function testFindMachineNotFindable(): void
+    {
+        $http503Exception = new RuntimeException('Service Unavailable', 503);
+
+        $this->dropletApiProxy->withGetAllCall($this->machineName, $http503Exception);
+
+        $expectedExceptionStack = [
+            new HttpException(self::MACHINE_ID, MachineAction::GET, $http503Exception),
+        ];
+
+        try {
+            $this->machineManager->find(self::MACHINE_ID);
+            self::fail(MachineNotFindableException::class . ' not thrown');
+        } catch (MachineNotFindableException $machineNotFoundException) {
+            self::assertEquals($expectedExceptionStack, $machineNotFoundException->getExceptionStack());
+        }
+    }
+
+    public function testFindMachineDoesNotExist(): void
+    {
+        $this->dropletApiProxy->withGetAllCall($this->machineName, []);
+
+        self::assertNull($this->machineManager->find(self::MACHINE_ID));
+    }
+
     /**
      * @param class-string $expectedExceptionClass
      */
