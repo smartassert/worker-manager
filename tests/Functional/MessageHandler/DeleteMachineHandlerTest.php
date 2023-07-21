@@ -13,9 +13,9 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
-use App\Services\RemoteMachineRemover;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
@@ -184,12 +184,12 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
 
     private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): DeleteMachineHandler
     {
-        $remoteMachineRemover = self::getContainer()->get(RemoteMachineRemover::class);
-        \assert($remoteMachineRemover instanceof RemoteMachineRemover);
+        $machineManager = self::getContainer()->get(MachineManager::class);
+        \assert($machineManager instanceof MachineManager);
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        return new DeleteMachineHandler($remoteMachineRemover, $machineRequestDispatcher, $machineRepository);
+        return new DeleteMachineHandler($machineManager, $machineRequestDispatcher, $machineRepository);
     }
 }

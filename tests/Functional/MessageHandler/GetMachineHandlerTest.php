@@ -22,7 +22,6 @@ use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
-use App\Services\RemoteMachineFinder;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
@@ -320,9 +319,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
-
-        $remoteMachineFinder = self::getContainer()->get(RemoteMachineFinder::class);
-        \assert($remoteMachineFinder instanceof RemoteMachineFinder);
 
         $machineUpdater = self::getContainer()->get(MachineUpdater::class);
         \assert($machineUpdater instanceof MachineUpdater);

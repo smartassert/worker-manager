@@ -121,11 +121,3 @@ services:
     App\Services\MachineManager:
         arguments:
             $providerMachineManagers: !tagged_iterator 'app.machine_manager.provider_machine_manager'
-
-    App\Services\RemoteMachineFinder:
-        arguments:
-            $providerMachineManagers: !tagged_iterator 'app.machine_manager.provider_machine_manager'
-
-    App\Services\RemoteMachineRemover:
-        arguments:
-            $providerMachineManagers: !tagged_iterator 'app.machine_manager.provider_machine_manager'
