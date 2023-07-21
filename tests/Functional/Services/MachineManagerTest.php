@@ -7,6 +7,9 @@ namespace App\Tests\Functional\Services;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Exception\MachineNotFindableException;
+use App\Exception\MachineNotRemovableException;
+use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
@@ -22,6 +25,7 @@ use App\Tests\Proxy\DigitalOceanV2\ClientProxy;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -192,6 +196,51 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
             $apiResponse,
             $expectedExceptionClass,
         );
+    }
+
+    /**
+     * @dataProvider removeSuccessDataProvider
+     */
+    public function testRemoveSuccess(?\Exception $dropletApiException): void
+    {
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
+
+        $this->expectNotToPerformAssertions();
+
+        $this->machineManager->remove(self::MACHINE_ID);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function removeSuccessDataProvider(): array
+    {
+        return [
+            'removed' => [
+                'exception' => null,
+            ],
+            'not found' => [
+                'exception' => new RuntimeException('Not Found', 404),
+            ],
+        ];
+    }
+
+    public function testRemoveThrowsMachineNotRemovableException(): void
+    {
+        $httpException = new RuntimeException('Service Unavailable', 503);
+
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $httpException);
+
+        $expectedExceptionStack = [
+            new HttpException(self::MACHINE_ID, MachineAction::DELETE, $httpException),
+        ];
+
+        try {
+            $this->machineManager->remove(self::MACHINE_ID);
+            self::fail(MachineNotFindableException::class . ' not thrown');
+        } catch (MachineNotRemovableException $machineNotFoundException) {
+            self::assertEquals($expectedExceptionStack, $machineNotFoundException->getExceptionStack());
+        }
     }
 
     /**

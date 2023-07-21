@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
+use App\Exception\MachineProvider\UnknownRemoteMachineExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
@@ -75,5 +77,31 @@ class MachineManager extends AbstractMachineManager
         }
 
         throw new ProviderMachineNotFoundException($machineProvider->getId(), $machineProvider->getName());
+    }
+
+    /**
+     * @throws MachineNotRemovableException
+     * @throws \Throwable
+     */
+    public function remove(string $machineId): void
+    {
+        $machineName = $this->createMachineName($machineId);
+
+        $exceptionStack = [];
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
+                try {
+                    $machineManager->remove($machineId, $machineName);
+                } catch (ExceptionInterface $exception) {
+                    if (!$exception instanceof UnknownRemoteMachineExceptionInterface) {
+                        $exceptionStack[] = $exception;
+                    }
+                }
+            }
+        }
+
+        if ([] !== $exceptionStack) {
+            throw new MachineNotRemovableException($machineId, $exceptionStack);
+        }
     }
 }
