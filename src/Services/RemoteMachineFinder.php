@@ -17,17 +17,16 @@ class RemoteMachineFinder extends AbstractMachineManager
         $machineName = $this->createMachineName($machineId);
 
         $exceptionStack = [];
-        $remoteMachine = null;
-        foreach ($this->machineManagerStack->getManagers() as $machineManager) {
-            if (null === $remoteMachine) {
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
                     $remoteMachine = $machineManager->get($machineId, $machineName);
+
+                    if ($remoteMachine instanceof RemoteMachineInterface) {
+                        return $remoteMachine;
+                    }
                 } catch (ExceptionInterface $exception) {
                     $exceptionStack[] = $exception;
-                }
-
-                if ($remoteMachine instanceof RemoteMachineInterface) {
-                    return $remoteMachine;
                 }
             }
         }

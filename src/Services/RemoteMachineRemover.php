@@ -17,9 +17,8 @@ class RemoteMachineRemover extends AbstractMachineManager
         $machineName = $this->createMachineName($machineId);
 
         $exceptionStack = [];
-        $remoteMachine = null;
-        foreach ($this->machineManagerStack->getManagers() as $machineManager) {
-            if (null === $remoteMachine) {
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
                     $machineManager->remove($machineId, $machineName);
                 } catch (ExceptionInterface $exception) {
