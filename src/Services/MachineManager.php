@@ -76,28 +76,4 @@ class MachineManager extends AbstractMachineManager
 
         throw new ProviderMachineNotFoundException($machineProvider->getId(), $machineProvider->getName());
     }
-
-    /**
-     * @throws ExceptionInterface
-     * @throws UnsupportedProviderException
-     * @throws \Throwable
-     */
-    public function delete(MachineProvider $machineProvider): void
-    {
-        $machineId = $machineProvider->getId();
-        $machineName = $this->createMachineName($machineId);
-
-        $provider = $this->findProvider($machineProvider);
-        if (null === $provider) {
-            throw new UnsupportedProviderException($machineProvider->getName());
-        }
-
-        try {
-            $provider->remove($machineId, $machineName);
-        } catch (\Throwable $exception) {
-            throw $exception instanceof ExceptionInterface
-                ? $exception
-                : $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
-        }
-    }
 }

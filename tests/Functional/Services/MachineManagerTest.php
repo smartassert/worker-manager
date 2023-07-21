@@ -194,36 +194,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         );
     }
 
-    public function testDeleteSuccess(): void
-    {
-        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName);
-
-        $this->machineManager->delete($this->createMachineProvider());
-        self::expectNotToPerformAssertions();
-    }
-
-    /**
-     * @dataProvider remoteRequestThrowsExceptionDataProvider
-     *
-     * @param class-string $expectedExceptionClass
-     */
-    public function testDeleteThrowsException(
-        \Exception $dropletApiException,
-        ResponseInterface $apiResponse,
-        string $expectedExceptionClass
-    ): void {
-        $this->doActionThrowsExceptionTest(
-            function () use ($dropletApiException) {
-                $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
-                $this->machineManager->delete($this->createMachineProvider());
-            },
-            MachineAction::DELETE,
-            $dropletApiException,
-            $apiResponse,
-            $expectedExceptionClass,
-        );
-    }
-
     /**
      * @param class-string $expectedExceptionClass
      */
