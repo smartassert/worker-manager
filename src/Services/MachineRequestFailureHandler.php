@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EventListener\Messenger;
+namespace App\Services;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
@@ -11,42 +11,23 @@ use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
-use App\Services\MessageHandlerExceptionFinder;
-use App\Services\MessageHandlerExceptionStackFactory;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
+use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
+use Symfony\Component\Messenger\Envelope;
 
-class MachineRequestFailureHandler implements EventSubscriberInterface
+readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 {
     public function __construct(
         private CreateFailureFactory $createFailureFactory,
-        private MessageHandlerExceptionFinder $messageHandlerExceptionFinder,
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
-        private readonly MachineRepository $machineRepository,
+        private MachineRepository $machineRepository,
     ) {
     }
 
-    /**
-     * @return array<class-string, array<int, int|string>>
-     */
-    public static function getSubscribedEvents(): array
+    public function handle(Envelope $envelope, \Throwable $throwable): void
     {
-        return [
-            WorkerMessageFailedEvent::class => ['onMessageFailed', -100],
-        ];
-    }
-
-    public function onMessageFailed(WorkerMessageFailedEvent $event): void
-    {
-        if (true === $event->willRetry()) {
-            return;
-        }
-
-        $envelope = $event->getEnvelope();
         $message = $envelope->getMessage();
-
         if (!$message instanceof MachineRequestInterface) {
             return;
         }
@@ -56,14 +37,13 @@ class MachineRequestFailureHandler implements EventSubscriberInterface
             return;
         }
 
-        $messageHandlerException = $this->messageHandlerExceptionFinder->findInWorkerMessageFailedEvent($event);
-        foreach ($this->exceptionStackFactory->create($messageHandlerException) as $loggableException) {
+        foreach ($this->exceptionStackFactory->create($throwable) as $loggableException) {
             $this->logException($message, $loggableException);
         }
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-            $this->createFailureFactory->create($machine->getId(), $messageHandlerException);
+            $this->createFailureFactory->create($machine->getId(), $throwable);
         }
 
         if ($message instanceof DeleteMachine) {

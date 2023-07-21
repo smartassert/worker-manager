@@ -284,6 +284,9 @@
     "smartassert/users-security-bundle": {
         "version": "0.4"
     },
+    "smartassert/worker-message-failed-event-bundle": {
+        "version": "0.6"
+    },
     "squizlabs/php_codesniffer": {
         "version": "3.0",
         "recipe": {

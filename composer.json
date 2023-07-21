@@ -16,6 +16,7 @@
         "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/health-check-bundle": "^2.0",
         "smartassert/users-security-bundle": "^6.0",
+        "smartassert/worker-message-failed-event-bundle": ">=1.1,<2",
         "symfony/console": "6.3.*",
         "symfony/doctrine-messenger": "6.3.*",
         "symfony/dotenv": "6.3.*",
