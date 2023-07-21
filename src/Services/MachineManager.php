@@ -13,17 +13,16 @@ use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 
-class MachineManager extends AbstractMachineManager
+readonly class MachineManager
 {
     /**
      * @param ProviderMachineManagerInterface[] $providerMachineManagers
      */
     public function __construct(
-        iterable $providerMachineManagers,
-        MachineNameFactory $machineNameFactory,
+        private iterable $providerMachineManagers,
+        private MachineNameFactory $machineNameFactory,
         private ExceptionFactory $exceptionFactory,
     ) {
-        parent::__construct($providerMachineManagers, $machineNameFactory);
     }
 
     /**
@@ -131,6 +130,26 @@ class MachineManager extends AbstractMachineManager
 
         if ([] !== $exceptionStack) {
             throw new MachineNotFindableException($machineId, $exceptionStack);
+        }
+
+        return null;
+    }
+
+    private function createMachineName(string $machineId): string
+    {
+        return $this->machineNameFactory->create($machineId);
+    }
+
+    private function findProvider(MachineProvider $machineProvider): ?ProviderMachineManagerInterface
+    {
+        $providerName = $machineProvider->getName();
+
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
+                if ($machineManager->getType() === $providerName) {
+                    return $machineManager;
+                }
+            }
         }
 
         return null;
