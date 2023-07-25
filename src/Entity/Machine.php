@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @phpstan-type SerializedMachine array{
- *   id: string,
+ *   id: non-empty-string,
  *   state: non-empty-string,
  *   ip_addresses: string[],
  *   state_category: non-empty-string
@@ -19,6 +19,9 @@ class Machine implements \JsonSerializable
 {
     private const NAME = 'worker-%s';
 
+    /**
+     * @var non-empty-string
+     */
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
@@ -33,7 +36,8 @@ class Machine implements \JsonSerializable
     private array $ip_addresses;
 
     /**
-     * @param string[] $ipAddresses
+     * @param non-empty-string $id
+     * @param string[]         $ipAddresses
      */
     public function __construct(
         string $id,
@@ -45,6 +49,9 @@ class Machine implements \JsonSerializable
         $this->ip_addresses = $ipAddresses;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getId(): string
     {
         return $this->id;

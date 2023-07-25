@@ -86,7 +86,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider invokeSuccessDataProvider
      *
-     * @param DropletEntity[] $expectedGetAllOutcome
+     * @param DropletEntity[]                                           $expectedGetAllOutcome
      * @param callable(FindMachine $message): MachineRequestInterface[] $expectedMachineRequestCollectionCreator
      * @param callable(TestMachineRequestFactory $factory): FindMachine $messageCreator
      */
