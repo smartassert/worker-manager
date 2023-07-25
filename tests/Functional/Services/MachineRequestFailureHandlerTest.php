@@ -17,9 +17,11 @@ use App\Message\GetMachine;
 use App\Model\ProviderInterface;
 use App\Repository\CreateFailureRepository;
 use App\Repository\MachineRepository;
+use App\Services\MachineRequestFailureHandler;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\Services\EntityRemover;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
@@ -52,6 +54,14 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         }
 
         $this->machineRepository->add(new Machine(self::MACHINE_ID));
+    }
+
+    public function testIsWorkerMessageFailedEventBundleExceptionHandler(): void
+    {
+        self::assertInstanceOf(
+            ExceptionHandlerInterface::class,
+            self::getContainer()->get(MachineRequestFailureHandler::class)
+        );
     }
 
     /**
