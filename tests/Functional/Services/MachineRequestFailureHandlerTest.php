@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\EventSubscriber\Messenger;
+namespace App\Tests\Functional\Services;
 
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
