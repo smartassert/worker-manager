@@ -6,5 +6,8 @@ namespace App\Message;
 
 interface UniqueRequestInterface
 {
+    /**
+     * @return non-empty-string
+     */
     public function getUniqueId(): string;
 }

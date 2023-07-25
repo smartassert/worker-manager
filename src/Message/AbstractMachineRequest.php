@@ -7,6 +7,7 @@ namespace App\Message;
 abstract class AbstractMachineRequest implements MachineRequestInterface
 {
     /**
+     * @param non-empty-string $uniqueId
      * @param non-empty-string $machineId
      */
     public function __construct(
