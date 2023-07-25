@@ -10,28 +10,40 @@ use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\MachineRequestFactory;
 
-class TestMachineRequestFactory
+readonly class TestMachineRequestFactory
 {
     public function __construct(
         private MachineRequestFactory $factory,
     ) {
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createFindThenCreate(string $machineId): FindMachine
     {
         return $this->factory->createFindThenCreate($machineId);
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createDelete(string $machineId): DeleteMachine
     {
         return $this->factory->createDelete($machineId);
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createFindThenCheckIsActive(string $machineId): FindMachine
     {
         return $this->factory->createFindThenCheckIsActive($machineId);
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createCreate(string $machineId): CreateMachine
     {
         $reflector = new \ReflectionObject($this->factory);
@@ -46,6 +58,9 @@ class TestMachineRequestFactory
         return $request;
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createCheckIsActive(string $machineId): CheckMachineIsActive
     {
         $factoryReflector = new \ReflectionObject($this->factory);
@@ -61,6 +76,7 @@ class TestMachineRequestFactory
     }
 
     /**
+     * @param non-empty-string          $machineId
      * @param MachineRequestInterface[] $onSuccessCollection
      * @param MachineRequestInterface[] $onFailureCollection
      */
@@ -81,6 +97,9 @@ class TestMachineRequestFactory
         return $request;
     }
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function createGet(string $machineId): GetMachine
     {
         $reflector = new \ReflectionObject($this->factory);
