@@ -14,6 +14,8 @@ use App\Services\Entity\Factory\CreateFailureFactory;
 use Psr\Log\LoggerInterface;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 {
@@ -27,6 +29,10 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
     {
+        if ($throwable instanceof HandlerFailedException) {
+            return;
+        }
+
         $message = $envelope->getMessage();
         if (!$message instanceof MachineRequestInterface) {
             return;
@@ -35,6 +41,10 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         $machine = $this->machineRepository->find($message->getMachineId());
         if (!$machine instanceof Machine) {
             return;
+        }
+
+        if ($throwable instanceof UnrecoverableMessageHandlingException) {
+            $throwable = $throwable->getPrevious() ?? $throwable;
         }
 
         foreach ($this->exceptionStackFactory->create($throwable) as $loggableException) {
