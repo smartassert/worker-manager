@@ -6,5 +6,8 @@ namespace App\Message;
 
 interface MachineRequestInterface extends UniqueRequestInterface
 {
+    /**
+     * @return non-empty-string
+     */
     public function getMachineId(): string;
 }
