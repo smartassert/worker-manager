@@ -8,6 +8,11 @@ class RequestIdFactory implements RequestIdFactoryInterface
 {
     public function create(): string
     {
-        return (string) new Ulid();
+        $id = (string) new Ulid();
+        if ('' === $id) {
+            throw new \RuntimeException('Generated id is empty');
+        }
+
+        return $id;
     }
 }
