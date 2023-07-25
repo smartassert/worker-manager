@@ -29,6 +29,9 @@ class MachineController
     ) {
     }
 
+    /**
+     * @param non-empty-string $id
+     */
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
     public function create(string $id, MachineProviderRepository $machineProviderRepository): JsonResponse
     {
@@ -59,6 +62,9 @@ class MachineController
         return new JsonResponse($machine, 202);
     }
 
+    /**
+     * @param non-empty-string $id
+     */
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
     public function status(string $id, CreateFailureRepository $createFailureRepository): JsonResponse
     {
@@ -80,6 +86,9 @@ class MachineController
         return new JsonResponse($machine);
     }
 
+    /**
+     * @param non-empty-string $id
+     */
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
     public function delete(string $id): JsonResponse
     {
