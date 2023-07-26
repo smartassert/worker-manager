@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Exception\MachineNotFindableException;
@@ -30,7 +31,7 @@ readonly class MachineManager
      * @throws UnsupportedProviderException
      * @throws \Throwable
      */
-    public function create(MachineProvider $machineProvider): RemoteMachineInterface
+    public function create(Machine $machine, MachineProvider $machineProvider): RemoteMachineInterface
     {
         $machineId = $machineProvider->getId();
 
