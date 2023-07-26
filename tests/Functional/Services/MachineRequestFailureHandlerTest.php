@@ -305,7 +305,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     $records = Records::empty();
                     $records->add(Record::with(
                         'critical',
-                        'Machine "' . $message->getMachineId() . '" is not findable',
+                        'Action "find" on machine "' . $message->getMachineId() . '" failed',
                         [
                             'message_id' => $message->getUniqueId(),
                             'machine_id' => $message->getMachineId(),
