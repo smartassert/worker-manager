@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Services;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Exception\MachineNotCreatableException;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -90,7 +91,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
 
         $machine = new Machine(self::MACHINE_ID);
-
         $remoteMachine = $this->machineManager->create($machine, $this->createMachineProvider());
 
         self::assertEquals(new RemoteMachine($droplet), $remoteMachine);
@@ -106,18 +106,24 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         ResponseInterface $apiResponse,
         string $expectedExceptionClass
     ): void {
-        $this->doActionThrowsExceptionTest(
-            function () use ($dropletApiException) {
-                $machine = new Machine(self::MACHINE_ID);
+        if ($this->digitalOceanClient instanceof ClientProxy) {
+            $this->digitalOceanClient->setLastResponse($apiResponse);
+        }
 
-                $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
-                $this->machineManager->create($machine, $this->createMachineProvider());
-            },
-            MachineAction::CREATE,
-            $dropletApiException,
-            $apiResponse,
-            $expectedExceptionClass,
-        );
+        try {
+            $machine = new Machine(self::MACHINE_ID);
+
+            $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
+            $this->machineManager->create($machine, $this->createMachineProvider());
+
+            self::fail(MachineNotCreatableException::class . ' not thrown');
+        } catch (MachineNotCreatableException $exception) {
+            $innerException = $exception->getExceptionStack()[0];
+            self::assertInstanceOf(ExceptionInterface::class, $innerException);
+            self::assertSame($expectedExceptionClass, $innerException::class);
+            self::assertSame(MachineAction::CREATE, $innerException->getAction());
+            self::assertEquals($dropletApiException, $innerException->getRemoteException());
+        }
     }
 
     public function testCreateThrowsDropletLimitException(): void
@@ -134,8 +140,10 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         try {
             $this->machineManager->create($machine, $this->createMachineProvider());
             self::fail(ExceptionInterface::class . ' not thrown');
-        } catch (ExceptionInterface $exception) {
-            self::assertSame($dropletApiException, $exception->getRemoteException());
+        } catch (MachineNotCreatableException $exception) {
+            $innerException = $exception->getExceptionStack()[0];
+            self::assertInstanceOf(ExceptionInterface::class, $innerException);
+            self::assertSame($dropletApiException, $innerException->getRemoteException());
         }
     }
 
@@ -192,16 +200,19 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         ResponseInterface $apiResponse,
         string $expectedExceptionClass
     ): void {
-        $this->doActionThrowsExceptionTest(
-            function () use ($dropletApiException) {
-                $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
-                $this->machineManager->get($this->createMachineProvider());
-            },
-            MachineAction::GET,
-            $dropletApiException,
-            $apiResponse,
-            $expectedExceptionClass,
-        );
+        if ($this->digitalOceanClient instanceof ClientProxy) {
+            $this->digitalOceanClient->setLastResponse($apiResponse);
+        }
+
+        try {
+            $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
+            $this->machineManager->get($this->createMachineProvider());
+            self::fail($dropletApiException::class . ' not thrown');
+        } catch (Exception $exception) {
+            self::assertSame($expectedExceptionClass, $exception::class);
+            self::assertSame(MachineAction::GET, $exception->getAction());
+            self::assertEquals($dropletApiException, $exception->getRemoteException());
+        }
     }
 
     /**
@@ -286,30 +297,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withGetAllCall($this->machineName, []);
 
         self::assertNull($this->machineManager->find(self::MACHINE_ID));
-    }
-
-    /**
-     * @param class-string $expectedExceptionClass
-     */
-    private function doActionThrowsExceptionTest(
-        callable $callable,
-        MachineAction $action,
-        \Exception $dropletApiException,
-        ResponseInterface $apiResponse,
-        string $expectedExceptionClass,
-    ): void {
-        if ($this->digitalOceanClient instanceof ClientProxy) {
-            $this->digitalOceanClient->setLastResponse($apiResponse);
-        }
-
-        try {
-            $callable();
-            self::fail($dropletApiException::class . ' not thrown');
-        } catch (Exception $exception) {
-            self::assertSame($expectedExceptionClass, $exception::class);
-            self::assertSame($action, $exception->getAction());
-            self::assertEquals($dropletApiException, $exception->getRemoteException());
-        }
     }
 
     private function createMachineProvider(): MachineProvider
