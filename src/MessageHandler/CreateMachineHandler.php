@@ -49,7 +49,7 @@ class CreateMachineHandler
         $this->machineRepository->add($machine);
 
         try {
-            $remoteMachine = $this->machineManager->create($machineProvider);
+            $remoteMachine = $this->machineManager->create($machine, $machineProvider);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
         } catch (\Throwable $exception) {
