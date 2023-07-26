@@ -33,6 +33,7 @@ use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Uid\Ulid;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -70,14 +71,17 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderRepository->add($machineProvider);
 
+        $machineId = (string) new Ulid();
+        \assert('' !== $machineId);
+        $this->machine = new Machine($machineId, MachineState::CREATE_RECEIVED);
+
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $machineRepository->add($this->machine);
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
+        $this->machineName = $machineNameFactory->create($this->machine->getId());
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
         \assert($machineRequestFactory instanceof TestMachineRequestFactory);
@@ -117,7 +121,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $expectedDropletEntity);
 
-        $message = $this->machineRequestFactory->createCreate(self::MACHINE_ID);
+        $message = $this->machineRequestFactory->createCreate($this->machine->getId());
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
@@ -144,12 +148,18 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
     /**
      * @dataProvider invokeThrowsExceptionDataProvider
+     *
+     * @param callable(Machine): \Throwable $vendorExceptionCreator
+     * @param callable(Machine): \Throwable $expectedExceptionCreator
      */
-    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
-    {
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorException);
+    public function testInvokeThrowsException(
+        callable $vendorExceptionCreator,
+        callable $expectedExceptionCreator,
+    ): void {
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorExceptionCreator($this->machine));
 
         $message = new CreateMachine('id0', $this->machine->getId());
+        $expectedException = $expectedExceptionCreator($this->machine);
 
         try {
             ($this->handler)($message);
@@ -166,80 +176,97 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $rateLimitReset = 1400000;
-
-        $apiLimitExceededException = new ApiLimitExceededException(
-            $rateLimitReset,
-            self::MACHINE_ID,
-            MachineAction::CREATE,
-            new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
-        );
-
         return [
             'HTTP 401' => [
-                'vendorException' => new VendorRuntimeException('Unauthorized', 401),
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    'Machine "' . self::MACHINE_ID . '" is not creatable',
-                    0,
-                    new MachineNotCreatableException(
-                        self::MACHINE_ID,
-                        [
-                            new AuthenticationException(
-                                self::MACHINE_ID,
-                                MachineAction::CREATE,
-                                new VendorRuntimeException('Unauthorized', 401)
-                            ),
-                        ]
-                    )
-                ),
+                'vendorExceptionCreator' => function () {
+                    return new VendorRuntimeException('Unauthorized', 401);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new AuthenticationException(
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new VendorRuntimeException('Unauthorized', 401)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 404' => [
-                'vendorException' => new ResourceNotFoundException('Not Found', 404),
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    'Machine "' . self::MACHINE_ID . '" is not creatable',
-                    0,
-                    new MachineNotCreatableException(
-                        self::MACHINE_ID,
-                        [
-                            new UnknownRemoteMachineException(
-                                ProviderInterface::NAME_DIGITALOCEAN,
-                                self::MACHINE_ID,
-                                MachineAction::CREATE,
-                                new ResourceNotFoundException('Not Found', 404),
-                            ),
-                        ]
-                    )
-                ),
+                'vendorExceptionCreator' => function () {
+                    return new ResourceNotFoundException('Not Found', 404);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new UnknownRemoteMachineException(
+                                    ProviderInterface::NAME_DIGITALOCEAN,
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new ResourceNotFoundException('Not Found', 404),
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 429' => [
-                'vendorException' => $apiLimitExceededException,
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    'Machine "' . self::MACHINE_ID . '" is not creatable',
-                    0,
-                    new MachineNotCreatableException(
-                        self::MACHINE_ID,
-                        [
-                            $apiLimitExceededException,
-                        ]
-                    )
-                ),
+                'vendorExceptionCreator' => function (Machine $machine) {
+                    return new ApiLimitExceededException(
+                        1400000,
+                        $machine->getId(),
+                        MachineAction::CREATE,
+                        new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
+                    );
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new ApiLimitExceededException(
+                                    1400000,
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 503' => [
-                'vendorException' => new VendorRuntimeException('Service Unavailable', 503),
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    'Machine "' . self::MACHINE_ID . '" is not creatable',
-                    0,
-                    new MachineNotCreatableException(
-                        self::MACHINE_ID,
-                        [
-                            new HttpException(
-                                self::MACHINE_ID,
-                                MachineAction::CREATE,
-                                new VendorRuntimeException('Service Unavailable', 503)
-                            ),
-                        ]
-                    )
-                ),
+                'vendorExceptionCreator' => function () {
+                    return new VendorRuntimeException('Service Unavailable', 503);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new HttpException(
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new VendorRuntimeException('Service Unavailable', 503)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
         ];
     }
