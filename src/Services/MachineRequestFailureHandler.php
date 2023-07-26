@@ -14,6 +14,8 @@ use App\Services\Entity\Factory\CreateFailureFactory;
 use Psr\Log\LoggerInterface;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 {
@@ -27,6 +29,10 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
     {
+        if ($throwable instanceof HandlerFailedException) {
+            return;
+        }
+
         $message = $envelope->getMessage();
         if (!$message instanceof MachineRequestInterface) {
             return;
@@ -37,8 +43,20 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             return;
         }
 
+        if ($throwable instanceof UnrecoverableMessageHandlingException) {
+            $throwable = $throwable->getPrevious() ?? $throwable;
+        }
+
         foreach ($this->exceptionStackFactory->create($throwable) as $loggableException) {
-            $this->logException($message, $loggableException);
+            $this->messengerAuditLogger->critical(
+                $loggableException->getMessage(),
+                [
+                    'message_id' => $message->getUniqueId(),
+                    'machine_id' => $message->getMachineId(),
+                    'code' => $loggableException->getCode(),
+                    'exception' => $loggableException::class,
+                ]
+            );
         }
 
         if ($message instanceof CreateMachine) {
@@ -59,18 +77,5 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         }
 
         $this->machineRepository->add($machine);
-    }
-
-    private function logException(MachineRequestInterface $message, \Throwable $throwable): void
-    {
-        $this->messengerAuditLogger->critical(
-            $throwable->getMessage(),
-            [
-                'message_id' => $message->getUniqueId(),
-                'machine_id' => $message->getMachineId(),
-                'code' => $throwable->getCode(),
-                'exception' => $throwable::class,
-            ]
-        );
     }
 }
