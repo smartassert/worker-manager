@@ -134,6 +134,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             })
         ;
 
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        self::assertNull($machineProviderRepository->find($this->machine->getId()));
+
         $handler = $this->createHandler($machineRequestDispatcher);
         ($handler)($message);
 
@@ -143,6 +147,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         self::assertSame(
             $expectedRemoteMachine->getIpAddresses(),
             ObjectReflector::getProperty($this->machine, 'ip_addresses')
+        );
+
+        self::assertEquals(
+            new MachineProvider($this->machine->getId(), ProviderInterface::NAME_DIGITALOCEAN),
+            $machineProviderRepository->find($this->machine->getId())
         );
     }
 
@@ -282,11 +291,15 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+
         return new CreateMachineHandler(
             $machineManager,
             $machineRequestDispatcher,
             $machineUpdater,
             $machineRepository,
+            $machineProviderRepository,
         );
     }
 }
