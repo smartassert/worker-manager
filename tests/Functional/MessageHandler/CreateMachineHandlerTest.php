@@ -192,7 +192,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
-                        'Machine "' . $machine->getId() . '" is not creatable',
+                        'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
                         new MachineNotCreatableException(
                             $machine->getId(),
@@ -213,7 +213,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
-                        'Machine "' . $machine->getId() . '" is not creatable',
+                        'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
                         new MachineNotCreatableException(
                             $machine->getId(),
@@ -240,7 +240,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
-                        'Machine "' . $machine->getId() . '" is not creatable',
+                        'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
                         new MachineNotCreatableException(
                             $machine->getId(),
@@ -262,7 +262,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
-                        'Machine "' . $machine->getId() . '" is not creatable',
+                        'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
                         new MachineNotCreatableException(
                             $machine->getId(),
