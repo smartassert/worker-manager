@@ -30,6 +30,7 @@
         "toin0u/digitalocean-v2": "^4.5"
     },
     "require-dev": {
+        "beste/psr-testlogger": "^1.0",
         "mockery/mockery": "^1.4",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.8",
