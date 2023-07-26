@@ -45,7 +45,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
-    private MachineProviderRepository $machineProviderRepository;
     private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
@@ -68,7 +67,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
         \assert($machineProviderRepository instanceof MachineProviderRepository);
-        $this->machineProviderRepository = $machineProviderRepository;
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderRepository->add($machineProvider);
 
@@ -262,7 +260,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             $machineRequestDispatcher,
             $machineUpdater,
             $machineRepository,
-            $this->machineProviderRepository,
         );
     }
 }
