@@ -40,18 +40,22 @@ class CreateMachineHandler
             return;
         }
 
-        $machineProvider = $this->machineProviderRepository->find($message->getMachineId());
-        if (!$machineProvider instanceof MachineProvider) {
-            return;
-        }
-
         $machine->setState(MachineState::CREATE_REQUESTED);
         $this->machineRepository->add($machine);
 
         try {
-            $remoteMachine = $this->machineManager->create($machineProvider);
+            $remoteMachine = $this->machineManager->create($machine);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
+
+            $machineProvider = $this->machineProviderRepository->find($message->getMachineId());
+            if ($machineProvider instanceof MachineProvider) {
+                $machineProvider->setName($remoteMachine->getProvider());
+            } else {
+                $machineProvider = new MachineProvider($machine->getId(), $remoteMachine->getProvider());
+            }
+
+            $this->machineProviderRepository->add($machineProvider);
         } catch (\Throwable $exception) {
             if (
                 $exception instanceof UnrecoverableExceptionInterface

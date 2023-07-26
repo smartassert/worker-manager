@@ -141,7 +141,7 @@ class DropletApiProxy extends Droplet
 
     public function prepareCreateCall(
         string $machineName,
-        DropletEntity | \Exception $outcome
+        DropletEntity | \Throwable $outcome
     ): void {
         $dropletConfiguration = $this->createDropletConfiguration($machineName);
 

@@ -9,7 +9,6 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Message\MachineRequestInterface;
 use App\Repository\CreateFailureRepository;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
@@ -56,10 +55,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $controller = $this->createController($machineRequestDispatcher);
 
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-
-        $controller->create(self::MACHINE_ID, $machineProviderRepository);
+        $controller->create(self::MACHINE_ID);
     }
 
     public function testStatusMachineNotFoundCallsMachineRequestDispatcher(): void

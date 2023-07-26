@@ -8,11 +8,11 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
+use App\Exception\MachineNotCreatableException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -33,6 +33,7 @@ use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Uid\Ulid;
 use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
@@ -45,7 +46,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
-    private MachineProviderRepository $machineProviderRepository;
     private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
@@ -68,18 +68,20 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
         \assert($machineProviderRepository instanceof MachineProviderRepository);
-        $this->machineProviderRepository = $machineProviderRepository;
         $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
         $machineProviderRepository->add($machineProvider);
 
+        $machineId = (string) new Ulid();
+        \assert('' !== $machineId);
+        $this->machine = new Machine($machineId, MachineState::CREATE_RECEIVED);
+
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $machineRepository->add($this->machine);
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
+        $this->machineName = $machineNameFactory->create($this->machine->getId());
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
         \assert($machineRequestFactory instanceof TestMachineRequestFactory);
@@ -119,7 +121,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $expectedDropletEntity);
 
-        $message = $this->machineRequestFactory->createCreate(self::MACHINE_ID);
+        $message = $this->machineRequestFactory->createCreate($this->machine->getId());
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
@@ -132,6 +134,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             })
         ;
 
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+        self::assertNull($machineProviderRepository->find($this->machine->getId()));
+
         $handler = $this->createHandler($machineRequestDispatcher);
         ($handler)($message);
 
@@ -142,50 +148,27 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             $expectedRemoteMachine->getIpAddresses(),
             ObjectReflector::getProperty($this->machine, 'ip_addresses')
         );
-    }
 
-    public function testInvokeUnsupportedProvider(): void
-    {
-        $invalidProvider = 'invalid';
-        $unsupportedProviderException = new UnsupportedProviderException($invalidProvider);
-        $expectedException = new UnrecoverableMessageHandlingException(
-            $unsupportedProviderException->getMessage(),
-            $unsupportedProviderException->getCode(),
-            $unsupportedProviderException
+        self::assertEquals(
+            new MachineProvider($this->machine->getId(), ProviderInterface::NAME_DIGITALOCEAN),
+            $machineProviderRepository->find($this->machine->getId())
         );
-
-        $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
-        if ($machineProvider instanceof MachineProvider) {
-            ObjectReflector::setProperty(
-                $machineProvider,
-                MachineProvider::class,
-                'provider',
-                $invalidProvider
-            );
-
-            $this->machineProviderRepository->add($machineProvider);
-        }
-
-        $message = new CreateMachine('id0', $this->machine->getId());
-
-        try {
-            ($this->handler)($message);
-            $this->fail($expectedException::class . ' not thrown');
-        } catch (\Exception $exception) {
-            self::assertEquals($expectedException, $exception);
-        }
-
-        self::assertSame(MachineState::CREATE_REQUESTED, $this->machine->getState());
     }
 
     /**
      * @dataProvider invokeThrowsExceptionDataProvider
+     *
+     * @param callable(Machine): \Throwable $vendorExceptionCreator
+     * @param callable(Machine): \Throwable $expectedExceptionCreator
      */
-    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
-    {
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorException);
+    public function testInvokeThrowsException(
+        callable $vendorExceptionCreator,
+        callable $expectedExceptionCreator,
+    ): void {
+        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorExceptionCreator($this->machine));
 
         $message = new CreateMachine('id0', $this->machine->getId());
+        $expectedException = $expectedExceptionCreator($this->machine);
 
         try {
             ($this->handler)($message);
@@ -202,56 +185,97 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
-        $authenticationException = new AuthenticationException(
-            self::MACHINE_ID,
-            MachineAction::CREATE,
-            new VendorRuntimeException('Unauthorized', 401)
-        );
-
-        $unknownRemoteMachineException = new UnknownRemoteMachineException(
-            ProviderInterface::NAME_DIGITALOCEAN,
-            self::MACHINE_ID,
-            MachineAction::CREATE,
-            new ResourceNotFoundException('Not Found', 404),
-        );
-
-        $rateLimitReset = 1400000;
-
-        $apiLimitExceededException = new ApiLimitExceededException(
-            $rateLimitReset,
-            self::MACHINE_ID,
-            MachineAction::CREATE,
-            new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
-        );
-
         return [
             'HTTP 401' => [
-                'vendorException' => new VendorRuntimeException('Unauthorized', 401),
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    $authenticationException->getMessage(),
-                    $authenticationException->getCode(),
-                    $authenticationException
-                ),
+                'vendorExceptionCreator' => function () {
+                    return new VendorRuntimeException('Unauthorized', 401);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new AuthenticationException(
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new VendorRuntimeException('Unauthorized', 401)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 404' => [
-                'vendorException' => new ResourceNotFoundException('Not Found', 404),
-                'expectedException' => $unknownRemoteMachineException,
+                'vendorExceptionCreator' => function () {
+                    return new ResourceNotFoundException('Not Found', 404);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new UnknownRemoteMachineException(
+                                    ProviderInterface::NAME_DIGITALOCEAN,
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new ResourceNotFoundException('Not Found', 404),
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 429' => [
-                'vendorException' => $apiLimitExceededException,
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    $apiLimitExceededException->getMessage(),
-                    $apiLimitExceededException->getCode(),
-                    $apiLimitExceededException
-                ),
+                'vendorExceptionCreator' => function (Machine $machine) {
+                    return new ApiLimitExceededException(
+                        1400000,
+                        $machine->getId(),
+                        MachineAction::CREATE,
+                        new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
+                    );
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new ApiLimitExceededException(
+                                    1400000,
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
             'HTTP 503' => [
-                'vendorException' => new VendorRuntimeException('Service Unavailable', 503),
-                'expectedException' => new HttpException(
-                    self::MACHINE_ID,
-                    MachineAction::CREATE,
-                    new VendorRuntimeException('Service Unavailable', 503)
-                ),
+                'vendorExceptionCreator' => function () {
+                    return new VendorRuntimeException('Service Unavailable', 503);
+                },
+                'expectedExceptionCreator' => function (Machine $machine) {
+                    return new UnrecoverableMessageHandlingException(
+                        'Machine "' . $machine->getId() . '" is not creatable',
+                        0,
+                        new MachineNotCreatableException(
+                            $machine->getId(),
+                            [
+                                new HttpException(
+                                    $machine->getId(),
+                                    MachineAction::CREATE,
+                                    new VendorRuntimeException('Service Unavailable', 503)
+                                ),
+                            ]
+                        )
+                    );
+                },
             ],
         ];
     }
@@ -267,12 +291,15 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
+        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
+        \assert($machineProviderRepository instanceof MachineProviderRepository);
+
         return new CreateMachineHandler(
             $machineManager,
             $machineRequestDispatcher,
             $machineUpdater,
             $machineRepository,
-            $this->machineProviderRepository,
+            $machineProviderRepository,
         );
     }
 }

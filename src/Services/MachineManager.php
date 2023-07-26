@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Exception\MachineNotCreatableException;
 use App\Exception\MachineNotFindableException;
 use App\Exception\MachineNotRemovableException;
 use App\Exception\MachineProvider\ExceptionInterface;
@@ -27,25 +29,25 @@ readonly class MachineManager
 
     /**
      * @throws ExceptionInterface
-     * @throws UnsupportedProviderException
      * @throws \Throwable
      */
-    public function create(MachineProvider $machineProvider): RemoteMachineInterface
+    public function create(Machine $machine): RemoteMachineInterface
     {
-        $machineId = $machineProvider->getId();
-
-        $provider = $this->findProvider($machineProvider);
-        if (null === $provider) {
-            throw new UnsupportedProviderException($machineProvider->getName());
+        $exceptionStack = [];
+        foreach ($this->providerMachineManagers as $machineManager) {
+            if ($machineManager instanceof ProviderMachineManagerInterface) {
+                try {
+                    return $machineManager->create(
+                        $machine->getId(),
+                        $this->machineNameFactory->create($machine->getId())
+                    );
+                } catch (ExceptionInterface $exception) {
+                    $exceptionStack[] = $exception;
+                }
+            }
         }
 
-        try {
-            return $provider->create($machineId, $this->machineNameFactory->create($machineId));
-        } catch (\Throwable $exception) {
-            throw $exception instanceof ExceptionInterface
-                ? $exception
-                : $this->exceptionFactory->create($machineId, MachineAction::CREATE, $exception);
-        }
+        throw new MachineNotCreatableException($machine->getId(), $exceptionStack);
     }
 
     /**

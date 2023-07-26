@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Application;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Application\AbstractMachineTest;
@@ -23,7 +21,6 @@ class MachineTest extends AbstractMachineTest
     private const MACHINE_ID = 'machine id';
 
     private MachineRepository $machineRepository;
-    private MachineProviderRepository $machineProviderRepository;
 
     protected function setUp(): void
     {
@@ -32,10 +29,6 @@ class MachineTest extends AbstractMachineTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
-
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-        $this->machineProviderRepository = $machineProviderRepository;
     }
 
     /**
@@ -71,10 +64,6 @@ class MachineTest extends AbstractMachineTest
         if ($existingMachine instanceof Machine) {
             self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
         }
-
-        $machineProvider = $this->machineProviderRepository->find(self::MACHINE_ID);
-        self::assertInstanceOf(MachineProvider::class, $machineProvider);
-        self::assertSame(self::MACHINE_ID, $machineProvider->getId());
     }
 
     /**
