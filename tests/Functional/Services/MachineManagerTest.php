@@ -91,7 +91,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
 
         $machine = new Machine(self::MACHINE_ID);
-        $remoteMachine = $this->machineManager->create($machine, $this->createMachineProvider());
+        $remoteMachine = $this->machineManager->create($machine);
 
         self::assertEquals(new RemoteMachine($droplet), $remoteMachine);
     }
@@ -114,7 +114,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
             $machine = new Machine(self::MACHINE_ID);
 
             $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
-            $this->machineManager->create($machine, $this->createMachineProvider());
+            $this->machineManager->create($machine);
 
             self::fail(MachineNotCreatableException::class . ' not thrown');
         } catch (MachineNotCreatableException $exception) {
@@ -138,7 +138,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $machine = new Machine(self::MACHINE_ID);
 
         try {
-            $this->machineManager->create($machine, $this->createMachineProvider());
+            $this->machineManager->create($machine);
             self::fail(ExceptionInterface::class . ' not thrown');
         } catch (MachineNotCreatableException $exception) {
             $innerException = $exception->getExceptionStack()[0];

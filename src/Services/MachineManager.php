@@ -31,7 +31,7 @@ readonly class MachineManager
      * @throws ExceptionInterface
      * @throws \Throwable
      */
-    public function create(Machine $machine, MachineProvider $machineProvider): RemoteMachineInterface
+    public function create(Machine $machine): RemoteMachineInterface
     {
         $exceptionStack = [];
         foreach ($this->providerMachineManagers as $machineManager) {
