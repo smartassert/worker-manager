@@ -9,7 +9,6 @@ use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
-use App\Model\ExceptionalMachineRequest;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use Psr\Log\LoggerInterface;
@@ -51,7 +50,12 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         foreach ($this->exceptionStackFactory->create($throwable) as $loggableException) {
             $this->messengerAuditLogger->critical(
                 $loggableException->getMessage(),
-                (new ExceptionalMachineRequest($message, $loggableException))->toArray()
+                [
+                    'message_id' => $message->getUniqueId(),
+                    'machine_id' => $message->getMachineId(),
+                    'code' => $loggableException->getCode(),
+                    'exception' => $loggableException::class,
+                ]
             );
         }
 
