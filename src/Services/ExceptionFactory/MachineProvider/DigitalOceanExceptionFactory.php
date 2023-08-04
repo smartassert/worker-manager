@@ -10,7 +10,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Model\ProviderInterface;
+use App\Model\DigitalOcean\RemoteMachine;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -45,12 +45,7 @@ class DigitalOceanExceptionFactory
             }
 
             if (404 === $exception->getCode()) {
-                return new UnknownRemoteMachineException(
-                    ProviderInterface::NAME_DIGITALOCEAN,
-                    $machineId,
-                    $action,
-                    $exception
-                );
+                return new UnknownRemoteMachineException(RemoteMachine::TYPE, $machineId, $action, $exception);
             }
 
             return new HttpException($machineId, $action, $exception);

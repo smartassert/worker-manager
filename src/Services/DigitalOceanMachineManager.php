@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use DigitalOceanV2\Client;
@@ -22,12 +21,9 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     ) {
     }
 
-    /**
-     * @return ProviderInterface::NAME_* $type
-     */
     public function getType(): string
     {
-        return ProviderInterface::NAME_DIGITALOCEAN;
+        return RemoteMachine::TYPE;
     }
 
     /**

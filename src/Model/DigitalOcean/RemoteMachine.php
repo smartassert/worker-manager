@@ -3,7 +3,6 @@
 namespace App\Model\DigitalOcean;
 
 use App\Enum\MachineState;
-use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 
@@ -11,18 +10,16 @@ class RemoteMachine implements RemoteMachineInterface
 {
     public const STATE_NEW = 'new';
     public const STATE_ACTIVE = 'active';
+    public const TYPE = 'digitalocean';
 
     public function __construct(
         private DropletEntity $droplet
     ) {
     }
 
-    /**
-     * @return ProviderInterface::NAME_*
-     */
     public function getProvider(): string
     {
-        return ProviderInterface::NAME_DIGITALOCEAN;
+        return self::TYPE;
     }
 
     public function getId(): int
