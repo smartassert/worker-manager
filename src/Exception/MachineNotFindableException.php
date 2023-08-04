@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-class MachineNotFindableException extends MachineActionFailedException
+class MachineNotFindableException extends AbstractMachineActionFailedException
 {
     public function __construct(string $id, array $exceptionStack = [])
     {

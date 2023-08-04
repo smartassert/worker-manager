@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-abstract class MachineActionFailedException extends AbstractMachineException implements
+abstract class AbstractMachineActionFailedException extends AbstractMachineException implements
     StackedExceptionInterface,
     UnrecoverableExceptionInterface
 {
