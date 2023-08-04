@@ -7,9 +7,7 @@ namespace App\Tests\Functional\Services;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
-use App\Exception\MachineNotCreatableException;
-use App\Exception\MachineNotFindableException;
-use App\Exception\MachineNotRemovableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
@@ -115,8 +113,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
             $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
             $this->machineManager->create($machine);
 
-            self::fail(MachineNotCreatableException::class . ' not thrown');
-        } catch (MachineNotCreatableException $exception) {
+            self::fail(MachineActionFailedException::class . ' not thrown');
+        } catch (MachineActionFailedException $exception) {
             $innerException = $exception->getExceptionStack()[0];
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($expectedExceptionClass, $innerException::class);
@@ -139,7 +137,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         try {
             $this->machineManager->create($machine);
             self::fail(ExceptionInterface::class . ' not thrown');
-        } catch (MachineNotCreatableException $exception) {
+        } catch (MachineActionFailedException $exception) {
             $innerException = $exception->getExceptionStack()[0];
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($dropletApiException, $innerException->getRemoteException());
@@ -253,8 +251,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
 
         try {
             $this->machineManager->remove(self::MACHINE_ID);
-            self::fail(MachineNotFindableException::class . ' not thrown');
-        } catch (MachineNotRemovableException $machineNotFoundException) {
+            self::fail(MachineActionFailedException::class . ' not thrown');
+        } catch (MachineActionFailedException $machineNotFoundException) {
             self::assertEquals($expectedExceptionStack, $machineNotFoundException->getExceptionStack());
         }
     }
@@ -285,8 +283,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
 
         try {
             $this->machineManager->find(self::MACHINE_ID);
-            self::fail(MachineNotFindableException::class . ' not thrown');
-        } catch (MachineNotFindableException $machineNotFoundException) {
+            self::fail(MachineActionFailedException::class . ' not thrown');
+        } catch (MachineActionFailedException $machineNotFoundException) {
             self::assertEquals($expectedExceptionStack, $machineNotFoundException->getExceptionStack());
         }
     }

@@ -7,7 +7,7 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
-use App\Exception\MachineNotRemovableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\DeleteMachine;
@@ -154,13 +154,21 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
             $http503Exception
         );
 
-        $machineNotRemovableAuthenticationException = new MachineNotRemovableException(self::MACHINE_ID, [
-            $authenticationException,
-        ]);
+        $machineNotRemovableAuthenticationException = new MachineActionFailedException(
+            self::MACHINE_ID,
+            MachineAction::DELETE,
+            [
+                $authenticationException,
+            ]
+        );
 
-        $machineNotRemovableServiceUnavailableException = new MachineNotRemovableException(self::MACHINE_ID, [
-            $serviceUnavailableException,
-        ]);
+        $machineNotRemovableServiceUnavailableException = new MachineActionFailedException(
+            self::MACHINE_ID,
+            MachineAction::DELETE,
+            [
+                $serviceUnavailableException,
+            ]
+        );
 
         return [
             'HTTP 401' => [

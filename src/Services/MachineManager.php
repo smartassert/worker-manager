@@ -5,9 +5,7 @@ namespace App\Services;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
-use App\Exception\MachineNotCreatableException;
-use App\Exception\MachineNotFindableException;
-use App\Exception\MachineNotRemovableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Exception\MachineProvider\UnknownRemoteMachineExceptionInterface;
@@ -47,7 +45,7 @@ readonly class MachineManager
             }
         }
 
-        throw new MachineNotCreatableException($machine->getId(), $exceptionStack);
+        throw new MachineActionFailedException($machine->getId(), MachineAction::CREATE, $exceptionStack);
     }
 
     /**
@@ -82,7 +80,7 @@ readonly class MachineManager
     /**
      * @param non-empty-string $machineId
      *
-     * @throws MachineNotRemovableException
+     * @throws MachineActionFailedException
      * @throws \Throwable
      */
     public function remove(string $machineId): void
@@ -101,14 +99,14 @@ readonly class MachineManager
         }
 
         if ([] !== $exceptionStack) {
-            throw new MachineNotRemovableException($machineId, $exceptionStack);
+            throw new MachineActionFailedException($machineId, MachineAction::DELETE, $exceptionStack);
         }
     }
 
     /**
      * @param non-empty-string $machineId
      *
-     * @throws MachineNotFindableException
+     * @throws MachineActionFailedException
      * @throws \Throwable
      */
     public function find(string $machineId): ?RemoteMachineInterface
@@ -129,7 +127,7 @@ readonly class MachineManager
         }
 
         if ([] !== $exceptionStack) {
-            throw new MachineNotFindableException($machineId, $exceptionStack);
+            throw new MachineActionFailedException($machineId, MachineAction::FIND, $exceptionStack);
         }
 
         return null;

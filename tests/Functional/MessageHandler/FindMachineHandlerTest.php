@@ -8,7 +8,7 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
-use App\Exception\MachineNotFindableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\FindMachine;
@@ -316,13 +316,21 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             $http503Exception
         );
 
-        $machineNotFindableAuthenticationException = new MachineNotFindableException(self::MACHINE_ID, [
-            $authenticationException,
-        ]);
+        $machineNotFindableAuthenticationException = new MachineActionFailedException(
+            self::MACHINE_ID,
+            MachineAction::FIND,
+            [
+                $authenticationException,
+            ]
+        );
 
-        $machineNotFindableServiceUnavailableException = new MachineNotFindableException(self::MACHINE_ID, [
-            $serviceUnavailableException,
-        ]);
+        $machineNotFindableServiceUnavailableException = new MachineActionFailedException(
+            self::MACHINE_ID,
+            MachineAction::FIND,
+            [
+                $serviceUnavailableException,
+            ]
+        );
 
         return [
             'HTTP 401' => [
