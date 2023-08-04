@@ -39,12 +39,4 @@ class MachineProvider
     {
         return $this->provider;
     }
-
-    /**
-     * @param ProviderInterface::NAME_* $name
-     */
-    public function setName(string $name): void
-    {
-        $this->provider = $name;
-    }
 }
