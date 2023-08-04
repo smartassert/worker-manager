@@ -47,11 +47,4 @@ class MachineProvider
     {
         $this->provider = $name;
     }
-
-    public function merge(MachineProvider $machineProvider): self
-    {
-        $this->provider = $machineProvider->getName();
-
-        return $this;
-    }
 }
