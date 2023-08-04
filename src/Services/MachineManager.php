@@ -80,6 +80,8 @@ readonly class MachineManager
     }
 
     /**
+     * @param non-empty-string $machineId
+     *
      * @throws MachineNotRemovableException
      * @throws \Throwable
      */
@@ -104,6 +106,8 @@ readonly class MachineManager
     }
 
     /**
+     * @param non-empty-string $machineId
+     *
      * @throws MachineNotFindableException
      * @throws \Throwable
      */

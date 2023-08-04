@@ -13,7 +13,7 @@ class AuthenticationExceptionTest extends TestCase
 {
     public function testIsUnrecoverable(): void
     {
-        $exception = new AuthenticationException('', MachineAction::GET, new \Exception());
+        $exception = new AuthenticationException(md5((string) rand()), MachineAction::GET, new \Exception());
 
         self::assertInstanceOf(UnrecoverableExceptionInterface::class, $exception);
     }

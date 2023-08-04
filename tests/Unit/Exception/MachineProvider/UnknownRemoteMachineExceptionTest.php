@@ -37,7 +37,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
             'get action not recoverable' => [
                 'exception' => new UnknownRemoteMachineException(
                     RemoteMachine::TYPE,
-                    '',
+                    md5((string) rand()),
                     MachineAction::GET,
                     new \Exception()
                 ),
@@ -46,7 +46,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
             'find action recoverable' => [
                 'exception' => new UnknownRemoteMachineException(
                     RemoteMachine::TYPE,
-                    '',
+                    md5((string) rand()),
                     MachineAction::FIND,
                     new \Exception()
                 ),

@@ -18,6 +18,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactory
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function create(
         string $machineId,
         MachineAction $action,
