@@ -6,8 +6,11 @@ use App\Enum\MachineAction;
 
 class MachineNotFindableException extends AbstractMachineActionFailedException
 {
-    public function __construct(string $id, array $exceptionStack = [])
+    /**
+     * @param non-empty-string $machineId
+     */
+    public function __construct(string $machineId, array $exceptionStack = [])
     {
-        parent::__construct($id, MachineAction::FIND, $exceptionStack);
+        parent::__construct($machineId, MachineAction::FIND, $exceptionStack);
     }
 }

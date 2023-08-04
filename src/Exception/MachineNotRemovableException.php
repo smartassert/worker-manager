@@ -6,8 +6,11 @@ use App\Enum\MachineAction;
 
 class MachineNotRemovableException extends AbstractMachineActionFailedException
 {
-    public function __construct(string $id, array $exceptionStack = [])
+    /**
+     * @param non-empty-string $machineId
+     */
+    public function __construct(string $machineId, array $exceptionStack = [])
     {
-        parent::__construct($id, MachineAction::DELETE, $exceptionStack);
+        parent::__construct($machineId, MachineAction::DELETE, $exceptionStack);
     }
 }

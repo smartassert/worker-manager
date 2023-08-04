@@ -3,17 +3,19 @@
 namespace App\Exception\MachineProvider;
 
 use App\Enum\MachineAction;
-use App\Exception\AbstractMachineException;
 
-class Exception extends AbstractMachineException implements ExceptionInterface
+class Exception extends \Exception implements ExceptionInterface
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
         string $machineId,
-        private MachineAction $action,
-        private \Throwable $remoteException,
+        private readonly MachineAction $action,
+        private readonly \Throwable $remoteException,
         int $code = 0
     ) {
-        parent::__construct($machineId, self::createMessage($machineId, $action), $code, $remoteException);
+        parent::__construct(self::createMessage($machineId, $action), $code, $remoteException);
     }
 
     public function getAction(): MachineAction

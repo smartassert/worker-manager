@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-abstract class AbstractMachineActionFailedException extends AbstractMachineException implements
+abstract class AbstractMachineActionFailedException extends \Exception implements
     StackedExceptionInterface,
     UnrecoverableExceptionInterface
 {
@@ -14,15 +14,12 @@ abstract class AbstractMachineActionFailedException extends AbstractMachineExcep
     private array $exceptionStack;
 
     /**
-     * @param non-empty-string $id
+     * @param non-empty-string $machineId
      * @param \Throwable[]     $exceptionStack
      */
-    public function __construct(
-        string $id,
-        MachineAction $action,
-        array $exceptionStack = [],
-    ) {
-        parent::__construct($id, sprintf('Action "%s" on machine "%s" failed', $action->value, $id));
+    public function __construct(string $machineId, MachineAction $action, array $exceptionStack = [])
+    {
+        parent::__construct(sprintf('Action "%s" on machine "%s" failed', $action->value, $machineId));
 
         $this->exceptionStack = array_filter($exceptionStack, function ($item) {
             return $item instanceof \Throwable;
