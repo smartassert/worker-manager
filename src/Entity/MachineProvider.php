@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Model\ProviderInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -13,13 +12,13 @@ class MachineProvider
     private string $id;
 
     /**
-     * @var ProviderInterface::NAME_*
+     * @var non-empty-string
      */
     #[ORM\Column(type: 'string', length: 255)]
     private string $provider;
 
     /**
-     * @param ProviderInterface::NAME_* $provider
+     * @param non-empty-string $provider
      */
     public function __construct(string $id, string $provider)
     {
@@ -33,7 +32,7 @@ class MachineProvider
     }
 
     /**
-     * @return ProviderInterface::NAME_*
+     * @return non-empty-string
      */
     public function getName(): string
     {

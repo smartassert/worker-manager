@@ -16,7 +16,6 @@ use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
@@ -68,7 +67,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
         \assert($machineProviderRepository instanceof MachineProviderRepository);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         $machineProviderRepository->add($machineProvider);
 
         $machineId = (string) new Ulid();
@@ -150,7 +149,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         self::assertEquals(
-            new MachineProvider($this->machine->getId(), ProviderInterface::NAME_DIGITALOCEAN),
+            new MachineProvider($this->machine->getId(), RemoteMachine::TYPE),
             $machineProviderRepository->find($this->machine->getId())
         );
     }
@@ -219,7 +218,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                             $machine->getId(),
                             [
                                 new UnknownRemoteMachineException(
-                                    ProviderInterface::NAME_DIGITALOCEAN,
+                                    RemoteMachine::TYPE,
                                     $machine->getId(),
                                     MachineAction::CREATE,
                                     new ResourceNotFoundException('Not Found', 404),

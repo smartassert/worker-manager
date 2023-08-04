@@ -7,7 +7,7 @@ use App\Enum\MachineState;
 interface RemoteMachineInterface
 {
     /**
-     * @return ProviderInterface::NAME_*
+     * @return non-empty-string
      */
     public function getProvider(): string;
 

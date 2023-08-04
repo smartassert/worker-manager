@@ -15,7 +15,6 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
@@ -306,7 +305,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
 
         $machineProvider = $machineProviderRepository->find(self::MACHINE_ID);
         if (!$machineProvider instanceof MachineProvider) {
-            $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+            $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
             $machineProviderRepository->add($machineProvider);
         }
 

@@ -3,12 +3,11 @@
 namespace App\Exception\MachineProvider;
 
 use App\Exception\AbstractMachineException;
-use App\Model\ProviderInterface;
 
 class ProviderMachineNotFoundException extends AbstractMachineException
 {
     /**
-     * @param ProviderInterface::NAME_* $providerName
+     * @param non-empty-string $providerName
      */
     public function __construct(
         string $id,

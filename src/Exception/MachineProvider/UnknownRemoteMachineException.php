@@ -3,12 +3,11 @@
 namespace App\Exception\MachineProvider;
 
 use App\Enum\MachineAction;
-use App\Model\ProviderInterface;
 
 class UnknownRemoteMachineException extends Exception implements UnknownRemoteMachineExceptionInterface
 {
     /**
-     * @param ProviderInterface::NAME_* $provider
+     * @param non-empty-string $provider
      */
     public function __construct(
         private string $provider,
