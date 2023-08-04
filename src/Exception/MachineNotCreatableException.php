@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-class MachineNotCreatableException extends MachineActionFailedException
+class MachineNotCreatableException extends AbstractMachineActionFailedException
 {
     public function __construct(string $id, array $exceptionStack = [])
     {
