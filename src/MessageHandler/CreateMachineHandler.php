@@ -49,13 +49,11 @@ class CreateMachineHandler
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
 
             $machineProvider = $this->machineProviderRepository->find($message->getMachineId());
-            if ($machineProvider instanceof MachineProvider) {
-                $machineProvider->setName($remoteMachine->getProvider());
-            } else {
-                $machineProvider = new MachineProvider($machine->getId(), $remoteMachine->getProvider());
+            if (!$machineProvider instanceof MachineProvider) {
+                $this->machineProviderRepository->add(
+                    new MachineProvider($machine->getId(), $remoteMachine->getProvider())
+                );
             }
-
-            $this->machineProviderRepository->add($machineProvider);
         } catch (\Throwable $exception) {
             if (
                 $exception instanceof UnrecoverableExceptionInterface
