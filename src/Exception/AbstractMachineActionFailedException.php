@@ -14,7 +14,8 @@ abstract class AbstractMachineActionFailedException extends AbstractMachineExcep
     private array $exceptionStack;
 
     /**
-     * @param \Throwable[] $exceptionStack
+     * @param non-empty-string $id
+     * @param \Throwable[]     $exceptionStack
      */
     public function __construct(
         string $id,

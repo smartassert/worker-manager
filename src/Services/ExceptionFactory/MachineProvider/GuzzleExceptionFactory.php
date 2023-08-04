@@ -17,6 +17,9 @@ class GuzzleExceptionFactory implements ExceptionFactoryInterface
         return $exception instanceof ConnectException;
     }
 
+    /**
+     * @param non-empty-string $resourceId
+     */
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ?ExceptionInterface
     {
         if (!$exception instanceof ConnectException) {

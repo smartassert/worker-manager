@@ -27,6 +27,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     }
 
     /**
+     * @param non-empty-string $machineId
+     *
      * @throws ExceptionInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
@@ -73,6 +75,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     }
 
     /**
+     * @param non-empty-string $machineId
+     *
      * @throws ExceptionInterface
      */
     public function remove(string $machineId, string $name): void
@@ -90,6 +94,8 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     }
 
     /**
+     * @param non-empty-string $machineId
+     *
      * @throws ExceptionInterface
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface

@@ -7,6 +7,7 @@ use App\Exception\AbstractMachineException;
 class ProviderMachineNotFoundException extends AbstractMachineException
 {
     /**
+     * @param non-empty-string $id
      * @param non-empty-string $providerName
      */
     public function __construct(

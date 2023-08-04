@@ -23,6 +23,9 @@ class ExceptionFactory
         });
     }
 
+    /**
+     * @param non-empty-string $resourceId
+     */
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
     {
         foreach ($this->factories as $factory) {
