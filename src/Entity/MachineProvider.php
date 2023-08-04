@@ -7,6 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class MachineProvider
 {
+    /**
+     * @var non-empty-string
+     */
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
@@ -18,6 +21,7 @@ class MachineProvider
     private string $provider;
 
     /**
+     * @param non-empty-string $id
      * @param non-empty-string $provider
      */
     public function __construct(string $id, string $provider)
@@ -26,6 +30,9 @@ class MachineProvider
         $this->provider = $provider;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getId(): string
     {
         return $this->id;
