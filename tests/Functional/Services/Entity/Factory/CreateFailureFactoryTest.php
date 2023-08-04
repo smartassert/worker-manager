@@ -19,7 +19,7 @@ use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
-use App\Model\ProviderInterface;
+use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\CreateFailureRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
 use App\Tests\Functional\AbstractEntityTestCase;
@@ -71,7 +71,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
 
         return [
             UnsupportedProviderException::class => [
-                'throwable' => new UnsupportedProviderException(ProviderInterface::NAME_DIGITALOCEAN),
+                'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
                     CreateFailure::CODE_UNSUPPORTED_PROVIDER,

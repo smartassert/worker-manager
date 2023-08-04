@@ -15,7 +15,6 @@ use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
 use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
@@ -146,7 +145,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             ],
         ]);
 
-        $nonDigitalOceanMachineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $nonDigitalOceanMachineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         ObjectReflector::setProperty(
             $nonDigitalOceanMachineProvider,
             MachineProvider::class,
@@ -166,10 +165,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                         '10.0.0.1',
                     ]
                 ),
-                'expectedMachineProvider' => new MachineProvider(
-                    self::MACHINE_ID,
-                    ProviderInterface::NAME_DIGITALOCEAN
-                ),
+                'expectedMachineProvider' => new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE),
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
@@ -192,10 +188,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                         '10.0.0.1',
                     ]
                 ),
-                'expectedMachineProvider' => new MachineProvider(
-                    self::MACHINE_ID,
-                    ProviderInterface::NAME_DIGITALOCEAN
-                ),
+                'expectedMachineProvider' => new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE),
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
@@ -215,10 +208,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     MachineState::FIND_NOT_FOUND
                 ),
-                'expectedMachineProvider' => new MachineProvider(
-                    self::MACHINE_ID,
-                    ProviderInterface::NAME_DIGITALOCEAN
-                ),
+                'expectedMachineProvider' => new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE),
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
@@ -241,10 +231,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                         '10.0.0.1',
                     ]
                 ),
-                'expectedMachineProvider' => new MachineProvider(
-                    self::MACHINE_ID,
-                    ProviderInterface::NAME_DIGITALOCEAN
-                ),
+                'expectedMachineProvider' => new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE),
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     $message = $factory->createFind(
                         self::MACHINE_ID,
@@ -285,7 +272,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);

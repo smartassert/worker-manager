@@ -16,7 +16,7 @@ use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
-use App\Model\ProviderInterface;
+use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\CreateFailureRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\CreateFailureFactory;
@@ -125,7 +125,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 ),
             ],
             'unsupported provider' => [
-                'throwable' => new UnsupportedProviderException(ProviderInterface::NAME_DIGITALOCEAN),
+                'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Entity;
 
 use App\Entity\MachineProvider;
-use App\Model\ProviderInterface;
+use App\Model\DigitalOcean\RemoteMachine;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
@@ -26,7 +26,7 @@ class MachineProviderTest extends AbstractEntityTestCase
         $repository = $this->entityManager->getRepository(MachineProvider::class);
         self::assertCount(0, $repository->findAll());
 
-        $entity = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $entity = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

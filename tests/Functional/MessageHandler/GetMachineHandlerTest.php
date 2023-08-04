@@ -15,7 +15,6 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Model\ProviderInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
@@ -93,7 +92,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->machineRepository->add($machine);
 
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         $this->machineProviderRepository->add($machineProvider);
 
         $expectedMachineProvider = clone $machineProvider;
@@ -202,7 +201,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $invalidProvider = 'invalid';
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         ObjectReflector::setProperty(
             $machineProvider,
             MachineProvider::class,
@@ -244,7 +243,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
-        $machineProvider = new MachineProvider(self::MACHINE_ID, ProviderInterface::NAME_DIGITALOCEAN);
+        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
         $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
@@ -279,7 +278,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $http404Exception = new ResourceNotFoundException('Not Found', 404);
         $unknownRemoteMachineException = new UnknownRemoteMachineException(
-            ProviderInterface::NAME_DIGITALOCEAN,
+            RemoteMachine::TYPE,
             self::MACHINE_ID,
             MachineAction::GET,
             $http404Exception,
