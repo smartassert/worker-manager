@@ -6,8 +6,11 @@ use App\Enum\MachineAction;
 
 class MachineNotCreatableException extends AbstractMachineActionFailedException
 {
-    public function __construct(string $id, array $exceptionStack = [])
+    /**
+     * @param non-empty-string $machineId
+     */
+    public function __construct(string $machineId, array $exceptionStack = [])
     {
-        parent::__construct($id, MachineAction::CREATE, $exceptionStack);
+        parent::__construct($machineId, MachineAction::CREATE, $exceptionStack);
     }
 }

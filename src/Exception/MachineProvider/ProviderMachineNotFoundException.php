@@ -2,16 +2,14 @@
 
 namespace App\Exception\MachineProvider;
 
-use App\Exception\AbstractMachineException;
-
-class ProviderMachineNotFoundException extends AbstractMachineException
+class ProviderMachineNotFoundException extends \Exception
 {
     /**
-     * @param non-empty-string $id
+     * @param non-empty-string $machineId
      * @param non-empty-string $providerName
      */
-    public function __construct(string $id, string $providerName)
+    public function __construct(string $machineId, string $providerName)
     {
-        parent::__construct($id, sprintf('Machine "%s" not found with provider "%s"', $id, $providerName));
+        parent::__construct(sprintf('Machine "%s" not found with provider "%s"', $machineId, $providerName));
     }
 }
