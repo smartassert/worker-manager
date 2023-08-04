@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-class MachineNotRemovableException extends AbstractMachineActionFailedException
+class MachineNotRemovableException extends MachineActionFailedException
 {
     /**
      * @param non-empty-string $machineId

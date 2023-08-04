@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-class MachineNotCreatableException extends AbstractMachineActionFailedException
+class MachineNotCreatableException extends MachineActionFailedException
 {
     /**
      * @param non-empty-string $machineId

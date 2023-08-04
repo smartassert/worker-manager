@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use App\Enum\MachineAction;
 
-class MachineNotFindableException extends AbstractMachineActionFailedException
+class MachineNotFindableException extends MachineActionFailedException
 {
     /**
      * @param non-empty-string $machineId
