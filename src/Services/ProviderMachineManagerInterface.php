@@ -3,13 +3,12 @@
 namespace App\Services;
 
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Model\ProviderInterface;
 use App\Model\RemoteMachineInterface;
 
 interface ProviderMachineManagerInterface
 {
     /**
-     * @return ProviderInterface::NAME_* $type
+     * @return non-empty-string
      */
     public function getType(): string;
 
