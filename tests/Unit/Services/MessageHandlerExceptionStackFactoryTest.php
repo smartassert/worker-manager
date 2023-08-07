@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Services;
 
 use App\Enum\MachineAction;
-use App\Exception\MachineNotFindableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\Exception;
 use App\Services\MessageHandlerExceptionStackFactory;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +43,11 @@ class MessageHandlerExceptionStackFactoryTest extends TestCase
             new \Exception('stacked exception two'),
         ];
 
-        $stackedMachineProviderException = new MachineNotFindableException('machine_id', $stackedExceptions);
+        $stackedMachineProviderException = new MachineActionFailedException(
+            'machine_id',
+            MachineAction::FIND,
+            $stackedExceptions
+        );
 
         return [
             'Not ExceptionInterface, not StackedExceptionInterface' => [

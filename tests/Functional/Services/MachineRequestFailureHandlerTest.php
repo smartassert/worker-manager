@@ -8,7 +8,7 @@ use App\Entity\CreateFailure;
 use App\Entity\Machine;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
-use App\Exception\MachineNotFindableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
@@ -285,8 +285,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     return new UnrecoverableMessageHandlingException(
                         'foobar',
                         789,
-                        new MachineNotFindableException(
+                        new MachineActionFailedException(
                             $message->getMachineId(),
+                            MachineAction::FIND,
                             [
                                 new ApiLimitExceededException(
                                     123,
@@ -310,7 +311,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                             'message_id' => $message->getUniqueId(),
                             'machine_id' => $message->getMachineId(),
                             'code' => 0,
-                            'exception' => MachineNotFindableException::class,
+                            'exception' => MachineActionFailedException::class,
                         ]
                     ));
 

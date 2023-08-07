@@ -8,7 +8,7 @@ use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
-use App\Exception\MachineNotCreatableException;
+use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -193,8 +193,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                     return new UnrecoverableMessageHandlingException(
                         'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
-                        new MachineNotCreatableException(
+                        new MachineActionFailedException(
                             $machine->getId(),
+                            MachineAction::CREATE,
                             [
                                 new AuthenticationException(
                                     $machine->getId(),
@@ -214,8 +215,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                     return new UnrecoverableMessageHandlingException(
                         'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
-                        new MachineNotCreatableException(
+                        new MachineActionFailedException(
                             $machine->getId(),
+                            MachineAction::CREATE,
                             [
                                 new UnknownRemoteMachineException(
                                     RemoteMachine::TYPE,
@@ -241,8 +243,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                     return new UnrecoverableMessageHandlingException(
                         'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
-                        new MachineNotCreatableException(
+                        new MachineActionFailedException(
                             $machine->getId(),
+                            MachineAction::CREATE,
                             [
                                 new ApiLimitExceededException(
                                     1400000,
@@ -263,8 +266,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                     return new UnrecoverableMessageHandlingException(
                         'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
-                        new MachineNotCreatableException(
+                        new MachineActionFailedException(
                             $machine->getId(),
+                            MachineAction::CREATE,
                             [
                                 new HttpException(
                                     $machine->getId(),
