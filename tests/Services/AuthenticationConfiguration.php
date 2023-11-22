@@ -27,12 +27,7 @@ class AuthenticationConfiguration
     public function getValidApiToken(): string
     {
         if (!isset($this->apiToken)) {
-            $apiToken = $this->usersClient->createApiToken($this->getDefaultApiKey()->key);
-            if (null === $apiToken) {
-                throw new \RuntimeException('Valid API token is null');
-            }
-
-            $this->apiToken = $apiToken;
+            $this->apiToken = $this->usersClient->createApiToken($this->getDefaultApiKey()->key);
         }
 
         return $this->apiToken->token;
@@ -46,7 +41,7 @@ class AuthenticationConfiguration
     public function getUser(): User
     {
         if (!isset($this->user)) {
-            $user = $this->usersClient->verifyFrontendToken($this->getFrontendToken());
+            $user = $this->usersClient->verifyFrontendToken($this->getFrontendToken()->token);
             if (null === $user) {
                 throw new \RuntimeException('User is null');
             }
@@ -69,7 +64,7 @@ class AuthenticationConfiguration
     private function getDefaultApiKey(): ApiKey
     {
         if (!isset($this->apiKey)) {
-            $apiKeys = $this->usersClient->listUserApiKeys($this->getFrontendToken());
+            $apiKeys = $this->usersClient->listUserApiKeys($this->getFrontendToken()->token);
             $apiKey = $apiKeys->getDefault();
             if (null === $apiKey) {
                 throw new \RuntimeException('API key is null');
