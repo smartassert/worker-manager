@@ -278,6 +278,9 @@
     "smartassert/symfony-test-client": {
         "version": "0.1"
     },
+    "smartassert/test-authenticaton-provider-bundle": {
+        "version": "3.0"
+    },
     "smartassert/users-client": {
         "version": "0.2"
     },

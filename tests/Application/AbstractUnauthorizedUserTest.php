@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Application;
 
 use App\Tests\Model\Machine;
-use App\Tests\Services\AuthenticationConfiguration;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
 
@@ -14,12 +13,9 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     /**
      * @dataProvider unauthorizedUserDataProvider
      */
-    public function testMachineCreateUnauthorizedUser(callable $tokenCreator): void
+    public function testMachineCreateUnauthorizedUser(?string $token): void
     {
-        $response = $this->applicationClient->makeMachineCreateRequest(
-            $tokenCreator(self::$authenticationConfiguration),
-            Machine::createId()
-        );
+        $response = $this->applicationClient->makeMachineCreateRequest($token, Machine::createId());
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -27,12 +23,9 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     /**
      * @dataProvider unauthorizedUserDataProvider
      */
-    public function testMachineStatusUnauthorizedUser(callable $tokenCreator): void
+    public function testMachineStatusUnauthorizedUser(?string $token): void
     {
-        $response = $this->applicationClient->makeMachineStatusRequest(
-            $tokenCreator(self::$authenticationConfiguration),
-            Machine::createId()
-        );
+        $response = $this->applicationClient->makeMachineStatusRequest($token, Machine::createId());
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -40,12 +33,9 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     /**
      * @dataProvider unauthorizedUserDataProvider
      */
-    public function testMachineDeleteUnauthorizedUser(callable $tokenCreator): void
+    public function testMachineDeleteUnauthorizedUser(?string $token): void
     {
-        $response = $this->applicationClient->makeMachineDeleteRequest(
-            $tokenCreator(self::$authenticationConfiguration),
-            Machine::createId()
-        );
+        $response = $this->applicationClient->makeMachineDeleteRequest($token, Machine::createId());
 
         $this->assertUnauthorizedResponse($response);
     }
@@ -57,19 +47,13 @@ abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
     {
         return [
             'no token' => [
-                'tokenCreator' => function () {
-                    return null;
-                }
+                'token' => null,
             ],
             'empty token' => [
-                'tokenCreator' => function () {
-                    return '';
-                }
+                'token' => '',
             ],
             'non-empty invalid token' => [
-                'tokenCreator' => function (AuthenticationConfiguration $authenticationConfiguration) {
-                    return $authenticationConfiguration->getInvalidApiToken();
-                }
+                'token' => 'invalid token',
             ],
         ];
     }

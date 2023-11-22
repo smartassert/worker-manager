@@ -39,6 +39,7 @@
         "phpstan/phpstan-symfony": "^1.2",
         "phpunit/phpunit": "^9.5",
         "smartassert/symfony-test-client": "^1.0",
+        "smartassert/test-authenticaton-provider-bundle": "^3.0",
         "smartassert/users-client": "*",
         "squizlabs/php_codesniffer": "dev-master",
         "symfony/browser-kit": "6.3.*",
