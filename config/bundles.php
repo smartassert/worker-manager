@@ -10,5 +10,5 @@ return [
     SmartAssert\HealthCheckBundle\HealthCheckBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     SmartAssert\WorkerMessageFailedEventBundle\WorkerMessageFailedEventBundle::class => ['all' => true],
-    SmartAssert\TestAuthenticationProviderBundle\TestAuthenticationProviderBundle::class => ['dev' => true, 'test' => true],
+    SmartAssert\TestAuthenticationProviderBundle\TestAuthenticationProviderBundle::class => ['test' => true],
 ];

@@ -76,28 +76,28 @@ class MachineTest extends AbstractMachineTest
                 'existingMachine' => null,
                 'expectedResponseIpAddresses' => [],
             ],
-//            'existing machine state: find/not-found' => [
-//                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::FIND_NOT_FOUND),
-//                'expectedResponseIpAddresses' => [],
-//            ],
-//            'existing machine state: create/failed, no ip addresses' => [
-//                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED),
-//                'expectedResponseIpAddresses' => [],
-//            ],
-//            'existing machine state: create/failed, has ip addresses' => [
-//                'existingMachine' => new Machine(
-//                    self::MACHINE_ID,
-//                    MachineState::CREATE_FAILED,
-//                    [
-//                        '127.0.0.1',
-//                        '10.0.0.1',
-//                    ]
-//                ),
-//                'expectedResponseIpAddresses' => [
-//                    '127.0.0.1',
-//                    '10.0.0.1',
-//                ],
-//            ],
+            //            'existing machine state: find/not-found' => [
+            //                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::FIND_NOT_FOUND),
+            //                'expectedResponseIpAddresses' => [],
+            //            ],
+            //            'existing machine state: create/failed, no ip addresses' => [
+            //                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED),
+            //                'expectedResponseIpAddresses' => [],
+            //            ],
+            //            'existing machine state: create/failed, has ip addresses' => [
+            //                'existingMachine' => new Machine(
+            //                    self::MACHINE_ID,
+            //                    MachineState::CREATE_FAILED,
+            //                    [
+            //                        '127.0.0.1',
+            //                        '10.0.0.1',
+            //                    ]
+            //                ),
+            //                'expectedResponseIpAddresses' => [
+            //                    '127.0.0.1',
+            //                    '10.0.0.1',
+            //                ],
+            //            ],
         ];
     }
 
