@@ -1,3 +1,7 @@
+parameters:
+    test_authentication_provider_bundle_frontend_token_provider_users:
+        'user@example.com': 'password'
+
 services:
     _defaults:
         autowire: true
@@ -74,12 +78,6 @@ services:
             $client: '@SmartAssert\SymfonyTestClient\HttpClient'
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
             $statusUrl: '%health_check_bundle_status_path%'
-
-    App\Tests\Services\AuthenticationConfiguration:
-        public: true
-        arguments:
-            $userEmail: 'user@example.com'
-            $userPassword: 'password'
 
     App\Tests\Services\Asserter\JsonResponseAsserter:
         public: true

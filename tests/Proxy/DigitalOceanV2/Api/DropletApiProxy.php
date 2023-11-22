@@ -55,7 +55,8 @@ class DropletApiProxy extends Droplet
                 $dropletConfiguration->getUserData(),
                 $dropletConfiguration->getMonitoring(),
                 $dropletConfiguration->getVolumes(),
-                $dropletConfiguration->getTags()
+                $dropletConfiguration->getTags(),
+                false,
             ],
             $outcome
         );
@@ -81,7 +82,8 @@ class DropletApiProxy extends Droplet
         string $userData = '',
         bool $monitoring = true,
         array $volumes = [],
-        array $tags = []
+        array $tags = [],
+        bool $disableAgent = false,
     ): DropletEntity {
         if (false === is_string($image)) {
             throw new \RuntimeException('image is not a string');
@@ -103,7 +105,8 @@ class DropletApiProxy extends Droplet
             $userData,
             $monitoring,
             $volumes,
-            $tags
+            $tags,
+            $disableAgent
         );
 
         if (false === $droplet instanceof DropletEntity) {
@@ -126,7 +129,7 @@ class DropletApiProxy extends Droplet
     /**
      * @param null|DropletEntity[]|\Exception $outcome
      */
-    public function withGetAllCall(string $name, null | \Exception | array $outcome): self
+    public function withGetAllCall(string $name, null | array | \Exception $outcome): self
     {
         return $this->withCall('getAll', [$name], $outcome);
     }
