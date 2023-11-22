@@ -55,7 +55,8 @@ class DropletApiProxy extends Droplet
                 $dropletConfiguration->getUserData(),
                 $dropletConfiguration->getMonitoring(),
                 $dropletConfiguration->getVolumes(),
-                $dropletConfiguration->getTags()
+                $dropletConfiguration->getTags(),
+                false,
             ],
             $outcome
         );
