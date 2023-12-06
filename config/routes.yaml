@@ -1,2 +1,10 @@
+controllers:
+  resource: ../src/Controller/
+  type: attribute
+
+kernel:
+  resource: ../src/Kernel.php
+  type: attribute
+
 _health_check_bundle_routes:
   resource: '@HealthCheckBundle/Resources/config/routes.yaml'
