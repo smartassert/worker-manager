@@ -21,5 +21,5 @@ interface RemoteMachineInterface
     /**
      * @return null|MachineState::UP_ACTIVE|MachineState::UP_STARTED
      */
-    public function getState(): null | MachineState;
+    public function getState(): ?MachineState;
 }
