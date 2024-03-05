@@ -10,7 +10,7 @@
         "ext-json": "*",
         "doctrine/doctrine-bundle": "^2.5",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.11",
+        "doctrine/orm": "^3.0",
         "guzzlehttp/guzzle": "^7.5",
         "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
