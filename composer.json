@@ -15,7 +15,7 @@
         "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/health-check-bundle": "^2.0",
-        "smartassert/users-security-bundle": "^8.0",
+        "smartassert/users-security-bundle": "^10.0",
         "smartassert/worker-message-failed-event-bundle": "^2.0",
         "symfony/console": "6.4.*",
         "symfony/doctrine-messenger": "6.4.*",
