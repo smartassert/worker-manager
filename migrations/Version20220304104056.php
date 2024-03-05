@@ -21,11 +21,11 @@ final class Version20220304104056 extends AbstractMigration
             CREATE TABLE machine (
                 id VARCHAR(32) NOT NULL, 
                 state VARCHAR(255) NOT NULL, 
-                ip_addresses TEXT DEFAULT NULL, 
+                ip_addresses JSON DEFAULT NULL, 
                 PRIMARY KEY(id)
             )
         ');
-        $this->addSql('COMMENT ON COLUMN machine.ip_addresses IS \'(DC2Type:simple_array)\'');
+        $this->addSql('COMMENT ON COLUMN machine.ip_addresses IS NULL');
     }
 
     public function down(Schema $schema): void

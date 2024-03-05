@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -32,7 +33,7 @@ class Machine implements \JsonSerializable
     /**
      * @var string[]
      */
-    #[ORM\Column(type: 'simple_array', nullable: true)]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $ip_addresses;
 
     /**
