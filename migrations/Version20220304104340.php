@@ -22,11 +22,11 @@ final class Version20220304104340 extends AbstractMigration
                 id VARCHAR(32) NOT NULL, 
                 code INT NOT NULL, 
                 reason TEXT NOT NULL, 
-                context TEXT DEFAULT NULL, 
+                context JSON DEFAULT NULL, 
                 PRIMARY KEY(id)
             )
         ');
-        $this->addSql('COMMENT ON COLUMN create_failure.context IS \'(DC2Type:array)\'');
+        $this->addSql('COMMENT ON COLUMN create_failure.context IS NULL');
     }
 
     public function down(Schema $schema): void

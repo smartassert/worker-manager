@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -50,7 +51,7 @@ class CreateFailure implements \JsonSerializable
     /**
      * @var array<string, int|string>
      */
-    #[ORM\Column(type: 'array', nullable: true)]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $context = [];
 
     /**
