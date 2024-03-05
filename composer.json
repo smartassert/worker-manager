@@ -125,9 +125,9 @@
             "@test-unit",
             "@test-functional"
         ],
-        "functional-start": "docker-compose -f ./tests/build/docker-compose.yml up -d postgres users-service users-http",
-        "functional-status": "docker-compose -f ./tests/build/docker-compose.yml ps postgres users-service users-http",
-        "functional-teardown": "docker-compose -f ./tests/build/docker-compose.yml down",
+        "functional-start": "docker compose -f ./tests/build/docker-compose.yml up -d postgres users-service users-http",
+        "functional-status": "docker compose -f ./tests/build/docker-compose.yml ps postgres users-service users-http",
+        "functional-teardown": "docker compose -f ./tests/build/docker-compose.yml down",
         "functional-setup": [
             "@functional-start",
             "sleep 2",
@@ -136,10 +136,10 @@
             "@users-setup"
         ],
         "users-db-setup": [
-            "docker-compose -f tests/build/docker-compose.yml exec -T users-service php bin/console doctrine:database:create --if-not-exists",
-            "docker-compose -f tests/build/docker-compose.yml exec -T users-service php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration"
+            "docker compose -f tests/build/docker-compose.yml exec -T users-service php bin/console doctrine:database:create --if-not-exists",
+            "docker compose -f tests/build/docker-compose.yml exec -T users-service php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration"
         ],
-        "users-generate-jwt-keys": "docker-compose -f tests/build/docker-compose.yml exec -T users-service php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction",
+        "users-generate-jwt-keys": "docker compose -f tests/build/docker-compose.yml exec -T users-service php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction",
         "users-create-user": [
             "curl --header 'Authorization: primary_admin_token' --data 'email=user@example.com&password=password' http://localhost:9080/user/create",
             ""
@@ -149,11 +149,11 @@
             "@users-generate-jwt-keys",
             "@users-create-user"
         ],
-        "integration-pull": "docker-compose -f tests/build/docker-compose.yml pull",
-        "integration-build": "docker-compose -f tests/build/docker-compose.yml build app",
-        "integration-up": "docker-compose -f tests/build/docker-compose.yml up -d",
-        "integration-status": "docker-compose -f tests/build/docker-compose.yml ps",
-        "integration-stop": "docker-compose -f tests/build/docker-compose.yml stop",
+        "integration-pull": "docker compose -f tests/build/docker-compose.yml pull",
+        "integration-build": "docker compose -f tests/build/docker-compose.yml build app",
+        "integration-up": "docker compose -f tests/build/docker-compose.yml up -d",
+        "integration-status": "docker compose -f tests/build/docker-compose.yml ps",
+        "integration-stop": "docker compose -f tests/build/docker-compose.yml stop",
         "integration-teardown": "@functional-teardown",
         "integration-setup": [
             "@integration-build",
