@@ -40,7 +40,6 @@
         "phpunit/phpunit": "^9.5",
         "smartassert/symfony-test-client": "^1.0",
         "smartassert/test-authenticaton-provider-bundle": "^5.0",
-        "smartassert/users-client": "*",
         "squizlabs/php_codesniffer": "dev-master",
         "symfony/browser-kit": "6.4.*",
         "symfony/maker-bundle": "^1.29",
