@@ -3,6 +3,8 @@
 namespace App\Services\Entity\Factory;
 
 use App\Entity\CreateFailure;
+use App\Enum\CreateFailure\Code;
+use App\Enum\CreateFailure\Reason;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
@@ -12,23 +14,10 @@ use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Repository\CreateFailureRepository;
 
-class CreateFailureFactory
+readonly class CreateFailureFactory
 {
-    /**
-     * @var array<CreateFailure::CODE_*, CreateFailure::REASON_*>
-     */
-    public const REASONS = [
-        CreateFailure::CODE_UNSUPPORTED_PROVIDER => CreateFailure::REASON_UNSUPPORTED_PROVIDER,
-        CreateFailure::CODE_API_LIMIT_EXCEEDED => CreateFailure::REASON_API_LIMIT_EXCEEDED,
-        CreateFailure::CODE_API_AUTHENTICATION_FAILURE => CreateFailure::REASON_API_AUTHENTICATION_FAILURE,
-        CreateFailure::CODE_CURL_ERROR => CreateFailure::REASON_CURL_ERROR,
-        CreateFailure::CODE_HTTP_ERROR => CreateFailure::REASON_HTTP_ERROR,
-        CreateFailure::CODE_UNPROCESSABLE_REQUEST => CreateFailure::REASON_UNPROCESSABLE_REQUEST,
-        CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR => CreateFailure::REASON_UNKNOWN_MACHINE_PROVIDER_ERROR,
-    ];
-
     public function __construct(
-        private readonly CreateFailureRepository $repository,
+        private CreateFailureRepository $repository,
     ) {
     }
 
@@ -47,50 +36,52 @@ class CreateFailureFactory
         return $entity;
     }
 
-    /**
-     * @return CreateFailure::CODE_*
-     */
-    private function findCode(\Throwable $throwable): int
+    private function findCode(\Throwable $throwable): Code
     {
         if ($throwable instanceof UnsupportedProviderException) {
-            return CreateFailure::CODE_UNSUPPORTED_PROVIDER;
+            return Code::UNSUPPORTED_PROVIDER;
         }
 
         if ($throwable instanceof ApiLimitExceptionInterface) {
-            return CreateFailure::CODE_API_LIMIT_EXCEEDED;
+            return Code::API_LIMIT_EXCEEDED;
         }
 
         if ($throwable instanceof AuthenticationExceptionInterface) {
-            return CreateFailure::CODE_API_AUTHENTICATION_FAILURE;
+            return Code::API_AUTHENTICATION_FAILURE;
         }
 
         if ($throwable instanceof CurlExceptionInterface) {
-            return CreateFailure::CODE_CURL_ERROR;
+            return Code::CURL_ERROR;
         }
 
         if ($throwable instanceof HttpExceptionInterface) {
-            return CreateFailure::CODE_HTTP_ERROR;
+            return Code::HTTP_ERROR;
         }
 
         if ($throwable instanceof UnprocessableRequestExceptionInterface) {
-            return CreateFailure::CODE_UNPROCESSABLE_REQUEST;
+            return Code::UNPROCESSABLE_REQUEST;
         }
 
         if ($throwable instanceof UnknownExceptionInterface) {
-            return CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR;
+            return Code::UNKNOWN_MACHINE_PROVIDER_ERROR;
         }
 
-        return CreateFailure::CODE_UNKNOWN;
+        return Code::UNKNOWN;
     }
 
-    /**
-     * @param CreateFailure::CODE_* $code
-     *
-     * @return CreateFailure::REASON_*
-     */
-    private function findReason(int $code): string
+    private function findReason(Code $code): Reason
     {
-        return self::REASONS[$code] ?? CreateFailure::REASON_UNKNOWN;
+        $reasons = [
+            Code::UNSUPPORTED_PROVIDER->value => Reason::UNSUPPORTED_PROVIDER,
+            Code::API_LIMIT_EXCEEDED->value => Reason::API_LIMIT_EXCEEDED,
+            Code::API_AUTHENTICATION_FAILURE->value => Reason::API_AUTHENTICATION_FAILURE,
+            Code::CURL_ERROR->value => Reason::CURL_ERROR,
+            Code::HTTP_ERROR->value => Reason::HTTP_ERROR,
+            Code::UNPROCESSABLE_REQUEST->value => Reason::UNPROCESSABLE_REQUEST,
+            Code::UNKNOWN_MACHINE_PROVIDER_ERROR->value => Reason::UNKNOWN_MACHINE_PROVIDER_ERROR,
+        ];
+
+        return $reasons[$code->value] ?? Reason::UNKNOWN;
     }
 
     /**

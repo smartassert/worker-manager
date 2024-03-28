@@ -6,6 +6,8 @@ namespace App\Tests\Functional\Services;
 
 use App\Entity\CreateFailure;
 use App\Entity\Machine;
+use App\Enum\CreateFailure\Code;
+use App\Enum\CreateFailure\Reason;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
@@ -117,8 +119,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_API_LIMIT_EXCEEDED,
-                    CreateFailure::REASON_API_LIMIT_EXCEEDED,
+                    Code::API_LIMIT_EXCEEDED,
+                    Reason::API_LIMIT_EXCEEDED,
                     [
                         'reset-timestamp' => 123,
                     ]
@@ -129,8 +131,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNSUPPORTED_PROVIDER,
-                    CreateFailure::REASON_UNSUPPORTED_PROVIDER
+                    Code::UNSUPPORTED_PROVIDER,
+                    Reason::UNSUPPORTED_PROVIDER
                 ),
             ],
             'unknown exception' => [
@@ -138,8 +140,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNKNOWN,
-                    CreateFailure::REASON_UNKNOWN
+                    Code::UNKNOWN,
+                    Reason::UNKNOWN
                 ),
             ],
         ];
