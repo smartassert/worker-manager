@@ -77,16 +77,15 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @dataProvider handleCreateMachineWorkerMessageFailedEventDataProvider
+     * @dataProvider handleWorkerMessageFailedEventDataProvider
      */
-    public function testHandleCreateMachineWorkerMessageFailedEvent(
+    public function testHandleWorkerMessageFailedEvent(
+        MachineRequestInterface $message,
         \Throwable $throwable,
         MachineState $expectedMachineState,
-        ActionFailure $expectedActionFailure
+        ?ActionFailure $expectedActionFailure
     ): void {
-        $envelope = new Envelope(
-            new CreateMachine('unique id', self::MACHINE_ID)
-        );
+        $envelope = new Envelope($message);
 
         $event = new WorkerMessageFailedEvent($envelope, 'receiver name not relevant', $throwable);
 
@@ -106,10 +105,11 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     /**
      * @return array<mixed>
      */
-    public function handleCreateMachineWorkerMessageFailedEventDataProvider(): array
+    public function handleWorkerMessageFailedEventDataProvider(): array
     {
         return [
-            'api limit exceeded' => [
+            'create, api limit exceeded' => [
+                'message' => new CreateMachine('unique id', self::MACHINE_ID),
                 'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
@@ -127,7 +127,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     ]
                 ),
             ],
-            'unsupported provider' => [
+            'create, unsupported provider' => [
+                'message' => new CreateMachine('unique id', self::MACHINE_ID),
                 'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
@@ -137,7 +138,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     MachineAction::CREATE,
                 ),
             ],
-            'unknown exception' => [
+            'create, unknown exception' => [
+                'message' => new CreateMachine('unique id', self::MACHINE_ID),
                 'throwable' => new \Exception('Unknown exception'),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
@@ -147,42 +149,58 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     MachineAction::CREATE,
                 ),
             ],
-        ];
-    }
-
-    /**
-     * @dataProvider handleWorkerMessageFailedEventDataProvider
-     */
-    public function testHandleWorkerMessageFailedEvent(object $message, MachineState $expectedMachineState): void
-    {
-        $envelope = new Envelope($message);
-        $event = new WorkerMessageFailedEvent($envelope, 'receiver name not relevant', new \Exception());
-
-        $this->eventDispatcher->dispatch($event);
-
-        $machine = $this->machineRepository->find(self::MACHINE_ID);
-        self::assertInstanceOf(Machine::class, $machine);
-
-        self::assertSame($expectedMachineState, $machine->getState());
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function handleWorkerMessageFailedEventDataProvider(): array
-    {
-        return [
-            DeleteMachine::class => [
-                'message' => new DeleteMachine('unique id', self::MACHINE_ID),
-                'expectedMachineState' => MachineState::DELETE_FAILED,
-            ],
-            FindMachine::class => [
+            'find, api limit exceeded' => [
                 'message' => new FindMachine('unique id', self::MACHINE_ID),
+                'throwable' => new ApiLimitExceededException(
+                    123,
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new \Exception()
+                ),
                 'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    Code::API_LIMIT_EXCEEDED,
+                    Reason::API_LIMIT_EXCEEDED,
+                    MachineAction::FIND,
+                    [
+                        'reset-timestamp' => 123,
+                    ]
+                ),
             ],
-            GetMachine::class => [
+            'find, unsupported provider' => [
+                'message' => new FindMachine('unique id', self::MACHINE_ID),
+                'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
+                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    Code::UNSUPPORTED_PROVIDER,
+                    Reason::UNSUPPORTED_PROVIDER,
+                    MachineAction::FIND,
+                ),
+            ],
+            'find, unknown exception' => [
+                'message' => new FindMachine('unique id', self::MACHINE_ID),
+                'throwable' => new \Exception('Unknown exception'),
+                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    Code::UNKNOWN,
+                    Reason::UNKNOWN,
+                    MachineAction::FIND,
+                ),
+            ],
+            'delete, unknown exception' => [
+                'message' => new DeleteMachine('unique id', self::MACHINE_ID),
+                'throwable' => new \Exception('Unknown exception'),
+                'expectedMachineState' => MachineState::DELETE_FAILED,
+                'expectedActionFailure' => null,
+            ],
+            'get, unknown exception' => [
                 'message' => new GetMachine('unique id', self::MACHINE_ID),
+                'throwable' => new \Exception('Unknown exception'),
                 'expectedMachineState' => MachineState::FIND_NOT_FOUND,
+                'expectedActionFailure' => null,
             ],
         ];
     }

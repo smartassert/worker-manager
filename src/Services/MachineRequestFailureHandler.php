@@ -71,6 +71,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof FindMachine) {
             $machine->setState(MachineState::FIND_NOT_FINDABLE);
+            $this->actionFailureFactory->create($machine->getId(), MachineAction::FIND, $throwable);
         }
 
         if ($message instanceof GetMachine) {
