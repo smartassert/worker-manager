@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Enum\CreateFailure\Code;
-use App\Enum\CreateFailure\Reason;
+use App\Enum\ActionFailure\Code;
+use App\Enum\ActionFailure\Reason;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-class CreateFailure implements \JsonSerializable
+class ActionFailure implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]

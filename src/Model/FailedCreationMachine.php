@@ -2,14 +2,14 @@
 
 namespace App\Model;
 
-use App\Entity\CreateFailure;
+use App\Entity\ActionFailure;
 use App\Entity\Machine;
 
 class FailedCreationMachine extends Machine
 {
     public function __construct(
         Machine $machine,
-        private readonly CreateFailure $createFailure,
+        private readonly ActionFailure $actionFailure,
     ) {
         parent::__construct($machine->getId(), $machine->getState(), $machine->getIpAddresses());
     }
@@ -18,7 +18,7 @@ class FailedCreationMachine extends Machine
     {
         return array_merge(
             parent::jsonSerialize(),
-            ['create_failure' => $this->createFailure],
+            ['action_failure' => $this->actionFailure],
         );
     }
 }

@@ -10,7 +10,7 @@ use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Factory\CreateFailureFactory;
+use App\Services\Entity\Factory\ActionFailureFactory;
 use Psr\Log\LoggerInterface;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -20,7 +20,7 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 {
     public function __construct(
-        private CreateFailureFactory $createFailureFactory,
+        private ActionFailureFactory $actionFailureFactory,
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
@@ -61,7 +61,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-            $this->createFailureFactory->create($machine->getId(), $throwable);
+            $this->actionFailureFactory->create($machine->getId(), $throwable);
         }
 
         if ($message instanceof DeleteMachine) {

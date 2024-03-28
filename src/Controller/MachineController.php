@@ -2,11 +2,11 @@
 
 namespace App\Controller;
 
-use App\Entity\CreateFailure;
+use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Model\FailedCreationMachine;
-use App\Repository\CreateFailureRepository;
+use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
 use App\Services\MachineRequestDispatcher;
@@ -55,7 +55,7 @@ class MachineController
      * @param non-empty-string $id
      */
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
-    public function status(string $id, CreateFailureRepository $createFailureRepository): JsonResponse
+    public function status(string $id, ActionFailureRepository $actionFailureRepository): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
@@ -67,9 +67,9 @@ class MachineController
             );
         }
 
-        $createFailure = $createFailureRepository->find($id);
-        if ($createFailure instanceof CreateFailure) {
-            $machine = new FailedCreationMachine($machine, $createFailure);
+        $actionFailure = $actionFailureRepository->find($id);
+        if ($actionFailure instanceof ActionFailure) {
+            $machine = new FailedCreationMachine($machine, $actionFailure);
         }
 
         return new JsonResponse($machine);

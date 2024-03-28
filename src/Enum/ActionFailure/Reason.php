@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enum\CreateFailure;
+namespace App\Enum\ActionFailure;
 
 enum Reason: string
 {

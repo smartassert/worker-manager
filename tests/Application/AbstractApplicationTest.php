@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Application;
 
-use App\Entity\CreateFailure;
+use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Tests\Services\ApplicationClient\Client;
@@ -38,7 +38,7 @@ abstract class AbstractApplicationTest extends WebTestCase
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
-            $entityRemover->removeAllForEntity(CreateFailure::class);
+            $entityRemover->removeAllForEntity(ActionFailure::class);
             $entityRemover->removeAllForEntity(Machine::class);
             $entityRemover->removeAllForEntity(MachineProvider::class);
         }

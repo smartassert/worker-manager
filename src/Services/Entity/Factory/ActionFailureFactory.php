@@ -2,9 +2,9 @@
 
 namespace App\Services\Entity\Factory;
 
-use App\Entity\CreateFailure;
-use App\Enum\CreateFailure\Code;
-use App\Enum\CreateFailure\Reason;
+use App\Entity\ActionFailure;
+use App\Enum\ActionFailure\Code;
+use App\Enum\ActionFailure\Reason;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
@@ -12,25 +12,25 @@ use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
-use App\Repository\CreateFailureRepository;
+use App\Repository\ActionFailureRepository;
 
-readonly class CreateFailureFactory
+readonly class ActionFailureFactory
 {
     public function __construct(
-        private CreateFailureRepository $repository,
+        private ActionFailureRepository $repository,
     ) {
     }
 
-    public function create(string $machineId, \Throwable $throwable): CreateFailure
+    public function create(string $machineId, \Throwable $throwable): ActionFailure
     {
         $existingEntity = $this->repository->find($machineId);
-        if ($existingEntity instanceof CreateFailure) {
+        if ($existingEntity instanceof ActionFailure) {
             return $existingEntity;
         }
 
         $code = $this->findCode($throwable);
 
-        $entity = new CreateFailure($machineId, $code, $this->findReason($code), $this->createContext($throwable));
+        $entity = new ActionFailure($machineId, $code, $this->findReason($code), $this->createContext($throwable));
         $this->repository->add($entity);
 
         return $entity;

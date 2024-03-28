@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services;
 
-use App\Entity\CreateFailure;
+use App\Entity\ActionFailure;
 use App\Entity\Machine;
-use App\Enum\CreateFailure\Code;
-use App\Enum\CreateFailure\Reason;
+use App\Enum\ActionFailure\Code;
+use App\Enum\ActionFailure\Reason;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
@@ -19,9 +19,9 @@ use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Repository\CreateFailureRepository;
+use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Factory\CreateFailureFactory;
+use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineRequestFailureHandler;
 use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -62,7 +62,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(CreateFailure::class);
+            $entityRemover->removeAllForEntity(ActionFailure::class);
         }
 
         $this->machineRepository->add(new Machine(self::MACHINE_ID));
@@ -82,7 +82,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
     public function testHandleCreateMachineWorkerMessageFailedEvent(
         \Throwable $throwable,
         MachineState $expectedMachineState,
-        CreateFailure $expectedCreateFailure
+        ActionFailure $expectedActionFailure
     ): void {
         $envelope = new Envelope(
             new CreateMachine('unique id', self::MACHINE_ID)
@@ -97,10 +97,10 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
 
         self::assertSame($expectedMachineState, $machine->getState());
 
-        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
-        \assert($createFailureRepository instanceof CreateFailureRepository);
+        $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
+        \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        self::assertEquals($expectedCreateFailure, $createFailureRepository->find(self::MACHINE_ID));
+        self::assertEquals($expectedActionFailure, $actionFailureRepository->find(self::MACHINE_ID));
     }
 
     /**
@@ -117,7 +117,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     new \Exception()
                 ),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::API_LIMIT_EXCEEDED,
                     Reason::API_LIMIT_EXCEEDED,
@@ -129,7 +129,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             'unsupported provider' => [
                 'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNSUPPORTED_PROVIDER,
                     Reason::UNSUPPORTED_PROVIDER
@@ -138,7 +138,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             'unknown exception' => [
                 'throwable' => new \Exception('Unknown exception'),
                 'expectedMachineState' => MachineState::CREATE_FAILED,
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNKNOWN,
                     Reason::UNKNOWN
@@ -192,8 +192,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
      */
     public function testExceptionLogging(callable $throwableCreator, callable $expectedCreator): void
     {
-        $createFailureFactory = self::getContainer()->get(CreateFailureFactory::class);
-        \assert($createFailureFactory instanceof CreateFailureFactory);
+        $actionFailureFactory = self::getContainer()->get(ActionFailureFactory::class);
+        \assert($actionFailureFactory instanceof ActionFailureFactory);
 
         $exceptionStackFactory = self::getContainer()->get(MessageHandlerExceptionStackFactory::class);
         \assert($exceptionStackFactory instanceof MessageHandlerExceptionStackFactory);
@@ -215,7 +215,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
         $message = new GetMachine($messageId, $machineId);
 
         $handler = new MachineRequestFailureHandler(
-            $createFailureFactory,
+            $actionFailureFactory,
             $exceptionStackFactory,
             $messengerAuditLogger,
             $machineRepository,

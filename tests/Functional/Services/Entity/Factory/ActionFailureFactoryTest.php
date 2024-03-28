@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Services\Entity\Factory;
 
-use App\Entity\CreateFailure;
-use App\Enum\CreateFailure\Code;
-use App\Enum\CreateFailure\Reason;
+use App\Entity\ActionFailure;
+use App\Enum\ActionFailure\Code;
+use App\Enum\ActionFailure\Reason;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
@@ -22,46 +22,46 @@ use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Repository\CreateFailureRepository;
-use App\Services\Entity\Factory\CreateFailureFactory;
+use App\Repository\ActionFailureRepository;
+use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
-class CreateFailureFactoryTest extends AbstractEntityTestCase
+class ActionFailureFactoryTest extends AbstractEntityTestCase
 {
-    private CreateFailureFactory $factory;
+    private ActionFailureFactory $factory;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $factory = self::getContainer()->get(CreateFailureFactory::class);
-        \assert($factory instanceof CreateFailureFactory);
+        $factory = self::getContainer()->get(ActionFailureFactory::class);
+        \assert($factory instanceof ActionFailureFactory);
         $this->factory = $factory;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
-            $entityRemover->removeAllForEntity(CreateFailure::class);
+            $entityRemover->removeAllForEntity(ActionFailure::class);
         }
     }
 
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(\Throwable $throwable, CreateFailure $expectedCreateFailure): void
+    public function testCreate(\Throwable $throwable, ActionFailure $expectedActionFailure): void
     {
-        $createFailure = $this->factory->create(self::MACHINE_ID, $throwable);
+        $actionFailure = $this->factory->create(self::MACHINE_ID, $throwable);
 
-        self::assertEquals($expectedCreateFailure, $createFailure);
+        self::assertEquals($expectedActionFailure, $actionFailure);
 
-        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
-        \assert($createFailureRepository instanceof CreateFailureRepository);
-        $retrievedCreateFailure = $createFailureRepository->find(self::MACHINE_ID);
+        $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
+        \assert($actionFailureRepository instanceof ActionFailureRepository);
+        $retrievedActionFailure = $actionFailureRepository->find(self::MACHINE_ID);
 
-        self::assertInstanceOf(CreateFailure::class, $retrievedCreateFailure);
-        self::assertEquals($createFailure, $retrievedCreateFailure);
+        self::assertInstanceOf(ActionFailure::class, $retrievedActionFailure);
+        self::assertEquals($actionFailure, $retrievedActionFailure);
     }
 
     /**
@@ -74,7 +74,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
         return [
             UnsupportedProviderException::class => [
                 'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNSUPPORTED_PROVIDER,
                     Reason::UNSUPPORTED_PROVIDER,
@@ -87,7 +87,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::GET,
                     new \Exception()
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::API_LIMIT_EXCEEDED,
                     Reason::API_LIMIT_EXCEEDED,
@@ -102,7 +102,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::GET,
                     new \Exception(),
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::API_AUTHENTICATION_FAILURE,
                     Reason::API_AUTHENTICATION_FAILURE,
@@ -115,7 +115,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::GET,
                     new \Exception()
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::CURL_ERROR,
                     Reason::CURL_ERROR,
@@ -130,7 +130,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::GET,
                     new RuntimeException('', 500)
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::HTTP_ERROR,
                     Reason::HTTP_ERROR,
@@ -148,7 +148,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                         422
                     )
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNPROCESSABLE_REQUEST,
                     Reason::UNPROCESSABLE_REQUEST,
@@ -163,7 +163,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     new \Exception()
                 ),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNKNOWN_MACHINE_PROVIDER_ERROR,
                     Reason::UNKNOWN_MACHINE_PROVIDER_ERROR,
@@ -171,7 +171,7 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
             ],
             'unknown exception' => [
                 'throwable' => new \RuntimeException('Runtime error'),
-                'expectedCreateFailure' => new CreateFailure(
+                'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNKNOWN,
                     Reason::UNKNOWN,
