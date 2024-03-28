@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\Model\FailedCreationMachine;
+use App\Model\FailedActionMachine;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
@@ -69,7 +69,7 @@ class MachineController
 
         $actionFailure = $actionFailureRepository->find($id);
         if ($actionFailure instanceof ActionFailure) {
-            $machine = new FailedCreationMachine($machine, $actionFailure);
+            $machine = new FailedActionMachine($machine, $actionFailure);
         }
 
         return new JsonResponse($machine);

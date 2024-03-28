@@ -5,7 +5,7 @@ namespace App\Model;
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
 
-class FailedCreationMachine extends Machine
+class FailedActionMachine extends Machine
 {
     public function __construct(
         Machine $machine,
