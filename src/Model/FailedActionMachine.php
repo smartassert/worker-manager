@@ -5,19 +5,21 @@ namespace App\Model;
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
 
-class FailedActionMachine extends Machine
+readonly class FailedActionMachine implements \JsonSerializable
 {
     public function __construct(
-        Machine $machine,
-        private readonly ActionFailure $actionFailure,
+        private Machine $machine,
+        private ActionFailure $actionFailure,
     ) {
-        parent::__construct($machine->getId(), $machine->getState(), $machine->getIpAddresses());
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function jsonSerialize(): array
     {
         return array_merge(
-            parent::jsonSerialize(),
+            $this->machine->jsonSerialize(),
             ['action_failure' => $this->actionFailure],
         );
     }
