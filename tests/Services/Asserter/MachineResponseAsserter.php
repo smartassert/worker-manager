@@ -17,7 +17,7 @@ class MachineResponseAsserter
 
     /**
      * @param null|string[]     $expectedIpAddresses
-     * @param null|array<mixed> $expectedCreateFailureData
+     * @param null|array<mixed> $expectedActionFailureData
      */
     public function assertStatusResponse(
         ResponseInterface $response,
@@ -25,11 +25,11 @@ class MachineResponseAsserter
         MachineState $expectedState,
         MachineStateCategory $expectedStateCategory,
         ?array $expectedIpAddresses,
-        ?array $expectedCreateFailureData = null
+        ?array $expectedActionFailureData = null
     ): void {
-        $expectedAdditionalData = null === $expectedCreateFailureData
+        $expectedAdditionalData = null === $expectedActionFailureData
             ? null :
-            ['create_failure' => $expectedCreateFailureData];
+            ['action_failure' => $expectedActionFailureData];
 
         $this->assertResponse(
             $response,

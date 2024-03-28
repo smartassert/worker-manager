@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Entity\Machine;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
@@ -10,7 +11,7 @@ use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Factory\CreateFailureFactory;
+use App\Services\Entity\Factory\ActionFailureFactory;
 use Psr\Log\LoggerInterface;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -20,7 +21,7 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 {
     public function __construct(
-        private CreateFailureFactory $createFailureFactory,
+        private ActionFailureFactory $actionFailureFactory,
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
@@ -61,7 +62,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-            $this->createFailureFactory->create($machine->getId(), $throwable);
+            $this->actionFailureFactory->create($machine->getId(), MachineAction::CREATE, $throwable);
         }
 
         if ($message instanceof DeleteMachine) {
@@ -70,6 +71,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof FindMachine) {
             $machine->setState(MachineState::FIND_NOT_FINDABLE);
+            $this->actionFailureFactory->create($machine->getId(), MachineAction::FIND, $throwable);
         }
 
         if ($message instanceof GetMachine) {

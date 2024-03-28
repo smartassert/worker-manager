@@ -10,7 +10,7 @@ use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Repository\MachineRepository;
-use App\Services\Entity\Factory\CreateFailureFactory;
+use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Tests\Application\AbstractMachineTest;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -131,7 +131,7 @@ class MachineTest extends AbstractMachineTest
         );
     }
 
-    public function testStatusWithoutCreateFailure(): void
+    public function testStatusWithoutActionFailure(): void
     {
         $this->machineRepository->add(new Machine(self::MACHINE_ID));
 
@@ -146,16 +146,17 @@ class MachineTest extends AbstractMachineTest
         );
     }
 
-    public function testStatusWithCreateFailure(): void
+    public function testStatusWithActionFailure(): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED);
 
         $this->machineRepository->add($machine);
 
-        $createFailureFactory = self::getContainer()->get(CreateFailureFactory::class);
-        \assert($createFailureFactory instanceof CreateFailureFactory);
-        $createFailureFactory->create(
+        $actionFailureFactory = self::getContainer()->get(ActionFailureFactory::class);
+        \assert($actionFailureFactory instanceof ActionFailureFactory);
+        $actionFailureFactory->create(
             self::MACHINE_ID,
+            MachineAction::CREATE,
             new ApiLimitExceededException(
                 123,
                 self::MACHINE_ID,
@@ -175,6 +176,7 @@ class MachineTest extends AbstractMachineTest
             [
                 'code' => 2,
                 'reason' => 'api limit exceeded',
+                'action' => 'create',
                 'context' => [
                     'reset-timestamp' => 123,
                 ],

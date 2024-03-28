@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Entity;
 
-use App\Entity\CreateFailure;
-use App\Enum\CreateFailure\Code;
-use App\Enum\CreateFailure\Reason;
-use App\Repository\CreateFailureRepository;
+use App\Entity\ActionFailure;
+use App\Enum\ActionFailure\Code;
+use App\Enum\ActionFailure\Reason;
+use App\Enum\MachineAction;
+use App\Repository\ActionFailureRepository;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
-class CreateFailureTest extends AbstractEntityTestCase
+class ActionFailureTest extends AbstractEntityTestCase
 {
     protected function setUp(): void
     {
@@ -19,16 +20,16 @@ class CreateFailureTest extends AbstractEntityTestCase
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
-            $entityRemover->removeAllForEntity(CreateFailure::class);
+            $entityRemover->removeAllForEntity(ActionFailure::class);
         }
     }
 
     public function testEntityMapping(): void
     {
-        $repository = $this->entityManager->getRepository(CreateFailure::class);
+        $repository = $this->entityManager->getRepository(ActionFailure::class);
         self::assertCount(0, $repository->findAll());
 
-        $entity = new CreateFailure(self::MACHINE_ID, Code::UNKNOWN, Reason::UNKNOWN);
+        $entity = new ActionFailure(self::MACHINE_ID, Code::UNKNOWN, Reason::UNKNOWN, MachineAction::CREATE);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -39,18 +40,18 @@ class CreateFailureTest extends AbstractEntityTestCase
     /**
      * @dataProvider retrieveDataProvider
      */
-    public function testRetrieve(CreateFailure $entity): void
+    public function testRetrieve(ActionFailure $entity): void
     {
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
         $this->entityManager->clear();
 
-        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
-        \assert($createFailureRepository instanceof CreateFailureRepository);
+        $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
+        \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        $retrievedEntity = $createFailureRepository->find(self::MACHINE_ID);
-        self::assertInstanceOf(CreateFailure::class, $retrievedEntity);
+        $retrievedEntity = $actionFailureRepository->find(self::MACHINE_ID);
+        self::assertInstanceOf(ActionFailure::class, $retrievedEntity);
         self::assertSame($entity->jsonSerialize(), $retrievedEntity->jsonSerialize());
     }
 
@@ -61,17 +62,19 @@ class CreateFailureTest extends AbstractEntityTestCase
     {
         return [
             'without context' => [
-                'entity' => new CreateFailure(
-                    self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN
-                ),
-            ],
-            'with context' => [
-                'entity' => new CreateFailure(
+                'entity' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNKNOWN,
                     Reason::UNKNOWN,
+                    MachineAction::CREATE,
+                ),
+            ],
+            'with context' => [
+                'entity' => new ActionFailure(
+                    self::MACHINE_ID,
+                    Code::UNKNOWN,
+                    Reason::UNKNOWN,
+                    MachineAction::CREATE,
                     [
                         'key1' => 'value1',
                     ]

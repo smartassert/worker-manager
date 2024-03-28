@@ -8,7 +8,7 @@ use App\Controller\MachineController;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Message\MachineRequestInterface;
-use App\Repository\CreateFailureRepository;
+use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
@@ -77,10 +77,10 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $controller = $this->createController($machineRequestDispatcher);
 
-        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
-        \assert($createFailureRepository instanceof CreateFailureRepository);
+        $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
+        \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        $controller->status(self::MACHINE_ID, $createFailureRepository);
+        $controller->status(self::MACHINE_ID, $actionFailureRepository);
     }
 
     public function testStatusMachineFoundDoesNotCallMachineRequestDispatcher(): void
@@ -96,10 +96,10 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
 
         $controller = $this->createController($machineRequestDispatcher);
 
-        $createFailureRepository = self::getContainer()->get(CreateFailureRepository::class);
-        \assert($createFailureRepository instanceof CreateFailureRepository);
+        $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
+        \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        $controller->status(self::MACHINE_ID, $createFailureRepository);
+        $controller->status(self::MACHINE_ID, $actionFailureRepository);
     }
 
     public function testDeleteCallsMachineRequestDispatcher(): void
