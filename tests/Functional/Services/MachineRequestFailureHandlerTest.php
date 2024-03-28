@@ -121,6 +121,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     Code::API_LIMIT_EXCEEDED,
                     Reason::API_LIMIT_EXCEEDED,
+                    MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
                     ]
@@ -132,7 +133,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNSUPPORTED_PROVIDER,
-                    Reason::UNSUPPORTED_PROVIDER
+                    Reason::UNSUPPORTED_PROVIDER,
+                    MachineAction::CREATE,
                 ),
             ],
             'unknown exception' => [
@@ -141,7 +143,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     Code::UNKNOWN,
-                    Reason::UNKNOWN
+                    Reason::UNKNOWN,
+                    MachineAction::CREATE,
                 ),
             ],
         ];

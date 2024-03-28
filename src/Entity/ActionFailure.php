@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\ActionFailure\Code;
 use App\Enum\ActionFailure\Reason;
+use App\Enum\MachineAction;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -24,17 +25,26 @@ class ActionFailure implements \JsonSerializable
      * @var array<string, int|string>
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private array $context = [];
+    private array $context;
+
+    #[ORM\Column(type: 'string', enumType: MachineAction::class)]
+    private MachineAction $action;
 
     /**
      * @param array<string, int|string> $context
      */
-    public function __construct(string $machineId, Code $code, Reason $reason, array $context = [])
-    {
+    public function __construct(
+        string $machineId,
+        Code $code,
+        Reason $reason,
+        MachineAction $action,
+        array $context = []
+    ) {
         $this->id = $machineId;
         $this->code = $code;
         $this->reason = $reason;
         $this->context = $context;
+        $this->action = $action;
     }
 
     public function getId(): string
@@ -43,11 +53,17 @@ class ActionFailure implements \JsonSerializable
     }
 
     /**
-     * @return array{code: value-of<Code>, reason: value-of<Reason>, context: array<string, int|string>}
+     * @return array{
+     *   action: value-of<MachineAction>,
+     *   code: value-of<Code>,
+     *   reason: value-of<Reason>,
+     *   context: array<string, int|string>
+     * }
      */
     public function jsonSerialize(): array
     {
         return [
+            'action' => $this->action->value,
             'code' => $this->code->value,
             'reason' => $this->reason->value,
             'context' => $this->context,

@@ -156,6 +156,7 @@ class MachineTest extends AbstractMachineTest
         \assert($actionFailureFactory instanceof ActionFailureFactory);
         $actionFailureFactory->create(
             self::MACHINE_ID,
+            MachineAction::CREATE,
             new ApiLimitExceededException(
                 123,
                 self::MACHINE_ID,
@@ -175,6 +176,7 @@ class MachineTest extends AbstractMachineTest
             [
                 'code' => 2,
                 'reason' => 'api limit exceeded',
+                'action' => 'create',
                 'context' => [
                     'reset-timestamp' => 123,
                 ],

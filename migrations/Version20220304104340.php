@@ -23,6 +23,7 @@ final class Version20220304104340 extends AbstractMigration
                 code INT NOT NULL, 
                 reason TEXT NOT NULL, 
                 context JSON DEFAULT NULL, 
+                action VARCHAR(255) NOT NULL,
                 PRIMARY KEY(id)
             )
         ');

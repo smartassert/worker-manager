@@ -5,6 +5,7 @@ namespace App\Services\Entity\Factory;
 use App\Entity\ActionFailure;
 use App\Enum\ActionFailure\Code;
 use App\Enum\ActionFailure\Reason;
+use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
@@ -21,7 +22,7 @@ readonly class ActionFailureFactory
     ) {
     }
 
-    public function create(string $machineId, \Throwable $throwable): ActionFailure
+    public function create(string $machineId, MachineAction $action, \Throwable $throwable): ActionFailure
     {
         $existingEntity = $this->repository->find($machineId);
         if ($existingEntity instanceof ActionFailure) {
@@ -30,7 +31,13 @@ readonly class ActionFailureFactory
 
         $code = $this->findCode($throwable);
 
-        $entity = new ActionFailure($machineId, $code, $this->findReason($code), $this->createContext($throwable));
+        $entity = new ActionFailure(
+            $machineId,
+            $code,
+            $this->findReason($code),
+            $action,
+            $this->createContext($throwable)
+        );
         $this->repository->add($entity);
 
         return $entity;

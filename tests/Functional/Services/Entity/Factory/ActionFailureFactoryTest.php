@@ -52,7 +52,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
      */
     public function testCreate(\Throwable $throwable, ActionFailure $expectedActionFailure): void
     {
-        $actionFailure = $this->factory->create(self::MACHINE_ID, $throwable);
+        $actionFailure = $this->factory->create(self::MACHINE_ID, MachineAction::CREATE, $throwable);
 
         self::assertEquals($expectedActionFailure, $actionFailure);
 
@@ -78,6 +78,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::UNSUPPORTED_PROVIDER,
                     Reason::UNSUPPORTED_PROVIDER,
+                    MachineAction::CREATE,
                 ),
             ],
             ApiLimitExceptionInterface::class => [
@@ -91,6 +92,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::API_LIMIT_EXCEEDED,
                     Reason::API_LIMIT_EXCEEDED,
+                    MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
                     ]
@@ -106,6 +108,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::API_AUTHENTICATION_FAILURE,
                     Reason::API_AUTHENTICATION_FAILURE,
+                    MachineAction::CREATE,
                 ),
             ],
             CurlExceptionInterface::class => [
@@ -119,6 +122,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::CURL_ERROR,
                     Reason::CURL_ERROR,
+                    MachineAction::CREATE,
                     [
                         'curl-code' => 7,
                     ]
@@ -134,6 +138,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::HTTP_ERROR,
                     Reason::HTTP_ERROR,
+                    MachineAction::CREATE,
                     [
                         'status-code' => 500,
                     ]
@@ -152,6 +157,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::UNPROCESSABLE_REQUEST,
                     Reason::UNPROCESSABLE_REQUEST,
+                    MachineAction::CREATE,
                     [
                         'provider-reason' => $unprocessableReason,
                     ]
@@ -167,6 +173,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::UNKNOWN_MACHINE_PROVIDER_ERROR,
                     Reason::UNKNOWN_MACHINE_PROVIDER_ERROR,
+                    MachineAction::CREATE,
                 ),
             ],
             'unknown exception' => [
@@ -175,6 +182,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     Code::UNKNOWN,
                     Reason::UNKNOWN,
+                    MachineAction::CREATE,
                 ),
             ],
         ];

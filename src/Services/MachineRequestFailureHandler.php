@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Entity\Machine;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
@@ -61,7 +62,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-            $this->actionFailureFactory->create($machine->getId(), $throwable);
+            $this->actionFailureFactory->create($machine->getId(), MachineAction::CREATE, $throwable);
         }
 
         if ($message instanceof DeleteMachine) {
