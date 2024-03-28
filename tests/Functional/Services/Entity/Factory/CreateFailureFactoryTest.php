@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\Entity\Factory;
 
 use App\Entity\CreateFailure;
+use App\Enum\CreateFailure\Code;
+use App\Enum\CreateFailure\Reason;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
@@ -74,8 +76,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNSUPPORTED_PROVIDER,
-                    CreateFailure::REASON_UNSUPPORTED_PROVIDER,
+                    Code::UNSUPPORTED_PROVIDER,
+                    Reason::UNSUPPORTED_PROVIDER,
                 ),
             ],
             ApiLimitExceptionInterface::class => [
@@ -87,8 +89,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_API_LIMIT_EXCEEDED,
-                    CreateFailure::REASON_API_LIMIT_EXCEEDED,
+                    Code::API_LIMIT_EXCEEDED,
+                    Reason::API_LIMIT_EXCEEDED,
                     [
                         'reset-timestamp' => 123,
                     ]
@@ -102,8 +104,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_API_AUTHENTICATION_FAILURE,
-                    CreateFailure::REASON_API_AUTHENTICATION_FAILURE,
+                    Code::API_AUTHENTICATION_FAILURE,
+                    Reason::API_AUTHENTICATION_FAILURE,
                 ),
             ],
             CurlExceptionInterface::class => [
@@ -115,8 +117,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_CURL_ERROR,
-                    CreateFailure::REASON_CURL_ERROR,
+                    Code::CURL_ERROR,
+                    Reason::CURL_ERROR,
                     [
                         'curl-code' => 7,
                     ]
@@ -130,8 +132,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_HTTP_ERROR,
-                    CreateFailure::REASON_HTTP_ERROR,
+                    Code::HTTP_ERROR,
+                    Reason::HTTP_ERROR,
                     [
                         'status-code' => 500,
                     ]
@@ -148,8 +150,8 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNPROCESSABLE_REQUEST,
-                    CreateFailure::REASON_UNPROCESSABLE_REQUEST,
+                    Code::UNPROCESSABLE_REQUEST,
+                    Reason::UNPROCESSABLE_REQUEST,
                     [
                         'provider-reason' => $unprocessableReason,
                     ]
@@ -163,16 +165,16 @@ class CreateFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNKNOWN_MACHINE_PROVIDER_ERROR,
-                    CreateFailure::REASON_UNKNOWN_MACHINE_PROVIDER_ERROR,
+                    Code::UNKNOWN_MACHINE_PROVIDER_ERROR,
+                    Reason::UNKNOWN_MACHINE_PROVIDER_ERROR,
                 ),
             ],
             'unknown exception' => [
                 'throwable' => new \RuntimeException('Runtime error'),
                 'expectedCreateFailure' => new CreateFailure(
                     self::MACHINE_ID,
-                    CreateFailure::CODE_UNKNOWN,
-                    CreateFailure::REASON_UNKNOWN,
+                    Code::UNKNOWN,
+                    Reason::UNKNOWN,
                 ),
             ],
         ];
