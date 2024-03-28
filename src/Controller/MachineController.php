@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\Model\FailedActionMachine;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
@@ -67,12 +66,14 @@ class MachineController
             );
         }
 
+        $responseData = $machine->jsonSerialize();
+
         $actionFailure = $actionFailureRepository->find($id);
         if ($actionFailure instanceof ActionFailure) {
-            $machine = new FailedActionMachine($machine, $actionFailure);
+            $responseData['action_failure'] = $actionFailure->jsonSerialize();
         }
 
-        return new JsonResponse($machine);
+        return new JsonResponse($responseData);
     }
 
     /**
