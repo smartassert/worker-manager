@@ -11,16 +11,18 @@ class ExceptionFactory
     /**
      * @var ExceptionFactoryInterface[]
      */
-    private array $factories;
+    private array $factories = [];
 
     /**
      * @param ExceptionFactoryInterface[] $factories
      */
-    public function __construct(array $factories)
+    public function __construct(iterable $factories)
     {
-        $this->factories = array_filter($factories, function ($value) {
-            return $value instanceof ExceptionFactoryInterface;
-        });
+        foreach ($factories as $factory) {
+            if ($factory instanceof ExceptionFactoryInterface) {
+                $this->factories[] = $factory;
+            }
+        }
     }
 
     /**

@@ -34,6 +34,9 @@ services:
         App\Services\ProviderMachineManagerInterface:
             tags: ['app.machine_manager.provider_machine_manager']
 
+        App\Services\ExceptionFactory\MachineProvider\ExceptionFactoryInterface:
+            tags: ['app.machine_provider.exception_factory']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -90,8 +93,7 @@ services:
 
     App\Services\ExceptionFactory\MachineProvider\ExceptionFactory:
         arguments:
-            $factories:
-                - '@App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory'
+            $factories: !tagged_iterator 'app.machine_provider.exception_factory'
 
     App\Services\ServiceStatusInspector\MessageQueueInspector:
         tags:
