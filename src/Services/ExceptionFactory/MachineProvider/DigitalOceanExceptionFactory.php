@@ -14,6 +14,7 @@ use App\Model\DigitalOcean\RemoteMachine;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
+use DigitalOceanV2\Exception\ValidationFailedException;
 use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactory
@@ -38,7 +39,10 @@ class DigitalOceanExceptionFactory
             }
         }
 
-        if (DropletLimitExceededException::is($exception)) {
+        if (
+            $exception instanceof ValidationFailedException
+            && str_contains($exception->getMessage(), DropletLimitExceededException::MESSAGE_IDENTIFIER)
+        ) {
             return new DropletLimitExceededException($machineId, $action, $exception);
         }
 
