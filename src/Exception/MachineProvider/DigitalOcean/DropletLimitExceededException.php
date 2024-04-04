@@ -6,8 +6,6 @@ use App\Enum\MachineAction;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
-use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
-use DigitalOceanV2\Exception\ValidationFailedException;
 
 class DropletLimitExceededException extends Exception implements
     UnprocessableRequestExceptionInterface,
@@ -26,15 +24,6 @@ class DropletLimitExceededException extends Exception implements
             $remoteException,
             UnprocessableRequestExceptionInterface::CODE_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED
         );
-    }
-
-    public static function is(VendorExceptionInterface $exception): bool
-    {
-        if (false === $exception instanceof ValidationFailedException) {
-            return false;
-        }
-
-        return str_contains($exception->getMessage(), self::MESSAGE_IDENTIFIER);
     }
 
     /**
