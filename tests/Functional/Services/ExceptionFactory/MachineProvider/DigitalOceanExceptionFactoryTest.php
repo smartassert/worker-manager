@@ -13,12 +13,11 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTest;
+use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
 {
@@ -39,14 +38,11 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(
-        VendorExceptionInterface $exception,
-        ?ResponseInterface $lastResponse,
-        ExceptionInterface $expectedException
-    ): void {
+    public function testCreate(VendorExceptionInterface $exception, ExceptionInterface $expectedException): void
+    {
         self::assertEquals(
             $expectedException,
-            $this->factory->create(self::ID, MachineAction::CREATE, $exception, $lastResponse)
+            $this->factory->create(self::ID, MachineAction::CREATE, $exception)
         );
     }
 
@@ -63,25 +59,31 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
             422
         );
 
+        $vendorApiLimitExceededException = new VendorApiLimitExceededException(
+            'api limit exceeded',
+            429,
+            new RateLimit([
+                'reset' => 123,
+                'limit' => 456,
+                'remaining' => 798,
+            ])
+        );
+
         return [
             RuntimeException::class . ' 400' => [
                 'exception' => $runtimeException400,
-                'lastResponse' => null,
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
             RuntimeException::class . ' 401' => [
                 'exception' => $runtimeException401,
-                'lastResponse' => null,
                 'expectedException' => new AuthenticationException(self::ID, self::ACTION, $runtimeException401),
             ],
             ValidationFailedException::class . ' generic' => [
                 'exception' => $genericValidationFailedException,
-                'lastResponse' => null,
                 'expectedException' => new Exception(self::ID, self::ACTION, $genericValidationFailedException),
             ],
             ValidationFailedException::class . ' droplet limit will be exceeded' => [
                 'exception' => $dropletLimitValidationFailedException,
-                'lastResponse' => null,
                 'expectedException' => new DropletLimitExceededException(
                     self::ID,
                     self::ACTION,
@@ -89,13 +91,12 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
                 ),
             ],
             ApiLimitExceededException::class => [
-                'exception' => new VendorApiLimitExceededException(),
-                'lastResponse' => new Response(429, ['ratelimit-reset' => '123']),
+                'exception' => $vendorApiLimitExceededException,
                 'expectedException' => new ApiLimitExceededException(
                     123,
                     self::ID,
                     self::ACTION,
-                    new VendorApiLimitExceededException()
+                    $vendorApiLimitExceededException
                 )
             ],
         ];
