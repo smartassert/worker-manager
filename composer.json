@@ -1,4 +1,10 @@
 {
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/webignition/Client"
+        }
+    ],
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "dev",
@@ -27,7 +33,7 @@
         "symfony/security-bundle": "7.0.*",
         "symfony/uid": "7.0.*",
         "symfony/yaml": "7.0.*",
-        "toin0u/digitalocean-v2": "^4.9"
+        "toin0u/digitalocean-v2": "dev-api-limit-exception-include-rate-limit"
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",

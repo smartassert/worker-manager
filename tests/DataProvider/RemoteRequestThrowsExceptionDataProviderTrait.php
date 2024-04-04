@@ -10,7 +10,6 @@ use App\Exception\MachineProvider\Exception;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use GuzzleHttp\Psr7\Response;
 
 trait RemoteRequestThrowsExceptionDataProviderTrait
 {
@@ -22,22 +21,14 @@ trait RemoteRequestThrowsExceptionDataProviderTrait
         return [
             VendorApiLimitExceededException::class => [
                 'dropletApiException' => new VendorApiLimitExceededException('Too Many Requests', 429),
-                'apiResponse' => new Response(
-                    429,
-                    [
-                        'RateLimit-Reset' => '123',
-                    ]
-                ),
                 'expectedExceptionClass' => ApiLimitExceededException::class,
             ],
             RuntimeException::class . ' HTTP 503' => [
                 'dropletApiException' => new RuntimeException('Service Unavailable', 503),
-                'apiResponse' => new Response(503),
                 'expectedExceptionClass' => HttpException::class,
             ],
             ValidationFailedException::class => [
                 'dropletApiException' => new ValidationFailedException('Bad Request', 400),
-                'apiResponse' => new Response(400),
                 'expectedExceptionClass' => Exception::class,
             ],
         ];

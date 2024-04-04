@@ -61,12 +61,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
                 $configuration->getTags()
             );
         } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create(
-                $machineId,
-                MachineAction::CREATE,
-                $exception,
-                $this->digitalOceanClient->getLastResponse()
-            );
+            throw $this->exceptionFactory->create($machineId, MachineAction::CREATE, $exception);
         }
 
         return new RemoteMachine(
@@ -84,12 +79,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         try {
             $this->digitalOceanClient->droplet()->removeTagged($name);
         } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create(
-                $machineId,
-                MachineAction::DELETE,
-                $exception,
-                $this->digitalOceanClient->getLastResponse()
-            );
+            throw $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
         }
     }
 
@@ -103,12 +93,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         try {
             $droplets = $this->digitalOceanClient->droplet()->getAll($name);
         } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create(
-                $machineId,
-                MachineAction::GET,
-                $exception,
-                $this->digitalOceanClient->getLastResponse()
-            );
+            throw $this->exceptionFactory->create($machineId, MachineAction::GET, $exception);
         }
 
         return 1 === count($droplets)

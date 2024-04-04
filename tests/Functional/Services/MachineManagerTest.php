@@ -19,13 +19,10 @@ use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use App\Tests\Proxy\DigitalOceanV2\ClientProxy;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use Psr\Http\Message\ResponseInterface;
 
 class MachineManagerTest extends AbstractBaseFunctionalTest
 {
@@ -36,7 +33,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     private MachineManager $machineManager;
     private DropletApiProxy $dropletApiProxy;
     private string $machineName;
-    private Client $digitalOceanClient;
 
     protected function setUp(): void
     {
@@ -53,10 +49,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
         \assert($machineNameFactory instanceof MachineNameFactory);
         $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
-
-        $digitalOceanClient = self::getContainer()->get(Client::class);
-        \assert($digitalOceanClient instanceof Client);
-        $this->digitalOceanClient = $digitalOceanClient;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -98,15 +90,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      *
      * @param class-string $expectedExceptionClass
      */
-    public function testCreateThrowsException(
-        \Exception $dropletApiException,
-        ResponseInterface $apiResponse,
-        string $expectedExceptionClass
-    ): void {
-        if ($this->digitalOceanClient instanceof ClientProxy) {
-            $this->digitalOceanClient->setLastResponse($apiResponse);
-        }
-
+    public function testCreateThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
+    {
         try {
             $machine = new Machine(self::MACHINE_ID);
 
@@ -192,15 +177,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      *
      * @param class-string $expectedExceptionClass
      */
-    public function testGetThrowsException(
-        \Exception $dropletApiException,
-        ResponseInterface $apiResponse,
-        string $expectedExceptionClass
-    ): void {
-        if ($this->digitalOceanClient instanceof ClientProxy) {
-            $this->digitalOceanClient->setLastResponse($apiResponse);
-        }
-
+    public function testGetThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
+    {
         try {
             $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
             $this->machineManager->get($this->createMachineProvider());

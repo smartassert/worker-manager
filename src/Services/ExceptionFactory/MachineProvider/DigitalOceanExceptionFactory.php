@@ -11,11 +11,11 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Model\DigitalOcean\RemoteMachine;
+use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
-use Psr\Http\Message\ResponseInterface;
 
 class DigitalOceanExceptionFactory
 {
@@ -25,18 +25,17 @@ class DigitalOceanExceptionFactory
     public function create(
         string $machineId,
         MachineAction $action,
-        VendorExceptionInterface $exception,
-        ?ResponseInterface $lastResponse,
+        VendorExceptionInterface $exception
     ): ExceptionInterface {
         if ($exception instanceof VendorApiLimitExceededException) {
-            if ($lastResponse instanceof ResponseInterface) {
-                return new ApiLimitExceededException(
-                    (int) $lastResponse->getHeaderLine('RateLimit-Reset'),
-                    $machineId,
-                    $action,
-                    $exception
-                );
+            $exceptionRateLimit = $exception->rateLimit;
+            if ($exceptionRateLimit instanceof RateLimit) {
+                $rateLimitReset = $exceptionRateLimit->reset;
+            } else {
+                $rateLimitReset = 0;
             }
+
+            return new ApiLimitExceededException($rateLimitReset, $machineId, $action, $exception);
         }
 
         if (
