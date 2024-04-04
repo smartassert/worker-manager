@@ -52,6 +52,7 @@ services:
         SECONDARY_DIGITALOCEAN_API_TOKEN: ${SECONDARY_DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
         AUTHENTICATION_BASE_URL: http://users-http
+        COMPOSER_AUTH_TOKEN: ${COMPOSER_AUTH_TOKEN}
     container_name: smartassert-worker-manager
     depends_on:
       - postgres

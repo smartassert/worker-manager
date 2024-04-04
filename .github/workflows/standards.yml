@@ -38,7 +38,11 @@ jobs:
           php-version: ${{ matrix.php }}
 
       - name: Install composer dependencies
-        run: composer install --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          composer config github-oauth.github.com "$GITHUB_TOKEN"
+          composer install --no-progress --prefer-dist --optimize-autoloader
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run
         run: composer cs-phpcs

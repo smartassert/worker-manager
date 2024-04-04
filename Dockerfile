@@ -19,6 +19,7 @@ ARG MACHINE_IS_ACTIVE_DISPATCH_DELAY=10000
 ARG VERSION=dockerfile_version
 ARG IS_READY=0
 ARG AUTHENTICATION_BASE_URL=https://users.example.com
+ARG COMPOSER_AUTH_TOKEN=composer_auth_token
 
 ENV APP_ENV=$APP_ENV
 ENV DATABASE_URL=$DATABASE_URL
@@ -39,10 +40,12 @@ ENV VERSION=$VERSION
 ENV IS_READY=$READY
 ENV USERS_SECURITY_BUNDLE_BASE_URL=$AUTHENTICATION_BASE_URL
 ENV AUTHENTICATION_BASE_URL=$AUTHENTICATION_BASE_URL
+ENV COMPOSER_AUTH_TOKEN=$COMPOSER_AUTH_TOKEN
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 RUN apt-get -qq update && apt-get -qq -y install  \
+  git \
   libpq-dev \
   libzip-dev \
   supervisor \
@@ -68,7 +71,8 @@ COPY migrations /app/migrations
 
 RUN chown -R www-data:www-data /app/var/log \
   && echo "APP_SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)" > .env \
-  && composer install --no-dev --no-scripts \
+  && composer config github-oauth.github.com "$COMPOSER_AUTH_TOKEN" \
+  && COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --no-scripts \
   && rm composer.lock \
   && php bin/console cache:clear \
   && printenv | grep "^WORKER_IMAGE" \
