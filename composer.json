@@ -27,7 +27,7 @@
         "symfony/security-bundle": "7.0.*",
         "symfony/uid": "7.0.*",
         "symfony/yaml": "7.0.*",
-        "toin0u/digitalocean-v2": "^4.5"
+        "toin0u/digitalocean-v2": "^4.9"
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",
