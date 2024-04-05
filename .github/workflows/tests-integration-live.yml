@@ -44,7 +44,6 @@ jobs:
         env:
           PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-          VERSION: gh-action-version
           COMPOSER_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$VERSION COMPOSER_AUTH_TOKEN=$COMPOSER_AUTH_TOKEN composer integration-setup
@@ -55,7 +54,6 @@ jobs:
         env:
           PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-#          EXPECTED_VERSION: gh-action-version
         run: composer test-integration-live
 
       - name: "Debug: output messenger log ..."

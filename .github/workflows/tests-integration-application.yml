@@ -48,11 +48,5 @@ jobs:
 
       - name: Run tests
         env:
-#          PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-#          SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           EXPECTED_VERSION: gh-action-version
         run: composer test-integration-application
-
-#      - name: "Debug: output messenger log ..."
-#        if: ${{ always() }}
-#        run: docker compose -f tests/build/docker-compose.yml exec -T app cat /app/var/log/messenger.prod.log
