@@ -26,8 +26,7 @@ readonly class MachineManager
     }
 
     /**
-     * @throws ExceptionInterface
-     * @throws \Throwable
+     * @throws MachineActionFailedException
      */
     public function create(Machine $machine): RemoteMachineInterface
     {
@@ -39,8 +38,12 @@ readonly class MachineManager
                         $machine->getId(),
                         $this->machineNameFactory->create($machine->getId())
                     );
-                } catch (ExceptionInterface $exception) {
-                    $exceptionStack[] = $exception;
+                } catch (\Throwable $exception) {
+                    $exceptionStack[] = $this->exceptionFactory->create(
+                        $machine->getId(),
+                        MachineAction::CREATE,
+                        $exception
+                    );
                 }
             }
         }
@@ -81,7 +84,6 @@ readonly class MachineManager
      * @param non-empty-string $machineId
      *
      * @throws MachineActionFailedException
-     * @throws \Throwable
      */
     public function remove(string $machineId): void
     {
@@ -90,9 +92,10 @@ readonly class MachineManager
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
                     $machineManager->remove($machineId, $this->machineNameFactory->create($machineId));
-                } catch (ExceptionInterface $exception) {
-                    if (!$exception instanceof UnknownRemoteMachineExceptionInterface) {
-                        $exceptionStack[] = $exception;
+                } catch (\Throwable $exception) {
+                    $newException = $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
+                    if (!$newException instanceof UnknownRemoteMachineExceptionInterface) {
+                        $exceptionStack[] = $newException;
                     }
                 }
             }
@@ -107,7 +110,6 @@ readonly class MachineManager
      * @param non-empty-string $machineId
      *
      * @throws MachineActionFailedException
-     * @throws \Throwable
      */
     public function find(string $machineId): ?RemoteMachineInterface
     {
@@ -120,8 +122,8 @@ readonly class MachineManager
                     if ($remoteMachine instanceof RemoteMachineInterface) {
                         return $remoteMachine;
                     }
-                } catch (ExceptionInterface $exception) {
-                    $exceptionStack[] = $exception;
+                } catch (\Throwable $exception) {
+                    $exceptionStack[] = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
                 }
             }
         }

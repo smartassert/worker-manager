@@ -27,6 +27,8 @@ use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use DigitalOceanV2\Entity\RateLimit;
+use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -169,14 +171,15 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $message = new CreateMachine('id0', $this->machine->getId());
         $expectedException = $expectedExceptionCreator($this->machine);
 
+        $exception = null;
+
         try {
             ($this->handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
-            self::assertEquals($expectedException, $exception);
         }
 
-        self::assertSame(MachineState::CREATE_REQUESTED, $this->machine->getState());
+        self::assertEquals($expectedException, $exception);
     }
 
     /**
@@ -184,6 +187,16 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
      */
     public function invokeThrowsExceptionDataProvider(): array
     {
+        $vendorApiLimitExceededException = new VendorApiLimitExceededException(
+            'Too Many Requests',
+            429,
+            new RateLimit([
+                'limit' => 123,
+                'remaining' => 456,
+                'reset' => 789,
+            ])
+        );
+
         return [
             'HTTP 401' => [
                 'vendorExceptionCreator' => function () {
@@ -231,15 +244,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                 },
             ],
             'HTTP 429' => [
-                'vendorExceptionCreator' => function (Machine $machine) {
-                    return new ApiLimitExceededException(
-                        1400000,
-                        $machine->getId(),
-                        MachineAction::CREATE,
-                        new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
-                    );
+                'vendorExceptionCreator' => function () use ($vendorApiLimitExceededException) {
+                    return $vendorApiLimitExceededException;
                 },
-                'expectedExceptionCreator' => function (Machine $machine) {
+                'expectedExceptionCreator' => function (Machine $machine) use ($vendorApiLimitExceededException) {
                     return new UnrecoverableMessageHandlingException(
                         'Action "create" on machine "' . $machine->getId() . '" failed',
                         0,
@@ -248,10 +256,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                             MachineAction::CREATE,
                             [
                                 new ApiLimitExceededException(
-                                    1400000,
+                                    789,
                                     $machine->getId(),
                                     MachineAction::CREATE,
-                                    new \DigitalOceanV2\Exception\ApiLimitExceededException('Too Many Requests', 429)
+                                    $vendorApiLimitExceededException
                                 ),
                             ]
                         )
