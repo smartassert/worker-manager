@@ -38,6 +38,8 @@ jobs:
 
       - name: Setup integration environment
         env:
+          PRIMARY_DIGITALOCEAN_API_TOKEN: primary_digitalocean_api_token
+          SECONDARY_DIGITALOCEAN_API_TOKEN: secondary_digitalocean_api_token
           VERSION: gh-action-version
         run: |
           VERSION=$VERSION composer integration-setup
