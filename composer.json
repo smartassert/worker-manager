@@ -138,7 +138,6 @@
             "@users-generate-jwt-keys",
             "@users-create-user"
         ],
-        "integration-pull": "docker compose -f tests/build/docker-compose.yml pull",
         "integration-build": "docker compose -f tests/build/docker-compose.yml build app",
         "integration-up": "docker compose -f tests/build/docker-compose.yml up -d",
         "integration-status": "docker compose -f tests/build/docker-compose.yml ps",
