@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration Tests (Live)
 
 on:
   push:
@@ -27,7 +27,11 @@ jobs:
           php-version: ${{ matrix.php }}
 
       - name: Install composer dependencies
-        run: composer install --no-progress --prefer-dist --optimize-autoloader
+        run: |
+          composer config github-oauth.github.com "$GITHUB_TOKEN"
+          composer install --no-progress --prefer-dist --optimize-autoloader
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull images
         run: composer integration-pull
@@ -40,18 +44,17 @@ jobs:
         env:
           PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-          VERSION: gh-action-version
+          COMPOSER_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$VERSION composer integration-setup
+          VERSION=$VERSION COMPOSER_AUTH_TOKEN=$COMPOSER_AUTH_TOKEN composer integration-setup
           docker compose -f tests/build/docker-compose.yml exec -T app touch /app/var/log/messenger.prod.log
           sleep 10
 
-      - name: Test status, machine creation, health check
+      - name: Run tests
         env:
           PRIMARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
-          EXPECTED_VERSION: gh-action-version
-        run: composer test-integration
+        run: composer test-integration-live
 
       - name: "Debug: output messenger log ..."
         if: ${{ always() }}

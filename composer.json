@@ -104,23 +104,11 @@
         "static-analysis": "XDEBUG_MODE=off ./vendor/bin/phpstan analyse --ansi",
         "test-unit": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Unit",
         "test-functional": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Functional",
-        "test-integration-unauthorized-user": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/UnauthorizedUserTest.php"
+        "test-integration-application": [
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Application"
         ],
-        "test-integration-machine-creation": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/MachineCreationTest.php"
-        ],
-        "test-integration-health-check": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/HealthCheckTest.php"
-        ],
-        "test-integration-status": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/StatusTest.php"
-        ],
-        "test-integration": [
-            "@test-integration-unauthorized-user",
-            "@test-integration-status",
-            "@test-integration-machine-creation",
-            "@test-integration-health-check"
+        "test-integration-live": [
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Live"
         ],
         "test": [
             "@test-unit",
