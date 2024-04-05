@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration;
+namespace App\Tests\Integration\Application;
 
 use App\Tests\Application\AbstractHealthCheckTest;
+use App\Tests\Integration\GetApplicationClientTrait;
 
 class HealthCheckTest extends AbstractHealthCheckTest
 {

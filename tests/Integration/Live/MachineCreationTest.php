@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration;
+namespace App\Tests\Integration\Live;
 
 use App\Enum\MachineState;
 use App\Tests\Application\AbstractMachineTest;
+use App\Tests\Integration\GetApplicationClientTrait;
 use App\Tests\Model\Machine;
 
 class MachineCreationTest extends AbstractMachineTest
