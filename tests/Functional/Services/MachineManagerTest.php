@@ -217,6 +217,26 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         ];
     }
 
+    /**
+     * @dataProvider remoteRequestThrowsExceptionDataProvider
+     *
+     * @param class-string $expectedExceptionClass
+     */
+    public function testRemoveThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
+    {
+        try {
+            $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
+            $this->machineManager->remove(self::MACHINE_ID);
+            self::fail($dropletApiException::class . ' not thrown');
+        } catch (MachineActionFailedException $exception) {
+            $innerException = $exception->getExceptionStack()[0];
+            self::assertInstanceOf(ExceptionInterface::class, $innerException);
+            self::assertSame($expectedExceptionClass, $innerException::class);
+            self::assertSame(MachineAction::DELETE, $innerException->getAction());
+            self::assertEquals($dropletApiException, $innerException->getRemoteException());
+        }
+    }
+
     public function testRemoveThrowsMachineNotRemovableException(): void
     {
         $httpException = new RuntimeException('Service Unavailable', 503);
@@ -256,7 +276,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withGetAllCall($this->machineName, $http503Exception);
 
         $expectedExceptionStack = [
-            new HttpException(self::MACHINE_ID, MachineAction::GET, $http503Exception),
+            new HttpException(self::MACHINE_ID, MachineAction::FIND, $http503Exception),
         ];
 
         try {

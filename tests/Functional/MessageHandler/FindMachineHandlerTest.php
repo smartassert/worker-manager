@@ -170,7 +170,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     return $factory->createFind(
                         self::MACHINE_ID,
                         [$factory->createCheckIsActive(self::MACHINE_ID)],
-                        []
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
@@ -193,7 +192,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     return $factory->createFind(
                         self::MACHINE_ID,
                         [$factory->createCheckIsActive(self::MACHINE_ID)],
-                        []
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
@@ -213,7 +211,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                     return $factory->createFind(
                         self::MACHINE_ID,
                         [$factory->createCheckIsActive(self::MACHINE_ID)],
-                        []
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
@@ -233,11 +230,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
                 ),
                 'expectedMachineProvider' => new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE),
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
-                    $message = $factory->createFind(
-                        self::MACHINE_ID,
-                        [],
-                        []
-                    );
+                    $message = $factory->createFind(self::MACHINE_ID);
 
                     return $message->withReDispatchOnSuccess(true);
                 },
@@ -304,7 +297,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $authenticationException = new AuthenticationException(
             self::MACHINE_ID,
-            MachineAction::GET,
+            MachineAction::FIND,
             $http401Exception
         );
 
@@ -312,7 +305,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $serviceUnavailableException = new HttpException(
             self::MACHINE_ID,
-            MachineAction::GET,
+            MachineAction::FIND,
             $http503Exception
         );
 

@@ -9,5 +9,8 @@ interface ExceptionFactoryInterface
 {
     public function handles(\Throwable $exception): bool;
 
+    /**
+     * @param non-empty-string $resourceId
+     */
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ?ExceptionInterface;
 }

@@ -17,16 +17,15 @@ use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
-class DigitalOceanExceptionFactory
+class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
-    /**
-     * @param non-empty-string $machineId
-     */
-    public function create(
-        string $machineId,
-        MachineAction $action,
-        VendorExceptionInterface $exception
-    ): ExceptionInterface {
+    public function handles(\Throwable $exception): bool
+    {
+        return $exception instanceof VendorExceptionInterface;
+    }
+
+    public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
+    {
         if ($exception instanceof VendorApiLimitExceededException) {
             $exceptionRateLimit = $exception->rateLimit;
             if ($exceptionRateLimit instanceof RateLimit) {
@@ -35,28 +34,28 @@ class DigitalOceanExceptionFactory
                 $rateLimitReset = 0;
             }
 
-            return new ApiLimitExceededException($rateLimitReset, $machineId, $action, $exception);
+            return new ApiLimitExceededException($rateLimitReset, $resourceId, $action, $exception);
         }
 
         if (
             $exception instanceof ValidationFailedException
             && str_contains($exception->getMessage(), DropletLimitExceededException::MESSAGE_IDENTIFIER)
         ) {
-            return new DropletLimitExceededException($machineId, $action, $exception);
+            return new DropletLimitExceededException($resourceId, $action, $exception);
         }
 
         if ($exception instanceof RuntimeException) {
             if (401 === $exception->getCode()) {
-                return new AuthenticationException($machineId, $action, $exception);
+                return new AuthenticationException($resourceId, $action, $exception);
             }
 
             if (404 === $exception->getCode()) {
-                return new UnknownRemoteMachineException(RemoteMachine::TYPE, $machineId, $action, $exception);
+                return new UnknownRemoteMachineException(RemoteMachine::TYPE, $resourceId, $action, $exception);
             }
 
-            return new HttpException($machineId, $action, $exception);
+            return new HttpException($resourceId, $action, $exception);
         }
 
-        return new Exception($machineId, $action, $exception);
+        return new Exception($resourceId, $action, $exception);
     }
 }

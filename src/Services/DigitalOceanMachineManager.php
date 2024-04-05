@@ -2,22 +2,18 @@
 
 namespace App\Services;
 
-use App\Enum\MachineAction;
-use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
-use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
-class DigitalOceanMachineManager implements ProviderMachineManagerInterface
+readonly class DigitalOceanMachineManager implements ProviderMachineManagerInterface
 {
     public function __construct(
-        private readonly Client $digitalOceanClient,
-        private readonly DigitalOceanExceptionFactory $exceptionFactory,
-        private readonly Factory $dropletConfigurationFactory,
+        private Client $digitalOceanClient,
+        private Factory $dropletConfigurationFactory,
     ) {
     }
 
@@ -29,7 +25,7 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     /**
      * @param non-empty-string $machineId
      *
-     * @throws ExceptionInterface
+     * @throws VendorExceptionInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
@@ -37,32 +33,28 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
         $configuration = $configuration->withNames([$name]);
         $configuration = $configuration->addTags([$name]);
 
-        try {
-            $namesValue = $configuration->getNames();
-            $namesSize = count($namesValue);
-            if (0 === $namesSize) {
-                $namesValue = '';
-            } elseif (1 === $namesSize) {
-                $namesValue = $namesValue[0];
-            }
-
-            $dropletEntity = $this->digitalOceanClient->droplet()->create(
-                $namesValue,
-                $configuration->getRegion(),
-                $configuration->getSize(),
-                $configuration->getImage(),
-                $configuration->getBackups(),
-                $configuration->getIpv6(),
-                $configuration->getVpcUuid(),
-                $configuration->getSshKeys(),
-                $configuration->getUserData(),
-                $configuration->getMonitoring(),
-                $configuration->getVolumes(),
-                $configuration->getTags()
-            );
-        } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create($machineId, MachineAction::CREATE, $exception);
+        $namesValue = $configuration->getNames();
+        $namesSize = count($namesValue);
+        if (0 === $namesSize) {
+            $namesValue = '';
+        } elseif (1 === $namesSize) {
+            $namesValue = $namesValue[0];
         }
+
+        $dropletEntity = $this->digitalOceanClient->droplet()->create(
+            $namesValue,
+            $configuration->getRegion(),
+            $configuration->getSize(),
+            $configuration->getImage(),
+            $configuration->getBackups(),
+            $configuration->getIpv6(),
+            $configuration->getVpcUuid(),
+            $configuration->getSshKeys(),
+            $configuration->getUserData(),
+            $configuration->getMonitoring(),
+            $configuration->getVolumes(),
+            $configuration->getTags()
+        );
 
         return new RemoteMachine(
             $dropletEntity instanceof DropletEntity ? $dropletEntity : new DropletEntity([])
@@ -72,32 +64,22 @@ class DigitalOceanMachineManager implements ProviderMachineManagerInterface
     /**
      * @param non-empty-string $machineId
      *
-     * @throws ExceptionInterface
+     * @throws VendorExceptionInterface
      */
     public function remove(string $machineId, string $name): void
     {
-        try {
-            $this->digitalOceanClient->droplet()->removeTagged($name);
-        } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
-        }
+        $this->digitalOceanClient->droplet()->removeTagged($name);
     }
 
     /**
      * @param non-empty-string $machineId
      *
-     * @throws ExceptionInterface
+     * @throws VendorExceptionInterface
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
-        try {
-            $droplets = $this->digitalOceanClient->droplet()->getAll($name);
-        } catch (VendorExceptionInterface $exception) {
-            throw $this->exceptionFactory->create($machineId, MachineAction::GET, $exception);
-        }
+        $droplets = $this->digitalOceanClient->droplet()->getAll($name);
 
-        return 1 === count($droplets)
-            ? new RemoteMachine($droplets[0])
-            : null;
+        return 1 === count($droplets) ? new RemoteMachine($droplets[0]) : null;
     }
 }
