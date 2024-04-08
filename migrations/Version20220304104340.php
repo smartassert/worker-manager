@@ -20,8 +20,7 @@ final class Version20220304104340 extends AbstractMigration
         $this->addSql('
             CREATE TABLE action_failure (
                 id VARCHAR(32) NOT NULL, 
-                code INT NOT NULL, 
-                reason TEXT NOT NULL, 
+                action_failure_type TEXT NOT NULL, 
                 context JSON DEFAULT NULL, 
                 action VARCHAR(255) NOT NULL,
                 PRIMARY KEY(id)

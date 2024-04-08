@@ -6,8 +6,7 @@ namespace App\Tests\Functional\Services;
 
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
-use App\Enum\ActionFailure\Code;
-use App\Enum\ActionFailure\Reason;
+use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
@@ -119,8 +118,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::API_LIMIT_EXCEEDED,
-                    Reason::API_LIMIT_EXCEEDED,
+                    ActionFailureType::API_LIMIT_EXCEEDED,
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
@@ -133,8 +131,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNSUPPORTED_PROVIDER,
-                    Reason::UNSUPPORTED_PROVIDER,
+                    ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::CREATE,
                 ),
             ],
@@ -144,8 +141,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN,
+                    ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
                 ),
             ],
@@ -160,8 +156,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::API_LIMIT_EXCEEDED,
-                    Reason::API_LIMIT_EXCEEDED,
+                    ActionFailureType::API_LIMIT_EXCEEDED,
                     MachineAction::FIND,
                     [
                         'reset-timestamp' => 123,
@@ -174,8 +169,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNSUPPORTED_PROVIDER,
-                    Reason::UNSUPPORTED_PROVIDER,
+                    ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::FIND,
                 ),
             ],
@@ -185,8 +179,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN,
+                    ActionFailureType::UNKNOWN,
                     MachineAction::FIND,
                 ),
             ],

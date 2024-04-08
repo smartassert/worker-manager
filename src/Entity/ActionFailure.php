@@ -2,8 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\ActionFailure\Code;
-use App\Enum\ActionFailure\Reason;
+use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,11 +14,8 @@ class ActionFailure implements \JsonSerializable
     #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
     private string $id;
 
-    #[ORM\Column(type: 'integer', enumType: Code::class)]
-    private Code $code;
-
-    #[ORM\Column(type: 'text', enumType: Reason::class)]
-    private Reason $reason;
+    #[ORM\Column(type: 'text', enumType: ActionFailureType::class)]
+    private ActionFailureType $actionFailureType;
 
     /**
      * @var array<string, int|string>
@@ -35,14 +31,12 @@ class ActionFailure implements \JsonSerializable
      */
     public function __construct(
         string $machineId,
-        Code $code,
-        Reason $reason,
+        ActionFailureType $actionFailureType,
         MachineAction $action,
         array $context = []
     ) {
         $this->id = $machineId;
-        $this->code = $code;
-        $this->reason = $reason;
+        $this->actionFailureType = $actionFailureType;
         $this->context = $context;
         $this->action = $action;
     }
@@ -55,8 +49,7 @@ class ActionFailure implements \JsonSerializable
     /**
      * @return array{
      *   action: value-of<MachineAction>,
-     *   code: value-of<Code>,
-     *   reason: value-of<Reason>,
+     *   type: value-of<ActionFailureType>,
      *   context: array<string, int|string>
      * }
      */
@@ -64,8 +57,7 @@ class ActionFailure implements \JsonSerializable
     {
         return [
             'action' => $this->action->value,
-            'code' => $this->code->value,
-            'reason' => $this->reason->value,
+            'type' => $this->actionFailureType->value,
             'context' => $this->context,
         ];
     }

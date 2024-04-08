@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\Entity\Factory;
 
 use App\Entity\ActionFailure;
-use App\Enum\ActionFailure\Code;
-use App\Enum\ActionFailure\Reason;
+use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
@@ -76,8 +75,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNSUPPORTED_PROVIDER,
-                    Reason::UNSUPPORTED_PROVIDER,
+                    ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::CREATE,
                 ),
             ],
@@ -90,8 +88,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::API_LIMIT_EXCEEDED,
-                    Reason::API_LIMIT_EXCEEDED,
+                    ActionFailureType::API_LIMIT_EXCEEDED,
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
@@ -106,8 +103,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::API_AUTHENTICATION_FAILURE,
-                    Reason::API_AUTHENTICATION_FAILURE,
+                    ActionFailureType::API_AUTHENTICATION_FAILURE,
                     MachineAction::CREATE,
                 ),
             ],
@@ -120,8 +116,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::CURL_ERROR,
-                    Reason::CURL_ERROR,
+                    ActionFailureType::CURL_ERROR,
                     MachineAction::CREATE,
                     [
                         'curl-code' => 7,
@@ -136,8 +131,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::HTTP_ERROR,
-                    Reason::HTTP_ERROR,
+                    ActionFailureType::HTTP_ERROR,
                     MachineAction::CREATE,
                     [
                         'status-code' => 500,
@@ -155,8 +149,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNPROCESSABLE_REQUEST,
-                    Reason::UNPROCESSABLE_REQUEST,
+                    ActionFailureType::UNPROCESSABLE_REQUEST,
                     MachineAction::CREATE,
                     [
                         'provider-reason' => $unprocessableReason,
@@ -171,8 +164,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN_MACHINE_PROVIDER_ERROR,
-                    Reason::UNKNOWN_MACHINE_PROVIDER_ERROR,
+                    ActionFailureType::UNKNOWN_MACHINE_PROVIDER_ERROR,
                     MachineAction::CREATE,
                 ),
             ],
@@ -180,8 +172,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new \RuntimeException('Runtime error'),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN,
+                    ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
                 ),
             ],

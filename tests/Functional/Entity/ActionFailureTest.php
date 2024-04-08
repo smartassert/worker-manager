@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Entity;
 
 use App\Entity\ActionFailure;
-use App\Enum\ActionFailure\Code;
-use App\Enum\ActionFailure\Reason;
+use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Repository\ActionFailureRepository;
 use App\Tests\Functional\AbstractEntityTestCase;
@@ -29,7 +28,7 @@ class ActionFailureTest extends AbstractEntityTestCase
         $repository = $this->entityManager->getRepository(ActionFailure::class);
         self::assertCount(0, $repository->findAll());
 
-        $entity = new ActionFailure(self::MACHINE_ID, Code::UNKNOWN, Reason::UNKNOWN, MachineAction::CREATE);
+        $entity = new ActionFailure(self::MACHINE_ID, ActionFailureType::UNKNOWN, MachineAction::CREATE);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -64,16 +63,14 @@ class ActionFailureTest extends AbstractEntityTestCase
             'without context' => [
                 'entity' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN,
+                    ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
                 ),
             ],
             'with context' => [
                 'entity' => new ActionFailure(
                     self::MACHINE_ID,
-                    Code::UNKNOWN,
-                    Reason::UNKNOWN,
+                    ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
                     [
                         'key1' => 'value1',
