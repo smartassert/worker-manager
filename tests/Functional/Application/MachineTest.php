@@ -174,8 +174,7 @@ class MachineTest extends AbstractMachineTest
             MachineStateCategory::END,
             [],
             [
-                'code' => 2,
-                'reason' => 'api limit exceeded',
+                'type' => 'api_limit_exceeded',
                 'action' => 'create',
                 'context' => [
                     'reset-timestamp' => 123,

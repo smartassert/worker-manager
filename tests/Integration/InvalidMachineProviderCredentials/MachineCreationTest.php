@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\InvalidMachineProviderCredentials;
 
 use App\Entity\ActionFailure;
-use App\Enum\ActionFailure\Code;
-use App\Enum\ActionFailure\Reason;
+use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Repository\ActionFailureRepository;
@@ -34,8 +33,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTest
         self::assertEquals(
             new ActionFailure(
                 $this->machineId,
-                Code::API_AUTHENTICATION_FAILURE,
-                Reason::API_AUTHENTICATION_FAILURE,
+                ActionFailureType::API_AUTHENTICATION_FAILURE,
                 MachineAction::FIND,
                 []
             ),
