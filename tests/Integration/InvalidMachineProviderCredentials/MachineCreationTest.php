@@ -10,26 +10,10 @@ use App\Enum\ActionFailure\Reason;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Repository\ActionFailureRepository;
-use App\Tests\Application\AbstractMachineTest;
-use App\Tests\Integration\GetApplicationClientTrait;
-use App\Tests\Model\Machine;
+use App\Tests\Integration\AbstractIntegrationMachineTest;
 
-class MachineCreationTest extends AbstractMachineTest
+class MachineCreationTest extends AbstractIntegrationMachineTest
 {
-    use GetApplicationClientTrait;
-
-    private const MAX_DURATION_IN_SECONDS = 120;
-    private const MICROSECONDS_PER_SECOND = 1000000;
-
-    private string $machineId;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->machineId = md5((string) rand());
-    }
-
     public function testCreateRemoteMachineMachineProviderAuthenticationFailure(): void
     {
         $response = $this->makeValidCreateRequest($this->machineId);
@@ -57,48 +41,5 @@ class MachineCreationTest extends AbstractMachineTest
             ),
             $actionFailure
         );
-    }
-
-    private function waitUntilMachineStateIs(MachineState $stopState): bool
-    {
-        $duration = 0;
-        $maxDuration = self::MAX_DURATION_IN_SECONDS * self::MICROSECONDS_PER_SECOND;
-        $intervalInMicroseconds = 100000;
-
-        while ($stopState !== $this->getMachine()->getState()) {
-            usleep($intervalInMicroseconds);
-            $duration += $intervalInMicroseconds;
-
-            if ($duration >= $maxDuration) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function getMachine(): Machine
-    {
-        $response = $this->makeValidStatusRequest($this->machineId);
-        self::assertSame(200, $response->getStatusCode());
-
-        $data = json_decode($response->getBody()->getContents(), true);
-        self::assertIsArray($data);
-
-        return new Machine($data);
-    }
-
-    private function assertEventualMachineState(MachineState $state): void
-    {
-        $waitResult = $this->waitUntilMachineStateIs($state);
-        if (false === $waitResult) {
-            $this->fail(sprintf(
-                'Timed out waiting for expected machine state. Expected: %s, actual: %s',
-                $state->value,
-                $this->getMachine()->getState()->value
-            ));
-        }
-
-        self::assertSame($state, $this->getMachine()->getState());
     }
 }
