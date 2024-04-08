@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Foo;
+namespace App\Tests\Integration\InvalidMachineProviderCredentials;
 
 use App\Entity\ActionFailure;
 use App\Enum\ActionFailure\Code;

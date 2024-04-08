@@ -110,8 +110,8 @@
         "test-integration-live": [
             "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Live"
         ],
-        "test-integration-foo": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Foo"
+        "test-integration-invalid-machine-provider-credentials": [
+            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/InvalidMachineProviderCredentials"
         ],
         "test": [
             "@test-unit",
