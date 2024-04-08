@@ -6,13 +6,16 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
+use App\Exception\MachineActionFailedException;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
+use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -28,6 +31,7 @@ class FindMachineHandler
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
         private readonly MachineProviderRepository $machineProviderRepository,
+        private readonly ExceptionFactory $exceptionFactory,
     ) {
     }
 
@@ -72,15 +76,24 @@ class FindMachineHandler
 
                 $this->machineRequestDispatcher->dispatchCollection($message->getOnFailureCollection());
             }
+        } catch (MachineActionFailedException $exception) {
+            throw new UnrecoverableMessageHandlingException(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $exception
+            );
         } catch (\Throwable $exception) {
+            $exception = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
+
             if (
                 $exception instanceof UnrecoverableExceptionInterface
                 || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
             ) {
-                $code = $exception->getCode();
-                $code = is_int($code) ? $code : 0;
-
-                throw new UnrecoverableMessageHandlingException($exception->getMessage(), $code, $exception);
+                throw new UnrecoverableMessageHandlingException(
+                    $exception->getMessage(),
+                    $exception->getCode(),
+                    $exception
+                );
             }
 
             throw $exception;

@@ -17,6 +17,7 @@ use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
+use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
@@ -356,12 +357,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
+        $exceptionFactory = self::getContainer()->get(ExceptionFactory::class);
+        \assert($exceptionFactory instanceof ExceptionFactory);
+
         return new FindMachineHandler(
             $machineManager,
             $machineUpdater,
             $machineRequestDispatcher,
             $this->machineRepository,
-            $this->machineProviderRepository
+            $this->machineProviderRepository,
+            $exceptionFactory,
         );
     }
 }

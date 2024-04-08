@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
+use App\Exception\NoDigitalOceanClientException;
 use App\Model\DigitalOcean\RemoteMachine;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
@@ -21,7 +22,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
     public function handles(\Throwable $exception): bool
     {
-        return $exception instanceof VendorExceptionInterface;
+        return $exception instanceof VendorExceptionInterface || $exception instanceof NoDigitalOceanClientException;
     }
 
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
@@ -42,6 +43,10 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             && str_contains($exception->getMessage(), DropletLimitExceededException::MESSAGE_IDENTIFIER)
         ) {
             return new DropletLimitExceededException($resourceId, $action, $exception);
+        }
+
+        if ($exception instanceof NoDigitalOceanClientException) {
+            return new AuthenticationException($resourceId, $action, $exception);
         }
 
         if ($exception instanceof RuntimeException) {
