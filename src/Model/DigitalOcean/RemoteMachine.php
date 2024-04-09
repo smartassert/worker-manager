@@ -11,7 +11,6 @@ class RemoteMachine implements RemoteMachineInterface
 {
     public const STATE_NEW = 'new';
     public const STATE_ACTIVE = 'active';
-    public const TYPE = 'digitalocean';
 
     public function __construct(
         private DropletEntity $droplet
