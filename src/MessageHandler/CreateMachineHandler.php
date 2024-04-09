@@ -51,7 +51,7 @@ class CreateMachineHandler
             $machineProvider = $this->machineProviderRepository->find($message->getMachineId());
             if (!$machineProvider instanceof MachineProvider) {
                 $this->machineProviderRepository->add(
-                    new MachineProvider($machine->getId(), $remoteMachine->getProvider())
+                    new MachineProvider($machine->getId(), $remoteMachine->getProvider()->value)
                 );
             }
         } catch (\Throwable $exception) {

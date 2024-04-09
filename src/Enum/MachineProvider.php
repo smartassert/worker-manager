@@ -4,5 +4,5 @@ namespace App\Enum;
 
 enum MachineProvider: string
 {
-    case DIGITALOCEAN = 'digtialocean';
+    case DIGITALOCEAN = 'digitalocean';
 }

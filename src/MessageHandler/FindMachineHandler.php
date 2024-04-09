@@ -59,7 +59,7 @@ class FindMachineHandler
                 $machineProvider = $this->machineProviderRepository->find($machineId);
                 if (!$machineProvider instanceof MachineProvider) {
                     $this->machineProviderRepository->add(
-                        new MachineProvider($machineId, $remoteMachine->getProvider())
+                        new MachineProvider($machineId, $remoteMachine->getProvider()->value)
                     );
                 }
 

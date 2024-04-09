@@ -2,6 +2,7 @@
 
 namespace App\Model\DigitalOcean;
 
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Model\RemoteMachineInterface;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -17,9 +18,9 @@ class RemoteMachine implements RemoteMachineInterface
     ) {
     }
 
-    public function getProvider(): string
+    public function getProvider(): MachineProvider
     {
-        return self::TYPE;
+        return MachineProvider::DIGITALOCEAN;
     }
 
     public function getId(): int
