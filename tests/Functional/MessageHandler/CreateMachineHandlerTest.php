@@ -219,7 +219,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                             MachineAction::CREATE,
                             [
                                 new UnknownRemoteMachineException(
-                                    RemoteMachine::TYPE,
+                                    MachineProvider::DIGITALOCEAN,
                                     $machine->getId(),
                                     MachineAction::CREATE,
                                     new ResourceNotFoundException('Not Found', 404),

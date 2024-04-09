@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Exception\MachineProvider;
 
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\RecoverableDeciderExceptionInterface;
-use App\Model\DigitalOcean\RemoteMachine;
 use PHPUnit\Framework\TestCase;
 
 class UnknownRemoteMachineExceptionTest extends TestCase
@@ -36,7 +36,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
         return [
             'get action not recoverable' => [
                 'exception' => new UnknownRemoteMachineException(
-                    RemoteMachine::TYPE,
+                    MachineProvider::DIGITALOCEAN,
                     md5((string) rand()),
                     MachineAction::GET,
                     new \Exception()
@@ -45,7 +45,7 @@ class UnknownRemoteMachineExceptionTest extends TestCase
             ],
             'find action recoverable' => [
                 'exception' => new UnknownRemoteMachineException(
-                    RemoteMachine::TYPE,
+                    MachineProvider::DIGITALOCEAN,
                     md5((string) rand()),
                     MachineAction::FIND,
                     new \Exception()

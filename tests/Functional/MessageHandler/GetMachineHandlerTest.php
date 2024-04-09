@@ -278,7 +278,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $http404Exception = new ResourceNotFoundException('Not Found', 404);
         $unknownRemoteMachineException = new UnknownRemoteMachineException(
-            RemoteMachine::TYPE,
+            MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::GET,
             $http404Exception,
