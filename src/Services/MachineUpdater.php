@@ -18,6 +18,7 @@ class MachineUpdater
     {
         $machine->setState($remoteMachine->getState() ?? MachineState::CREATE_REQUESTED);
         $machine->setIpAddresses($remoteMachine->getIpAddresses());
+        $machine->setProvider($remoteMachine->getProvider());
         $this->machineRepository->add($machine);
 
         return $machine;

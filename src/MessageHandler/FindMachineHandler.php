@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
@@ -13,7 +12,6 @@ use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 use App\Services\MachineManager;
@@ -30,7 +28,6 @@ class FindMachineHandler
         private MachineUpdater $machineUpdater,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
-        private readonly MachineProviderRepository $machineProviderRepository,
         private readonly ExceptionFactory $exceptionFactory,
     ) {
     }
@@ -55,13 +52,6 @@ class FindMachineHandler
 
             if ($remoteMachine instanceof RemoteMachineInterface) {
                 $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
-
-                $machineProvider = $this->machineProviderRepository->find($machineId);
-                if (!$machineProvider instanceof MachineProvider) {
-                    $this->machineProviderRepository->add(
-                        new MachineProvider($machineId, $remoteMachine->getProvider())
-                    );
-                }
 
                 $onSuccessCollection = $message->getOnSuccessCollection();
 

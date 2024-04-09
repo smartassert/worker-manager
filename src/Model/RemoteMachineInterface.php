@@ -2,14 +2,12 @@
 
 namespace App\Model;
 
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 
 interface RemoteMachineInterface
 {
-    /**
-     * @return non-empty-string
-     */
-    public function getProvider(): string;
+    public function getProvider(): MachineProvider;
 
     public function getId(): int;
 

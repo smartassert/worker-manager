@@ -20,7 +20,6 @@ use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
-use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Tests\Functional\AbstractEntityTestCase;
@@ -72,7 +71,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
 
         return [
             UnsupportedProviderException::class => [
-                'throwable' => new UnsupportedProviderException(RemoteMachine::TYPE),
+                'throwable' => new UnsupportedProviderException(null),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     ActionFailureType::UNSUPPORTED_PROVIDER,

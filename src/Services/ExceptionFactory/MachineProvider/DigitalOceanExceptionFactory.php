@@ -3,6 +3,7 @@
 namespace App\Services\ExceptionFactory\MachineProvider;
 
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
@@ -11,7 +12,6 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
-use App\Model\DigitalOcean\RemoteMachine;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
@@ -55,7 +55,12 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             }
 
             if (404 === $exception->getCode()) {
-                return new UnknownRemoteMachineException(RemoteMachine::TYPE, $resourceId, $action, $exception);
+                return new UnknownRemoteMachineException(
+                    MachineProvider::DIGITALOCEAN,
+                    $resourceId,
+                    $action,
+                    $exception
+                );
             }
 
             return new HttpException($resourceId, $action, $exception);

@@ -6,7 +6,6 @@ namespace App\Tests\Application;
 
 use App\Entity\ActionFailure;
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Tests\Services\ApplicationClient\Client;
 use App\Tests\Services\Asserter\JsonResponseAsserter;
 use App\Tests\Services\EntityRemover;
@@ -40,7 +39,6 @@ abstract class AbstractApplicationTest extends WebTestCase
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(ActionFailure::class);
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 

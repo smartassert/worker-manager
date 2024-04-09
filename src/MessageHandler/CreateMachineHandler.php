@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
 use App\Services\MachineRequestDispatcher;
@@ -26,7 +24,6 @@ class CreateMachineHandler
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineUpdater $machineUpdater,
         private readonly MachineRepository $machineRepository,
-        private readonly MachineProviderRepository $machineProviderRepository,
     ) {
     }
 
@@ -47,13 +44,6 @@ class CreateMachineHandler
             $remoteMachine = $this->machineManager->create($machine);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
-
-            $machineProvider = $this->machineProviderRepository->find($message->getMachineId());
-            if (!$machineProvider instanceof MachineProvider) {
-                $this->machineProviderRepository->add(
-                    new MachineProvider($machine->getId(), $remoteMachine->getProvider())
-                );
-            }
         } catch (\Throwable $exception) {
             if (
                 $exception instanceof UnrecoverableExceptionInterface

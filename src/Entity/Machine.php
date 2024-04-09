@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use Doctrine\DBAL\Types\Types;
@@ -36,6 +37,9 @@ class Machine implements \JsonSerializable
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $ip_addresses;
 
+    #[ORM\Column(type: 'string', length: 255, enumType: MachineProvider::class, nullable: true)]
+    private ?MachineProvider $provider;
+
     /**
      * @param non-empty-string $id
      * @param string[]         $ipAddresses
@@ -48,6 +52,7 @@ class Machine implements \JsonSerializable
         $this->id = $id;
         $this->state = $state;
         $this->ip_addresses = $ipAddresses;
+        $this->provider = null;
     }
 
     /**
@@ -87,6 +92,16 @@ class Machine implements \JsonSerializable
     public function setIpAddresses(array $ipAddresses): void
     {
         $this->ip_addresses = $ipAddresses;
+    }
+
+    public function setProvider(MachineProvider $provider): void
+    {
+        $this->provider = $provider;
+    }
+
+    public function getProvider(): ?MachineProvider
+    {
+        return $this->provider;
     }
 
     /**

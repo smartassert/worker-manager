@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
@@ -57,14 +57,19 @@ readonly class MachineManager
      * @throws ProviderMachineNotFoundException
      * @throws \Throwable
      */
-    public function get(MachineProvider $machineProvider): RemoteMachineInterface
+    public function get(Machine $machine): RemoteMachineInterface
     {
-        $machineId = $machineProvider->getId();
+        $machineProvider = $machine->getProvider();
+        if (null === $machineProvider) {
+            throw new UnsupportedProviderException($machineProvider);
+        }
 
         $provider = $this->findProvider($machineProvider);
         if (null === $provider) {
-            throw new UnsupportedProviderException($machineProvider->getName());
+            throw new UnsupportedProviderException($machineProvider);
         }
+
+        $machineId = $machine->getId();
 
         try {
             $machine = $provider->get($machineId, $this->machineNameFactory->create($machineId));
@@ -77,7 +82,7 @@ readonly class MachineManager
                 : $this->exceptionFactory->create($machineId, MachineAction::GET, $exception);
         }
 
-        throw new ProviderMachineNotFoundException($machineProvider->getId(), $machineProvider->getName());
+        throw new ProviderMachineNotFoundException($machineId, $machineProvider->value);
     }
 
     /**
@@ -137,13 +142,12 @@ readonly class MachineManager
 
     private function findProvider(MachineProvider $machineProvider): ?ProviderMachineManagerInterface
     {
-        $providerName = $machineProvider->getName();
-
         foreach ($this->providerMachineManagers as $machineManager) {
-            if ($machineManager instanceof ProviderMachineManagerInterface) {
-                if ($machineManager->getType() === $providerName) {
-                    return $machineManager;
-                }
+            if (
+                $machineManager instanceof ProviderMachineManagerInterface
+                && $machineManager->supports($machineProvider)
+            ) {
+                return $machineManager;
             }
         }
 

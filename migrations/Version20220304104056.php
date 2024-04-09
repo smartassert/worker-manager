@@ -22,6 +22,7 @@ final class Version20220304104056 extends AbstractMigration
                 id VARCHAR(32) NOT NULL, 
                 state VARCHAR(255) NOT NULL, 
                 ip_addresses JSON DEFAULT NULL, 
+                provider VARCHAR(255) DEFAULT NULL,
                 PRIMARY KEY(id)
             )
         ');
