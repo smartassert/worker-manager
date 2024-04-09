@@ -18,11 +18,6 @@ readonly class DigitalOceanMachineManager implements ProviderMachineManagerInter
     ) {
     }
 
-    public function getType(): string
-    {
-        return RemoteMachine::TYPE;
-    }
-
     /**
      * @param non-empty-string $machineId
      *

@@ -9,11 +9,6 @@ use App\Model\RemoteMachineInterface;
 interface ProviderMachineManagerInterface
 {
     /**
-     * @return non-empty-string
-     */
-    public function getType(): string;
-
-    /**
      * @throws ExceptionInterface
      * @throws \Throwable
      */
