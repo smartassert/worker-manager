@@ -96,7 +96,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    ActionFailureType::API_LIMIT_EXCEEDED,
+                    ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED,
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
@@ -113,7 +113,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    ActionFailureType::API_AUTHENTICATION_FAILURE,
+                    ActionFailureType::VENDOR_AUTHENTICATION_FAILURE,
                     MachineAction::CREATE,
                     [
                         'provider' => $digitalOceanMachine->getProvider()?->value,
