@@ -62,7 +62,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-            $this->actionFailureFactory->create($machine->getId(), MachineAction::CREATE, $throwable);
+            $this->actionFailureFactory->create($machine, MachineAction::CREATE, $throwable);
         }
 
         if ($message instanceof DeleteMachine) {
@@ -71,7 +71,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof FindMachine) {
             $machine->setState(MachineState::FIND_NOT_FINDABLE);
-            $this->actionFailureFactory->create($machine->getId(), MachineAction::FIND, $throwable);
+            $this->actionFailureFactory->create($machine, MachineAction::FIND, $throwable);
         }
 
         if ($message instanceof GetMachine) {

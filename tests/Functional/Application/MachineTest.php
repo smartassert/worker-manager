@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Application;
 
 use App\Entity\Machine;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -149,13 +150,14 @@ class MachineTest extends AbstractMachineTest
     public function testStatusWithActionFailure(): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         $this->machineRepository->add($machine);
 
         $actionFailureFactory = self::getContainer()->get(ActionFailureFactory::class);
         \assert($actionFailureFactory instanceof ActionFailureFactory);
         $actionFailureFactory->create(
-            self::MACHINE_ID,
+            $machine,
             MachineAction::CREATE,
             new ApiLimitExceededException(
                 123,
@@ -178,6 +180,7 @@ class MachineTest extends AbstractMachineTest
                 'action' => 'create',
                 'context' => [
                     'reset-timestamp' => 123,
+                    'provider' => $machine->getProvider()?->value,
                 ],
             ]
         );

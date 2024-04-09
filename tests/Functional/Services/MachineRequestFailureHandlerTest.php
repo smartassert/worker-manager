@@ -8,6 +8,7 @@ use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -63,7 +64,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
             $entityRemover->removeAllForEntity(ActionFailure::class);
         }
 
-        $this->machineRepository->add(new Machine(self::MACHINE_ID));
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
+        $this->machineRepository->add($machine);
     }
 
     public function testIsWorkerMessageFailedEventBundleExceptionHandler(): void
@@ -121,6 +124,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -132,6 +136,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::CREATE,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
                 ),
             ],
             'create, unknown exception' => [
@@ -142,6 +149,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
                 ),
             ],
             'find, api limit exceeded' => [
@@ -159,6 +169,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     MachineAction::FIND,
                     [
                         'reset-timestamp' => 123,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -170,6 +181,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::FIND,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
                 ),
             ],
             'find, unknown exception' => [
@@ -180,6 +194,9 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN,
                     MachineAction::FIND,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
                 ),
             ],
             'delete, unknown exception' => [
