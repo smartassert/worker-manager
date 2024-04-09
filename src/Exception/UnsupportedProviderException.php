@@ -2,17 +2,17 @@
 
 namespace App\Exception;
 
+use App\Enum\MachineProvider;
+
 class UnsupportedProviderException extends \Exception implements UnrecoverableExceptionInterface
 {
-    private const MESSAGE = 'Unsupported provider "%s"';
-
     public function __construct(
-        public string $provider,
+        public ?MachineProvider $provider,
     ) {
-        parent::__construct(sprintf(self::MESSAGE, $provider));
+        parent::__construct(sprintf('Unsupported provider "%s"', $provider?->value));
     }
 
-    public function getProvider(): string
+    public function getProvider(): ?MachineProvider
     {
         return $this->provider;
     }

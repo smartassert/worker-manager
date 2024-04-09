@@ -7,13 +7,13 @@ namespace App\Tests\Functional\Services;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider as MachineProviderEnum;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Repository\MachineProviderRepository;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
@@ -151,7 +151,10 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->dropletApiProxy->withGetAllCall($this->machineName, [$expectedDropletEntity]);
 
-        $remoteMachine = $this->machineManager->get($this->createMachineProvider());
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+        $remoteMachine = $this->machineManager->get($machine);
 
         self::assertEquals(new RemoteMachine($expectedDropletEntity), $remoteMachine);
     }
@@ -163,13 +166,15 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
             []
         );
 
-        $machineProvider = $this->createMachineProvider();
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
         self::expectExceptionObject(new ProviderMachineNotFoundException(
-            $machineProvider->getId(),
-            $machineProvider->getName()
+            $machine->getId(),
+            MachineProviderEnum::DIGITALOCEAN->value
         ));
 
-        $this->machineManager->get($machineProvider);
+        $this->machineManager->get($machine);
     }
 
     /**
@@ -179,9 +184,12 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
      */
     public function testGetThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
         try {
             $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);
-            $this->machineManager->get($this->createMachineProvider());
+            $this->machineManager->get($machine);
             self::fail($dropletApiException::class . ' not thrown');
         } catch (Exception $exception) {
             self::assertSame($expectedExceptionClass, $exception::class);
@@ -292,19 +300,5 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withGetAllCall($this->machineName, []);
 
         self::assertNull($this->machineManager->find(self::MACHINE_ID));
-    }
-
-    private function createMachineProvider(): MachineProvider
-    {
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-
-        $machineProvider = $machineProviderRepository->find(self::MACHINE_ID);
-        if (!$machineProvider instanceof MachineProvider) {
-            $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
-            $machineProviderRepository->add($machineProvider);
-        }
-
-        return $machineProvider;
     }
 }

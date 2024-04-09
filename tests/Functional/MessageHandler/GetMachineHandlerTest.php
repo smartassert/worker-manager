@@ -31,7 +31,6 @@ use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use webignition\ObjectReflector\ObjectReflector;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 {
@@ -167,7 +166,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         return [
             'updated within initial remote id and initial remote state' => [
                 'getAllOutcome' => [$createdDropletEntity],
-                'machine' => new Machine(self::MACHINE_ID),
+                'machine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })(),
                 'expectedMachine' => (function () {
                     $machine = new Machine(
                         self::MACHINE_ID,
@@ -180,7 +184,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             ],
             'updated within initial ip addresses' => [
                 'getAllOutcome' => [$upNewDropletEntity],
-                'machine' => new Machine(self::MACHINE_ID, MachineState::UP_STARTED),
+                'machine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED);
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })(),
                 'expectedMachine' => (function (array $ipAddresses) {
                     $machine = new Machine(
                         self::MACHINE_ID,
@@ -194,11 +203,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             ],
             'updated within active remote state' => [
                 'getAllOutcome' => [$upActiveDropletEntity],
-                'machine' => new Machine(
-                    self::MACHINE_ID,
-                    MachineState::UP_STARTED,
-                    $ipAddresses
-                ),
+                'machine' => (function (array $ipAddresses) {
+                    $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED, $ipAddresses);
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })($ipAddresses),
                 'expectedMachine' => (function (array $ipAddresses) {
                     $machine = new Machine(
                         self::MACHINE_ID,
@@ -216,22 +226,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     public function testInvokeUnsupportedProvider(): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
-        $invalidProvider = 'invalid';
-        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
-        ObjectReflector::setProperty(
-            $machineProvider,
-            MachineProvider::class,
-            'provider',
-            $invalidProvider
-        );
-
         $this->machineRepository->add($machine);
-        $this->machineProviderRepository->add($machineProvider);
 
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
 
-        $unsupportedProviderException = new UnsupportedProviderException($invalidProvider);
+        $unsupportedProviderException = new UnsupportedProviderException(null);
         $expectedException = new UnrecoverableMessageHandlingException(
             $unsupportedProviderException->getMessage(),
             $unsupportedProviderException->getCode(),
@@ -257,6 +257,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
         $this->machineRepository->add($machine);
 
         $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
@@ -343,7 +344,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             $machineRequestDispatcher,
             $machineUpdater,
             $this->machineRepository,
-            $this->machineProviderRepository,
         );
     }
 }
