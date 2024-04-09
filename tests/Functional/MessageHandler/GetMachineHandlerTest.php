@@ -16,7 +16,6 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
@@ -40,7 +39,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     private const REMOTE_ID = 123;
 
     private MachineRepository $machineRepository;
-    private MachineProviderRepository $machineProviderRepository;
     private DropletApiProxy $dropletApiProxy;
     private MachineNameFactory $machineNameFactory;
 
@@ -51,10 +49,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
-
-        $machineProviderStore = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderStore instanceof MachineProviderRepository);
-        $this->machineProviderRepository = $machineProviderStore;
 
         $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
         \assert($dropletApiProxy instanceof DropletApiProxy);
@@ -92,11 +86,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         $this->machineRepository->add($machine);
 
-        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
-        $this->machineProviderRepository->add($machineProvider);
-
-        $expectedMachineProvider = clone $machineProvider;
-
         $message = new GetMachine('id0', $machine->getId());
 
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
@@ -111,7 +100,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         ($handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
-        self::assertEquals($expectedMachineProvider, $machineProvider);
     }
 
     /**
@@ -259,9 +247,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
         $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
         $this->machineRepository->add($machine);
-
-        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
-        $this->machineProviderRepository->add($machineProvider);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
 
