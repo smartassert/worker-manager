@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
@@ -16,7 +16,6 @@ use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Repository\MachineProviderRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager;
 use App\Services\MachineNameFactory;
@@ -41,8 +40,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 {
     use MockeryPHPUnitIntegration;
 
-    private const MACHINE_ID = 'machine id';
-
     private CreateMachineHandler $handler;
     private Machine $machine;
     private DropletApiProxy $dropletApiProxy;
@@ -64,13 +61,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
-
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-        $machineProvider = new MachineProvider(self::MACHINE_ID, RemoteMachine::TYPE);
-        $machineProviderRepository->add($machineProvider);
 
         $machineId = (string) new Ulid();
         \assert('' !== $machineId);
@@ -98,7 +89,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
 
     public function testInvokeSuccess(): void
     {
-        self::assertSame([], ObjectReflector::getProperty($this->machine, 'ip_addresses'));
+        self::assertSame([], $this->machine->getIpAddresses());
 
         $dropletId = 123;
 
@@ -135,9 +126,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             })
         ;
 
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-        self::assertNull($machineProviderRepository->find($this->machine->getId()));
+        self::assertNull($this->machine->getProvider());
 
         $handler = $this->createHandler($machineRequestDispatcher);
         ($handler)($message);
@@ -150,10 +139,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
             ObjectReflector::getProperty($this->machine, 'ip_addresses')
         );
 
-        self::assertEquals(
-            new MachineProvider($this->machine->getId(), RemoteMachine::TYPE),
-            $machineProviderRepository->find($this->machine->getId())
-        );
+        self::assertSame(MachineProvider::DIGITALOCEAN, $this->machine->getProvider());
     }
 
     /**
@@ -302,15 +288,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        $machineProviderRepository = self::getContainer()->get(MachineProviderRepository::class);
-        \assert($machineProviderRepository instanceof MachineProviderRepository);
-
         return new CreateMachineHandler(
             $machineManager,
             $machineRequestDispatcher,
             $machineUpdater,
             $machineRepository,
-            $machineProviderRepository,
         );
     }
 }
