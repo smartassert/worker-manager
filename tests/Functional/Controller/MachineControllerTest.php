@@ -6,7 +6,6 @@ namespace App\Tests\Functional\Controller;
 
 use App\Controller\MachineController;
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
@@ -32,7 +31,6 @@ class MachineControllerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 

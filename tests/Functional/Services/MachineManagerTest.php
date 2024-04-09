@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
-use App\Enum\MachineProvider as MachineProviderEnum;
+use App\Enum\MachineProvider;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
@@ -53,7 +52,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 
@@ -152,7 +150,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         $this->dropletApiProxy->withGetAllCall($this->machineName, [$expectedDropletEntity]);
 
         $machine = new Machine(self::MACHINE_ID);
-        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         $remoteMachine = $this->machineManager->get($machine);
 
@@ -167,11 +165,11 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
         );
 
         $machine = new Machine(self::MACHINE_ID);
-        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         self::expectExceptionObject(new ProviderMachineNotFoundException(
             $machine->getId(),
-            MachineProviderEnum::DIGITALOCEAN->value
+            MachineProvider::DIGITALOCEAN->value
         ));
 
         $this->machineManager->get($machine);
@@ -185,7 +183,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
     public function testGetThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
         $machine = new Machine(self::MACHINE_ID);
-        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         try {
             $this->dropletApiProxy->withGetAllCall($this->machineName, $dropletApiException);

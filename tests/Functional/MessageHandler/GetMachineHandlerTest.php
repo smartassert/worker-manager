@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Functional\MessageHandler;
 
 use App\Entity\Machine;
-use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
-use App\Enum\MachineProvider as MachineProviderEnum;
+use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -61,7 +60,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
-            $entityRemover->removeAllForEntity(MachineProvider::class);
         }
     }
 
@@ -156,7 +154,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'getAllOutcome' => [$createdDropletEntity],
                 'machine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
@@ -165,7 +163,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                         self::MACHINE_ID,
                         MachineState::UP_STARTED,
                     );
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
@@ -174,7 +172,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'getAllOutcome' => [$upNewDropletEntity],
                 'machine' => (function () {
                     $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED);
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
@@ -184,7 +182,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                         MachineState::UP_STARTED,
                         $ipAddresses
                     );
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })($ipAddresses),
@@ -193,7 +191,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                 'getAllOutcome' => [$upActiveDropletEntity],
                 'machine' => (function (array $ipAddresses) {
                     $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED, $ipAddresses);
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })($ipAddresses),
@@ -203,7 +201,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                         MachineState::UP_ACTIVE,
                         $ipAddresses
                     );
-                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+                    $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })($ipAddresses),
@@ -245,7 +243,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
-        $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+        $machine->setProvider(MachineProvider::DIGITALOCEAN);
         $this->machineRepository->add($machine);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
