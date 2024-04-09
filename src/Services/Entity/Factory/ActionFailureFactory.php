@@ -49,11 +49,11 @@ readonly class ActionFailureFactory
         }
 
         if ($throwable instanceof ApiLimitExceptionInterface) {
-            return ActionFailureType::API_LIMIT_EXCEEDED;
+            return ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED;
         }
 
         if ($throwable instanceof AuthenticationExceptionInterface) {
-            return ActionFailureType::API_AUTHENTICATION_FAILURE;
+            return ActionFailureType::VENDOR_AUTHENTICATION_FAILURE;
         }
 
         if ($throwable instanceof CurlExceptionInterface) {

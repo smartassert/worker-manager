@@ -33,7 +33,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTest
         self::assertEquals(
             new ActionFailure(
                 $this->machineId,
-                ActionFailureType::API_AUTHENTICATION_FAILURE,
+                ActionFailureType::VENDOR_AUTHENTICATION_FAILURE,
                 MachineAction::FIND,
                 [
                     'provider' => null,

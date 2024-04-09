@@ -120,7 +120,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::CREATE_FAILED,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    ActionFailureType::API_LIMIT_EXCEEDED,
+                    ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED,
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
@@ -165,7 +165,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
-                    ActionFailureType::API_LIMIT_EXCEEDED,
+                    ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED,
                     MachineAction::FIND,
                     [
                         'reset-timestamp' => 123,
