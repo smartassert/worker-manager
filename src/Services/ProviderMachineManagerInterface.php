@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Model\RemoteMachineInterface;
 
@@ -29,4 +30,6 @@ interface ProviderMachineManagerInterface
      * @throws \Throwable
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface;
+
+    public function supports(MachineProvider $provider): bool;
 }

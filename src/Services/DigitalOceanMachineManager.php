@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enum\MachineProvider;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
 use DigitalOceanV2\Client;
@@ -81,5 +82,10 @@ readonly class DigitalOceanMachineManager implements ProviderMachineManagerInter
         $droplets = $this->digitalOceanClient->droplet()->getAll($name);
 
         return 1 === count($droplets) ? new RemoteMachine($droplets[0]) : null;
+    }
+
+    public function supports(MachineProvider $provider): bool
+    {
+        return MachineProvider::DIGITALOCEAN === $provider;
     }
 }
