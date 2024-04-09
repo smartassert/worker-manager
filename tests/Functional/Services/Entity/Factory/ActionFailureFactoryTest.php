@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\Entity\Factory;
 
 use App\Entity\ActionFailure;
+use App\Entity\Machine;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
@@ -48,9 +50,9 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(\Throwable $throwable, ActionFailure $expectedActionFailure): void
+    public function testCreate(Machine $machine, \Throwable $throwable, ActionFailure $expectedActionFailure): void
     {
-        $actionFailure = $this->factory->create(self::MACHINE_ID, MachineAction::CREATE, $throwable);
+        $actionFailure = $this->factory->create($machine, MachineAction::CREATE, $throwable);
 
         self::assertEquals($expectedActionFailure, $actionFailure);
 
@@ -68,17 +70,24 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     public function createDataProvider(): array
     {
         $unprocessableReason = UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED;
+        $digitalOceanMachine = new Machine(self::MACHINE_ID);
+        $digitalOceanMachine->setProvider(MachineProvider::DIGITALOCEAN);
 
         return [
             UnsupportedProviderException::class => [
+                'machine' => new Machine(self::MACHINE_ID),
                 'throwable' => new UnsupportedProviderException(null),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     ActionFailureType::UNSUPPORTED_PROVIDER,
                     MachineAction::CREATE,
+                    [
+                        'provider' => null,
+                    ]
                 ),
             ],
             ApiLimitExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
@@ -91,10 +100,12 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
                     ]
                 ),
             ],
             AuthenticationExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new AuthenticationException(
                     self::MACHINE_ID,
                     MachineAction::GET,
@@ -104,9 +115,13 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     ActionFailureType::API_AUTHENTICATION_FAILURE,
                     MachineAction::CREATE,
+                    [
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                    ]
                 ),
             ],
             CurlExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new CurlException(
                     7,
                     self::MACHINE_ID,
@@ -119,10 +134,12 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'curl-code' => 7,
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
                     ]
                 ),
             ],
             HttpExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new HttpException(
                     self::MACHINE_ID,
                     MachineAction::GET,
@@ -134,10 +151,12 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'status-code' => 500,
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
                     ]
                 ),
             ],
             UnprocessableRequestExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new DropletLimitExceededException(
                     self::MACHINE_ID,
                     MachineAction::GET,
@@ -152,10 +171,12 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'provider-reason' => $unprocessableReason,
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
                     ]
                 ),
             ],
             UnknownExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new UnknownException(
                     self::MACHINE_ID,
                     MachineAction::CREATE,
@@ -165,14 +186,21 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN_MACHINE_PROVIDER_ERROR,
                     MachineAction::CREATE,
+                    [
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                    ]
                 ),
             ],
             'unknown exception' => [
+                'machine' => $digitalOceanMachine,
                 'throwable' => new \RuntimeException('Runtime error'),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
+                    [
+                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                    ]
                 ),
             ],
         ];

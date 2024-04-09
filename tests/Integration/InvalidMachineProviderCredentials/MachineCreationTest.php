@@ -35,7 +35,9 @@ class MachineCreationTest extends AbstractIntegrationMachineTest
                 $this->machineId,
                 ActionFailureType::API_AUTHENTICATION_FAILURE,
                 MachineAction::FIND,
-                []
+                [
+                    'provider' => null,
+                ]
             ),
             $actionFailure
         );

@@ -3,6 +3,7 @@
 namespace App\Services\Entity\Factory;
 
 use App\Entity\ActionFailure;
+use App\Entity\Machine;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
@@ -21,16 +22,21 @@ readonly class ActionFailureFactory
     ) {
     }
 
-    public function create(string $machineId, MachineAction $action, \Throwable $throwable): ActionFailure
+    public function create(Machine $machine, MachineAction $action, \Throwable $throwable): ActionFailure
     {
-        $existingEntity = $this->repository->find($machineId);
+        $existingEntity = $this->repository->find($machine->getId());
         if ($existingEntity instanceof ActionFailure) {
             return $existingEntity;
         }
 
         $type = $this->findType($throwable);
 
-        $entity = new ActionFailure($machineId, $type, $action, $this->createContext($throwable));
+        $entity = new ActionFailure(
+            $machine->getId(),
+            $type,
+            $action,
+            array_merge($this->createContext($throwable), ['provider' => $machine->getProvider()?->value])
+        );
         $this->repository->add($entity);
 
         return $entity;
@@ -70,7 +76,7 @@ readonly class ActionFailureFactory
     }
 
     /**
-     * @return array<string, int|string>
+     * @return array<string, null|int|string>
      */
     private function createContext(\Throwable $throwable): array
     {

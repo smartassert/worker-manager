@@ -18,7 +18,7 @@ class ActionFailure implements \JsonSerializable
     private ActionFailureType $actionFailureType;
 
     /**
-     * @var array<string, int|string>
+     * @var array<string, null|int|string>
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $context;
@@ -27,7 +27,7 @@ class ActionFailure implements \JsonSerializable
     private MachineAction $action;
 
     /**
-     * @param array<string, int|string> $context
+     * @param array<string, null|int|string> $context
      */
     public function __construct(
         string $machineId,
@@ -50,7 +50,7 @@ class ActionFailure implements \JsonSerializable
      * @return array{
      *   action: value-of<MachineAction>,
      *   type: value-of<ActionFailureType>,
-     *   context: array<string, int|string>
+     *   context: array<string, int|string|null>
      * }
      */
     public function jsonSerialize(): array
