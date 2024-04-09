@@ -94,6 +94,11 @@ class Machine implements \JsonSerializable
         $this->ip_addresses = $ipAddresses;
     }
 
+    public function setProvider(MachineProviderEnum $provider): void
+    {
+        $this->provider = $provider;
+    }
+
     public function getProvider(): ?MachineProviderEnum
     {
         return $this->provider;

@@ -7,6 +7,7 @@ namespace App\Tests\Functional\MessageHandler;
 use App\Entity\Machine;
 use App\Entity\MachineProvider;
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider as MachineProviderEnum;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
@@ -167,19 +168,29 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             'updated within initial remote id and initial remote state' => [
                 'getAllOutcome' => [$createdDropletEntity],
                 'machine' => new Machine(self::MACHINE_ID),
-                'expectedMachine' => new Machine(
-                    self::MACHINE_ID,
-                    MachineState::UP_STARTED
-                ),
+                'expectedMachine' => (function () {
+                    $machine = new Machine(
+                        self::MACHINE_ID,
+                        MachineState::UP_STARTED,
+                    );
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })(),
             ],
             'updated within initial ip addresses' => [
                 'getAllOutcome' => [$upNewDropletEntity],
                 'machine' => new Machine(self::MACHINE_ID, MachineState::UP_STARTED),
-                'expectedMachine' => new Machine(
-                    self::MACHINE_ID,
-                    MachineState::UP_STARTED,
-                    $ipAddresses
-                ),
+                'expectedMachine' => (function (array $ipAddresses) {
+                    $machine = new Machine(
+                        self::MACHINE_ID,
+                        MachineState::UP_STARTED,
+                        $ipAddresses
+                    );
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })($ipAddresses),
             ],
             'updated within active remote state' => [
                 'getAllOutcome' => [$upActiveDropletEntity],
@@ -188,11 +199,16 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
                     MachineState::UP_STARTED,
                     $ipAddresses
                 ),
-                'expectedMachine' => new Machine(
-                    self::MACHINE_ID,
-                    MachineState::UP_ACTIVE,
-                    $ipAddresses
-                ),
+                'expectedMachine' => (function (array $ipAddresses) {
+                    $machine = new Machine(
+                        self::MACHINE_ID,
+                        MachineState::UP_ACTIVE,
+                        $ipAddresses
+                    );
+                    $machine->setProvider(MachineProviderEnum::DIGITALOCEAN);
+
+                    return $machine;
+                })($ipAddresses),
             ],
         ];
     }
