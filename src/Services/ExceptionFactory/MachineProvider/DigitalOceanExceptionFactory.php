@@ -46,7 +46,12 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof NoDigitalOceanClientException) {
-            return new AuthenticationException(MachineProvider::DIGITALOCEAN, $resourceId, $action, [$exception]);
+            return new AuthenticationException(
+                MachineProvider::DIGITALOCEAN,
+                $resourceId,
+                $action,
+                $exception->getExceptionStack()
+            );
         }
 
         if ($exception instanceof RuntimeException) {
