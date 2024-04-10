@@ -17,7 +17,7 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    DigitalOceanV2\Client:
+    app.tests.digitalocean.client:
         class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
@@ -86,4 +86,4 @@ services:
     App\Services\MachineManager\DigitalOcean\ClientPool:
         arguments:
             $clients:
-                - '@DigitalOceanV2\Client'
+                - '@app.tests.digitalocean.client'
