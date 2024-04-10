@@ -18,7 +18,7 @@ class AuthenticationExceptionTest extends TestCase
             MachineProvider::DIGITALOCEAN,
             md5((string) rand()),
             MachineAction::GET,
-            new \Exception()
+            [new \Exception()]
         );
 
         self::assertInstanceOf(UnrecoverableExceptionInterface::class, $exception);

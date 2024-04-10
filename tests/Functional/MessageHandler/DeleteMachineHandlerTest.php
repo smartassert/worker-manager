@@ -145,7 +145,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTest
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::DELETE,
-            $http401Exception
+            [$http401Exception]
         );
 
         $http503Exception = new RuntimeException('Service Unavailable', 503);
