@@ -11,9 +11,6 @@ services:
     App\Tests\Services\EntityRemover:
         public: true
 
-    Symfony\Component\Messenger\Transport\InMemoryTransport:
-        alias: 'messenger.transport.async'
-
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
 
@@ -85,3 +82,8 @@ services:
 
     App\Tests\Services\Asserter\MachineResponseAsserter:
         public: true
+
+    App\Services\MachineManager\DigitalOcean\ClientPool:
+        arguments:
+            $clients:
+                - '@DigitalOceanV2\Client'
