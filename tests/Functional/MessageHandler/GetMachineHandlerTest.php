@@ -271,6 +271,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
     {
         $http401Exception = new RuntimeException('Unauthorized', 401);
         $authenticationException = new AuthenticationException(
+            MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::GET,
             $http401Exception

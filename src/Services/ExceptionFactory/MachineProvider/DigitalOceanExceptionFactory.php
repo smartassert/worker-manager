@@ -46,12 +46,12 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof NoDigitalOceanClientException) {
-            return new AuthenticationException($resourceId, $action, $exception);
+            return new AuthenticationException(MachineProvider::DIGITALOCEAN, $resourceId, $action, $exception);
         }
 
         if ($exception instanceof RuntimeException) {
             if (401 === $exception->getCode()) {
-                return new AuthenticationException($resourceId, $action, $exception);
+                return new AuthenticationException(MachineProvider::DIGITALOCEAN, $resourceId, $action, $exception);
             }
 
             if (404 === $exception->getCode()) {
