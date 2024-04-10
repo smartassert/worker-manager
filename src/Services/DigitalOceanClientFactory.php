@@ -62,6 +62,6 @@ class DigitalOceanClientFactory
             }
         }
 
-        throw new NoDigitalOceanClientException();
+        throw new NoDigitalOceanClientException([]);
     }
 }
