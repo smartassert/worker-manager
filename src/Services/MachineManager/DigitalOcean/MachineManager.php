@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MachineManager\DigitalOcean;
 
 use App\Enum\MachineProvider;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
+use App\Services\MachineManager\ProviderMachineManagerInterface;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
-readonly class DigitalOceanMachineManager implements ProviderMachineManagerInterface
+readonly class MachineManager implements ProviderMachineManagerInterface
 {
     public function __construct(
         private Client $digitalOceanClient,

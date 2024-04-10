@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MachineManager;
 
 use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\ExceptionInterface;

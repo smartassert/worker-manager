@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MachineManager;
 
 use App\Entity\Machine;
 use App\Enum\MachineAction;
@@ -12,6 +12,7 @@ use App\Exception\MachineProvider\UnknownRemoteMachineExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
+use App\Services\MachineNameFactory;
 
 readonly class MachineManager
 {

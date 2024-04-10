@@ -17,7 +17,7 @@ use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
-use App\Services\MachineManager;
+use App\Services\MachineManager\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;

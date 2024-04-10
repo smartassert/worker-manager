@@ -31,7 +31,7 @@ services:
             $healthCheckLogger: '@monolog.logger.health_check'
 
     _instanceof:
-        App\Services\ProviderMachineManagerInterface:
+        App\Services\MachineManager\ProviderMachineManagerInterface:
             tags: ['app.machine_manager.provider_machine_manager']
 
         App\Services\ExceptionFactory\MachineProvider\ExceptionFactoryInterface:
@@ -64,8 +64,6 @@ services:
 
     Psr\Http\Message\StreamFactoryInterface:
         alias: GuzzleHttp\Psr7\HttpFactory
-
-    SmartAssert\ServiceClient\RequestFactory: ~
 
     GuzzleHttp\HandlerStack:
         class: GuzzleHttp\HandlerStack
@@ -120,6 +118,6 @@ services:
             $dispatchDelays:
                 'App\Message\CheckMachineIsActive': '%machine_is_active_dispatch_delay%'
 
-    App\Services\MachineManager:
+    App\Services\MachineManager\MachineManager:
         arguments:
             $providerMachineManagers: !tagged_iterator 'app.machine_manager.provider_machine_manager'

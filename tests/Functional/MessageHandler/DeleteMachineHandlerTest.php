@@ -13,7 +13,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
-use App\Services\MachineManager;
+use App\Services\MachineManager\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTest;

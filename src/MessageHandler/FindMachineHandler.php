@@ -14,7 +14,7 @@ use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
-use App\Services\MachineManager;
+use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;

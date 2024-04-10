@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\Services;
+namespace App\Tests\Functional\Services\MachineManager\DigitalOcean;
 
 use App\Entity\Machine;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
-use App\Services\DigitalOceanMachineManager;
+use App\Services\MachineManager\DigitalOcean\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
@@ -21,7 +21,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
 
     private const MACHINE_ID = 'machine id';
 
-    private DigitalOceanMachineManager $machineManager;
+    private MachineManager $machineManager;
     private Machine $machine;
     private string $machineName;
     private DropletApiProxy $dropletApiProxy;
@@ -30,8 +30,8 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
     {
         parent::setUp();
 
-        $machineManager = self::getContainer()->get(DigitalOceanMachineManager::class);
-        \assert($machineManager instanceof DigitalOceanMachineManager);
+        $machineManager = self::getContainer()->get(MachineManager::class);
+        \assert($machineManager instanceof MachineManager);
         $this->machineManager = $machineManager;
 
         $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
