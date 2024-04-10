@@ -81,7 +81,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
                     MachineProvider::DIGITALOCEAN,
                     self::ID,
                     self::ACTION,
-                    $runtimeException401
+                    [$runtimeException401]
                 ),
             ],
             ValidationFailedException::class . ' generic' => [

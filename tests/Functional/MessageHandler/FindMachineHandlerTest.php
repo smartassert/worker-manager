@@ -297,7 +297,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTest
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::FIND,
-            $http401Exception
+            [$http401Exception]
         );
 
         $http503Exception = new RuntimeException('Service Unavailable', 503);

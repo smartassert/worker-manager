@@ -274,7 +274,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::GET,
-            $http401Exception
+            [$http401Exception]
         );
 
         $http404Exception = new ResourceNotFoundException('Not Found', 404);

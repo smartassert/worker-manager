@@ -200,7 +200,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
                                     MachineProvider::DIGITALOCEAN,
                                     $machine->getId(),
                                     MachineAction::CREATE,
-                                    new VendorRuntimeException('Unauthorized', 401)
+                                    [new VendorRuntimeException('Unauthorized', 401)]
                                 ),
                             ]
                         )

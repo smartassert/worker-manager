@@ -110,7 +110,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineProvider::DIGITALOCEAN,
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new \Exception(),
+                    [new \Exception()],
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
