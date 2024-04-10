@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\ExceptionFactory\MachineProvider;
 
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
@@ -76,7 +77,12 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
             ],
             RuntimeException::class . ' 401' => [
                 'exception' => $runtimeException401,
-                'expectedException' => new AuthenticationException(self::ID, self::ACTION, $runtimeException401),
+                'expectedException' => new AuthenticationException(
+                    MachineProvider::DIGITALOCEAN,
+                    self::ID,
+                    self::ACTION,
+                    $runtimeException401
+                ),
             ],
             ValidationFailedException::class . ' generic' => [
                 'exception' => $genericValidationFailedException,

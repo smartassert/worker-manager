@@ -107,6 +107,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
             AuthenticationExceptionInterface::class => [
                 'machine' => $digitalOceanMachine,
                 'throwable' => new AuthenticationException(
+                    MachineProvider::DIGITALOCEAN,
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new \Exception(),
