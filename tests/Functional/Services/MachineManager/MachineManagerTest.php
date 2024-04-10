@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\Services;
+namespace App\Tests\Functional\Services\MachineManager;
 
 use App\Entity\Machine;
 use App\Enum\MachineAction;
@@ -13,7 +13,7 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\Services\MachineManager;
+use App\Services\MachineManager\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
