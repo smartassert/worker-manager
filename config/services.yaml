@@ -75,16 +75,6 @@ services:
             $config:
                 handler: '@GuzzleHttp\HandlerStack'
 
-    App\Services\DigitalOceanClientFactory:
-        arguments:
-            $apiTokens:
-                primary: '%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%'
-                secondary: '%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%'
-
-    DigitalOceanV2\Client:
-        class: DigitalOceanV2\Client
-        factory: ['@App\Services\DigitalOceanClientFactory', 'create']
-
     App\Services\MachineNameFactory:
         arguments:
             $environmentPrefix: '%machine_name_prefix%'
