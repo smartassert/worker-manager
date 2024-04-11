@@ -11,16 +11,13 @@ services:
     App\Tests\Services\EntityRemover:
         public: true
 
-    Symfony\Component\Messenger\Transport\InMemoryTransport:
-        alias: 'messenger.transport.async'
-
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
 
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    DigitalOceanV2\Client:
+    app.tests.digitalocean.client:
         class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
 
     App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
@@ -85,3 +82,8 @@ services:
 
     App\Tests\Services\Asserter\MachineResponseAsserter:
         public: true
+
+    App\Services\MachineManager\DigitalOcean\ClientPool:
+        arguments:
+            $clients:
+                - '@app.tests.digitalocean.client'

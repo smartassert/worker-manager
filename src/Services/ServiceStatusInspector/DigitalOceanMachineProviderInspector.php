@@ -2,7 +2,7 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use DigitalOceanV2\Client;
+use App\Services\MachineManager\DigitalOcean\ClientPool;
 use DigitalOceanV2\Exception\RuntimeException;
 use SmartAssert\ServiceStatusInspector\ComponentStatusInspectorInterface;
 
@@ -12,7 +12,7 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
     public const DEFAULT_IDENTIFIER = 'machine_provider_digital_ocean';
 
     public function __construct(
-        private readonly Client $digitalOceanClient,
+        private readonly ClientPool $clientPool,
         private readonly string $identifier = self::DEFAULT_IDENTIFIER,
     ) {
     }
@@ -20,7 +20,7 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
     public function getStatus(): bool
     {
         try {
-            $this->digitalOceanClient->droplet()->getById(self::DROPLET_ID);
+            $this->clientPool->droplet()->getById(self::DROPLET_ID);
         } catch (RuntimeException $runtimeException) {
             if (404 !== $runtimeException->getCode()) {
                 throw $runtimeException;
