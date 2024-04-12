@@ -203,13 +203,27 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
                 'message' => new DeleteMachine('unique id', self::MACHINE_ID),
                 'throwable' => new \Exception('Unknown exception'),
                 'expectedMachineState' => MachineState::DELETE_FAILED,
-                'expectedActionFailure' => null,
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::UNKNOWN,
+                    MachineAction::DELETE,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
+                ),
             ],
             'get, unknown exception' => [
                 'message' => new GetMachine('unique id', self::MACHINE_ID),
                 'throwable' => new \Exception('Unknown exception'),
                 'expectedMachineState' => MachineState::FIND_NOT_FOUND,
-                'expectedActionFailure' => null,
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::UNKNOWN,
+                    MachineAction::FIND,
+                    [
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
+                ),
             ],
         ];
     }
