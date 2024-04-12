@@ -55,10 +55,6 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof RuntimeException) {
-            if (401 === $exception->getCode()) {
-                return new AuthenticationException(MachineProvider::DIGITALOCEAN, $resourceId, $action, [$exception]);
-            }
-
             if (404 === $exception->getCode()) {
                 return new UnknownRemoteMachineException(
                     MachineProvider::DIGITALOCEAN,

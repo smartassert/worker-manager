@@ -12,11 +12,11 @@ use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\NoDigitalOceanClientException;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTest;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
@@ -39,7 +39,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
     /**
      * @dataProvider createDataProvider
      */
-    public function testCreate(VendorExceptionInterface $exception, ExceptionInterface $expectedException): void
+    public function testCreate(\Throwable $exception, ExceptionInterface $expectedException): void
     {
         self::assertEquals(
             $expectedException,
@@ -75,8 +75,10 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
                 'exception' => $runtimeException400,
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
-            RuntimeException::class . ' 401' => [
-                'exception' => $runtimeException401,
+            NoDigitalOceanClientException::class => [
+                'exception' => new NoDigitalOceanClientException([
+                    $runtimeException401,
+                ]),
                 'expectedException' => new AuthenticationException(
                     MachineProvider::DIGITALOCEAN,
                     self::ID,

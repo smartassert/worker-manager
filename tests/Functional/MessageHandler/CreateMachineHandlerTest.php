@@ -13,6 +13,7 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
+use App\Exception\NoDigitalOceanClientException;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -184,9 +185,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTest
         );
 
         return [
-            'HTTP 401' => [
+            'NoDigitalOceanClientException as a result of HTTP 401' => [
                 'vendorExceptionCreator' => function () {
-                    return new VendorRuntimeException('Unauthorized', 401);
+                    return new NoDigitalOceanClientException([
+                        new VendorRuntimeException('Unauthorized', 401),
+                    ]);
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(

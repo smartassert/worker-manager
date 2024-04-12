@@ -11,6 +11,7 @@ use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
+use App\Exception\NoDigitalOceanClientException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
@@ -289,7 +290,9 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTest
 
         return [
             'HTTP 401' => [
-                'vendorException' => $http401Exception,
+                'vendorException' => new NoDigitalOceanClientException([
+                    $http401Exception,
+                ]),
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $authenticationException->getMessage(),
                     $authenticationException->getCode(),

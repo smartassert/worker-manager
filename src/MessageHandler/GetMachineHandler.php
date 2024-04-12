@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
+use App\Exception\MachineActionFailedException;
 use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
@@ -40,6 +41,12 @@ class GetMachineHandler
             $remoteMachine = $this->machineManager->get($machine);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
             $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
+        } catch (MachineActionFailedException $exception) {
+            throw new UnrecoverableMessageHandlingException(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $exception
+            );
         } catch (\Throwable $exception) {
             if (
                 $exception instanceof UnrecoverableExceptionInterface
