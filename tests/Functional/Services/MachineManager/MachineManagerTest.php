@@ -20,6 +20,7 @@ use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
@@ -218,7 +219,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTest
                 'exception' => null,
             ],
             'not found' => [
-                'exception' => new RuntimeException('Not Found', 404),
+                'exception' => new ResourceNotFoundException(),
             ],
         ];
     }

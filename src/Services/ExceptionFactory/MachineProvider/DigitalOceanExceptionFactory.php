@@ -15,6 +15,7 @@ use App\Exception\NoDigitalOceanClientException;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
+use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
@@ -54,16 +55,16 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if ($exception instanceof RuntimeException) {
-            if (404 === $exception->getCode()) {
-                return new UnknownRemoteMachineException(
-                    MachineProvider::DIGITALOCEAN,
-                    $resourceId,
-                    $action,
-                    $exception
-                );
-            }
+        if ($exception instanceof ResourceNotFoundException) {
+            return new UnknownRemoteMachineException(
+                MachineProvider::DIGITALOCEAN,
+                $resourceId,
+                $action,
+                $exception
+            );
+        }
 
+        if ($exception instanceof RuntimeException) {
             return new HttpException($resourceId, $action, $exception);
         }
 
