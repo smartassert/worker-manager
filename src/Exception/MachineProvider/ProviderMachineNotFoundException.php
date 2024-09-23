@@ -2,7 +2,9 @@
 
 namespace App\Exception\MachineProvider;
 
-class ProviderMachineNotFoundException extends \Exception
+use App\Exception\UnrecoverableExceptionInterface;
+
+class ProviderMachineNotFoundException extends \Exception implements UnrecoverableExceptionInterface
 {
     /**
      * @param non-empty-string $machineId

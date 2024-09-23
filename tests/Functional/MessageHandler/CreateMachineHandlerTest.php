@@ -210,9 +210,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                     );
                 },
             ],
-            'HTTP 404' => [
+            'ResourceNotFoundException as a result of HTTP 404' => [
                 'vendorExceptionCreator' => function () {
-                    return new ResourceNotFoundException('Not Found', 404);
+                    return new ResourceNotFoundException();
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
@@ -226,7 +226,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                     MachineProvider::DIGITALOCEAN,
                                     $machine->getId(),
                                     MachineAction::CREATE,
-                                    new ResourceNotFoundException('Not Found', 404),
+                                    new ResourceNotFoundException(),
                                 ),
                             ]
                         )
