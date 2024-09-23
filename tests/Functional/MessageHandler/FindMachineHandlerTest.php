@@ -22,7 +22,7 @@ use App\Services\MachineManager\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -32,7 +32,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
-class FindMachineHandlerTest extends AbstractBaseFunctionalTest
+class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 

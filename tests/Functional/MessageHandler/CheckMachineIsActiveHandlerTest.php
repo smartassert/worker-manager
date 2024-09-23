@@ -9,13 +9,13 @@ use App\Enum\MachineState;
 use App\MessageHandler\CheckMachineIsActiveHandler;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTest
+class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Enum\MachineState;
-use App\Tests\Application\AbstractMachineTest;
+use App\Tests\Application\AbstractMachineTestCase;
 use App\Tests\Model\Machine;
 
-abstract class AbstractIntegrationMachineTest extends AbstractMachineTest
+abstract class AbstractIntegrationMachineTestCase extends AbstractMachineTestCase
 {
     use GetApplicationClientTrait;
 

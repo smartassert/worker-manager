@@ -8,7 +8,7 @@ use App\Tests\Services\Asserter\MachineResponseAsserter;
 use Psr\Http\Message\ResponseInterface;
 use SmartAssert\TestAuthenticationProviderBundle\ApiTokenProvider;
 
-abstract class AbstractMachineTest extends AbstractApplicationTest
+abstract class AbstractMachineTestCase extends AbstractApplicationTestCase
 {
     protected MachineResponseAsserter $machineResponseAsserter;
     protected ApiTokenProvider $apiTokenProvider;

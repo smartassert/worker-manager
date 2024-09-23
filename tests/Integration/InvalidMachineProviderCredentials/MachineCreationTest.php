@@ -9,9 +9,9 @@ use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Repository\ActionFailureRepository;
-use App\Tests\Integration\AbstractIntegrationMachineTest;
+use App\Tests\Integration\AbstractIntegrationMachineTestCase;
 
-class MachineCreationTest extends AbstractIntegrationMachineTest
+class MachineCreationTest extends AbstractIntegrationMachineTestCase
 {
     public function testCreateRemoteMachineMachineProviderAuthenticationFailure(): void
     {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Application;
 
-use App\Tests\Application\AbstractStatusTest;
+use App\Tests\Application\AbstractStatusTestCase;
 use App\Tests\Integration\GetApplicationClientTrait;
 
-class StatusTest extends AbstractStatusTest
+class StatusTest extends AbstractStatusTestCase
 {
     use GetApplicationClientTrait;
 

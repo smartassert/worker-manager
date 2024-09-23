@@ -8,11 +8,11 @@ use App\Enum\MachineAction;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\RequestInterface;
 
-class ExceptionFactoryTest extends AbstractBaseFunctionalTest
+class ExceptionFactoryTest extends AbstractBaseFunctionalTestCase
 {
     private const ID = 'resource_id';
     private const ACTION = MachineAction::CREATE;

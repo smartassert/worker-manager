@@ -8,14 +8,14 @@ use App\Message\CheckMachineIsActive;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\MachineRequestDispatcher;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
 use webignition\ObjectReflector\ObjectReflector;
 
-class MachineRequestDispatcherTest extends AbstractBaseFunctionalTest
+class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
 {
     private MachineRequestDispatcher $machineRequestDispatcher;
     private int $checkMachineIsActiveDispatchDelay;
