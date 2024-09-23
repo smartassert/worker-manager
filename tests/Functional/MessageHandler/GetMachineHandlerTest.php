@@ -10,6 +10,7 @@ use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
 use App\Exception\UnsupportedProviderException;
@@ -302,9 +303,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'HTTP 404' => [
                 'vendorException' => $http404Exception,
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $unknownRemoteMachineException->getMessage(),
-                    $unknownRemoteMachineException->getCode(),
-                    $unknownRemoteMachineException
+                    'Machine "machine id" not found with provider "digitalocean"',
+                    0,
+                    new ProviderMachineNotFoundException(
+                        self::MACHINE_ID,
+                        MachineProvider::DIGITALOCEAN->value
+                    )
                 ),
             ],
             'HTTP 503' => [

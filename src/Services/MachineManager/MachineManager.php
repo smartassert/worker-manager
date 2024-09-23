@@ -12,6 +12,7 @@ use App\Exception\MachineProvider\UnknownRemoteMachineExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
+use App\Services\ExceptionIdentifier\ExceptionIdentifier;
 use App\Services\MachineNameFactory;
 
 readonly class MachineManager
@@ -23,6 +24,7 @@ readonly class MachineManager
         private iterable $providerMachineManagers,
         private MachineNameFactory $machineNameFactory,
         private ExceptionFactory $exceptionFactory,
+        private ExceptionIdentifier $exceptionIdentifier,
     ) {
     }
 
@@ -78,6 +80,10 @@ readonly class MachineManager
                 return $machine;
             }
         } catch (\Throwable $exception) {
+            if ($this->exceptionIdentifier->isMachineNotFoundException($exception)) {
+                throw new ProviderMachineNotFoundException($machineId, $machineProvider->value);
+            }
+
             throw $exception instanceof ExceptionInterface
                 ? $exception
                 : $this->exceptionFactory->create($machineId, MachineAction::GET, $exception);
