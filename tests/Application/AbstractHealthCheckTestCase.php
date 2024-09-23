@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Application;
 
-abstract class AbstractHealthCheckTest extends AbstractApplicationTest
+abstract class AbstractHealthCheckTestCase extends AbstractApplicationTestCase
 {
     public function testGetHealthCheck(): void
     {

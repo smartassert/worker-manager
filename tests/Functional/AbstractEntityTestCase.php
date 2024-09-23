@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
-abstract class AbstractEntityTestCase extends AbstractBaseFunctionalTest
+abstract class AbstractEntityTestCase extends AbstractBaseFunctionalTestCase
 {
     protected const MACHINE_ID = 'machine id';
 

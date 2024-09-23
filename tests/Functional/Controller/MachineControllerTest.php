@@ -12,13 +12,13 @@ use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Envelope;
 
-class MachineControllerTest extends AbstractBaseFunctionalTest
+class MachineControllerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 

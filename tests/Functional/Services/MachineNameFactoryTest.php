@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services;
 
 use App\Services\MachineNameFactory;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 
-class MachineNameFactoryTest extends AbstractBaseFunctionalTest
+class MachineNameFactoryTest extends AbstractBaseFunctionalTestCase
 {
     private MachineNameFactory $factory;
 

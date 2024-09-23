@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Application;
 
-abstract class AbstractStatusTest extends AbstractApplicationTest
+abstract class AbstractStatusTestCase extends AbstractApplicationTestCase
 {
     public function testGetStatus(): void
     {

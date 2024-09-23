@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Application;
 
-use App\Tests\Application\AbstractHealthCheckTest;
+use App\Tests\Application\AbstractHealthCheckTestCase;
 use App\Tests\Integration\GetApplicationClientTrait;
 
-class HealthCheckTest extends AbstractHealthCheckTest
+class HealthCheckTest extends AbstractHealthCheckTestCase
 {
     use GetApplicationClientTrait;
 

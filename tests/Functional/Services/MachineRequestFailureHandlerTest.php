@@ -23,7 +23,7 @@ use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineRequestFailureHandler;
 use App\Services\MessageHandlerExceptionStackFactory;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use Beste\Psr\Log\Record;
 use Beste\Psr\Log\Records;
@@ -37,7 +37,7 @@ use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Uid\Ulid;
 
-class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTest
+class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 

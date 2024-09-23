@@ -12,10 +12,10 @@ use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
-use App\Tests\Application\AbstractMachineTest;
+use App\Tests\Application\AbstractMachineTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
-class MachineTest extends AbstractMachineTest
+class MachineTest extends AbstractMachineTestCase
 {
     use GetApplicationClientTrait;
 

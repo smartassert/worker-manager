@@ -14,13 +14,13 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\NoDigitalOceanClientException;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
-class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTest
+class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
 {
     private const ID = 'resource_id';
     private const ACTION = MachineAction::CREATE;

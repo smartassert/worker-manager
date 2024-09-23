@@ -9,13 +9,13 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\MachineManager;
 use App\Services\MachineNameFactory;
-use App\Tests\AbstractBaseFunctionalTest;
+use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 
-class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTest
+class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 {
     use RemoteRequestThrowsExceptionDataProviderTrait;
 

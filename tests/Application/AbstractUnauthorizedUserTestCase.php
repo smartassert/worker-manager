@@ -8,7 +8,7 @@ use App\Tests\Model\Machine;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
 
-abstract class AbstractUnauthorizedUserTest extends AbstractApplicationTest
+abstract class AbstractUnauthorizedUserTestCase extends AbstractApplicationTestCase
 {
     /**
      * @dataProvider unauthorizedUserDataProvider
