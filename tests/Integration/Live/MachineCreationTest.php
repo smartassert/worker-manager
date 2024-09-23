@@ -35,7 +35,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTest
         sleep(3);
 
         shell_exec(sprintf(
-            'docker-compose -f tests/build/docker-compose.yml exec -T app php bin/console doctrine:query:sql "%s"',
+            'docker compose -f tests/build/docker-compose.yml exec -T app php bin/console doctrine:query:sql "%s"',
             'DELETE From machine;'
         ));
 
