@@ -10,6 +10,7 @@ use App\Message\CheckMachineIsActive;
 use App\Repository\MachineRepository;
 use App\Services\MachineRequestDispatcher;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 
 #[AsMessageHandler]
 class CheckMachineIsActiveHandler
@@ -20,6 +21,9 @@ class CheckMachineIsActiveHandler
     ) {
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     public function __invoke(CheckMachineIsActive $message): void
     {
         $machine = $this->machineRepository->find($message->getMachineId());
