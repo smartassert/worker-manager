@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Message\MachineRequestInterface;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 
@@ -18,6 +19,9 @@ class MachineRequestDispatcher
     ) {
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     public function dispatch(MachineRequestInterface $request): Envelope
     {
         $dispatchDelay = $this->dispatchDelays[$request::class] ?? null;
@@ -34,6 +38,8 @@ class MachineRequestDispatcher
      * @param MachineRequestInterface[] $collection
      *
      * @return Envelope[]
+     *
+     * @throws ExceptionInterface
      */
     public function dispatchCollection(array $collection): array
     {
