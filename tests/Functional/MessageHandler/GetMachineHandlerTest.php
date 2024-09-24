@@ -11,7 +11,6 @@ use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
-use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
 use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
@@ -280,13 +279,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         );
 
         $http404Exception = new ResourceNotFoundException('Not Found', 404);
-        $unknownRemoteMachineException = new UnknownRemoteMachineException(
-            MachineProvider::DIGITALOCEAN,
-            self::MACHINE_ID,
-            MachineAction::GET,
-            $http404Exception,
-        );
-
         $http503Exception = new RuntimeException('Service Unavailable', 503);
 
         return [

@@ -7,8 +7,8 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\NotFoundRemoteMachineExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
-use App\Exception\MachineProvider\UnknownRemoteMachineExceptionInterface;
 use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
@@ -106,7 +106,7 @@ readonly class MachineManager
                     $machineManager->remove($machineId, $this->machineNameFactory->create($machineId));
                 } catch (\Throwable $exception) {
                     $newException = $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
-                    if (!$newException instanceof UnknownRemoteMachineExceptionInterface) {
+                    if (!$newException instanceof NotFoundRemoteMachineExceptionInterface) {
                         $exceptionStack[] = $newException;
                     }
                 }

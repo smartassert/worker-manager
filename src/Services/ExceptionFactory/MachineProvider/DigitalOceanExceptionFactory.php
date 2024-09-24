@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\MissingRemoteMachineException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
 use DigitalOceanV2\Entity\RateLimit;
@@ -56,6 +57,15 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof ResourceNotFoundException) {
+            if (MachineAction::GET === $action) {
+                return new MissingRemoteMachineException(
+                    MachineProvider::DIGITALOCEAN,
+                    $resourceId,
+                    $action,
+                    $exception
+                );
+            }
+
             return new UnknownRemoteMachineException(
                 MachineProvider::DIGITALOCEAN,
                 $resourceId,

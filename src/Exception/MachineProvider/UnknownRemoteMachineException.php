@@ -2,27 +2,9 @@
 
 namespace App\Exception\MachineProvider;
 
-use App\Enum\MachineAction;
-use App\Enum\MachineProvider;
+use App\Exception\MachineProvider\AbstractNotFoundRemoteMachineException as Base;
+use App\Exception\MachineProvider\NotFoundRemoteMachineExceptionInterface as NotFoundRemoteMachineException;
 
-class UnknownRemoteMachineException extends Exception implements UnknownRemoteMachineExceptionInterface
+class UnknownRemoteMachineException extends Base implements NotFoundRemoteMachineException
 {
-    public function __construct(
-        private readonly MachineProvider $provider,
-        string $machineId,
-        MachineAction $action,
-        \Throwable $remoteException
-    ) {
-        parent::__construct($machineId, $action, $remoteException);
-    }
-
-    public function getProvider(): MachineProvider
-    {
-        return $this->provider;
-    }
-
-    public function isRecoverable(): bool
-    {
-        return MachineAction::GET !== $this->getAction();
-    }
 }
