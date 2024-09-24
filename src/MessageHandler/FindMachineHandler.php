@@ -8,7 +8,6 @@ use App\Entity\Machine;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
-use App\Exception\RecoverableDeciderExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
@@ -66,19 +65,12 @@ class FindMachineHandler
 
                 $this->machineRequestDispatcher->dispatchCollection($message->getOnFailureCollection());
             }
-        } catch (MachineActionFailedException $exception) {
-            throw new UnrecoverableMessageHandlingException(
-                $exception->getMessage(),
-                $exception->getCode(),
-                $exception
-            );
+        } catch (MachineActionFailedException $e) {
+            throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         } catch (\Throwable $exception) {
             $exception = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
 
-            if (
-                $exception instanceof UnrecoverableExceptionInterface
-                || $exception instanceof RecoverableDeciderExceptionInterface && false === $exception->isRecoverable()
-            ) {
+            if ($exception instanceof UnrecoverableExceptionInterface) {
                 throw new UnrecoverableMessageHandlingException(
                     $exception->getMessage(),
                     $exception->getCode(),
