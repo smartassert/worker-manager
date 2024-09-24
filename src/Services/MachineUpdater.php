@@ -7,10 +7,10 @@ use App\Enum\MachineState;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
 
-class MachineUpdater
+readonly class MachineUpdater
 {
     public function __construct(
-        private readonly MachineRepository $machineRepository,
+        private MachineRepository $machineRepository,
     ) {
     }
 
