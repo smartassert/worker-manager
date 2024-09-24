@@ -11,6 +11,7 @@ use App\Response\BadMachineCreateRequestResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 class MachineController
@@ -27,6 +28,8 @@ class MachineController
 
     /**
      * @param non-empty-string $id
+     *
+     * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
     public function create(string $id): JsonResponse
@@ -52,6 +55,8 @@ class MachineController
 
     /**
      * @param non-empty-string $id
+     *
+     * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
     public function status(string $id, ActionFailureRepository $actionFailureRepository): JsonResponse
@@ -78,6 +83,8 @@ class MachineController
 
     /**
      * @param non-empty-string $id
+     *
+     * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
     public function delete(string $id): JsonResponse
