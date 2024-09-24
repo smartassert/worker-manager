@@ -6,7 +6,7 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\Exception\MachineActionFailedException;
+use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
@@ -61,7 +61,7 @@ class FindMachineHandler
 
                 $this->machineRequestDispatcher->dispatchCollection($message->getOnFailureCollection());
             }
-        } catch (MachineActionFailedException $e) {
+        } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
     }
