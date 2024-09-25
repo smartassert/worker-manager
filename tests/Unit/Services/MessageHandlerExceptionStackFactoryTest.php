@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Services;
 use App\Enum\MachineAction;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\Exception;
+use App\Exception\Stack;
 use App\Services\MessageHandlerExceptionStackFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -46,7 +47,7 @@ class MessageHandlerExceptionStackFactoryTest extends TestCase
         $stackedMachineProviderException = new MachineActionFailedException(
             'machine_id',
             MachineAction::FIND,
-            $stackedExceptions
+            new Stack($stackedExceptions)
         );
 
         return [

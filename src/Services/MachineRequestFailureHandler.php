@@ -58,9 +58,8 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         $machine->setState($message->getFailureState());
         $this->machineRepository->add($machine);
 
-        // @todo fix in #514
         if ($throwable instanceof MachineActionFailedException) {
-            $throwable = $throwable->getExceptionStack()[0];
+            $throwable = $throwable->getExceptionStack()->first();
         }
 
         $this->actionFailureFactory->create($machine, $message->getAction(), $throwable);

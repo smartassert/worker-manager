@@ -12,6 +12,7 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
@@ -275,7 +276,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::GET,
-            [$http401Exception]
+            new Stack([$http401Exception])
         );
 
         $http404Exception = new ResourceNotFoundException('Not Found', 404);
@@ -283,9 +284,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         return [
             'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException([
-                    $http401Exception,
-                ]),
+                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $authenticationException->getMessage(),
                     $authenticationException->getCode(),

@@ -12,6 +12,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
+use App\Exception\Stack;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineNameFactory;
@@ -99,7 +100,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
 
             self::fail(MachineActionFailedException::class . ' not thrown');
         } catch (MachineActionFailedException $exception) {
-            $innerException = $exception->getExceptionStack()[0];
+            $innerException = $exception->getExceptionStack()->first();
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($expectedExceptionClass, $innerException::class);
             self::assertSame(MachineAction::CREATE, $innerException->getAction());
@@ -122,7 +123,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             $this->machineManager->create($machine);
             self::fail(ExceptionInterface::class . ' not thrown');
         } catch (MachineActionFailedException $exception) {
-            $innerException = $exception->getExceptionStack()[0];
+            $innerException = $exception->getExceptionStack()->first();
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($dropletApiException, $innerException->getRemoteException());
         }
@@ -236,7 +237,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             $this->machineManager->remove(self::MACHINE_ID);
             self::fail($dropletApiException::class . ' not thrown');
         } catch (MachineActionFailedException $exception) {
-            $innerException = $exception->getExceptionStack()[0];
+            $innerException = $exception->getExceptionStack()->first();
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($expectedExceptionClass, $innerException::class);
             self::assertSame(MachineAction::DELETE, $innerException->getAction());
@@ -250,9 +251,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
 
         $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $httpException);
 
-        $expectedExceptionStack = [
+        $expectedExceptionStack = new Stack([
             new HttpException(self::MACHINE_ID, MachineAction::DELETE, $httpException),
-        ];
+        ]);
 
         try {
             $this->machineManager->remove(self::MACHINE_ID);
@@ -282,9 +283,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
 
         $this->dropletApiProxy->withGetAllCall($this->machineName, $http503Exception);
 
-        $expectedExceptionStack = [
+        $expectedExceptionStack = new Stack([
             new HttpException(self::MACHINE_ID, MachineAction::FIND, $http503Exception),
-        ];
+        ]);
 
         try {
             $this->machineManager->find(self::MACHINE_ID);

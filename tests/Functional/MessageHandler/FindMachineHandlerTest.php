@@ -12,6 +12,7 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
 use App\MessageHandler\FindMachineHandler;
@@ -297,7 +298,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::FIND,
-            [$http401Exception]
+            new Stack([$http401Exception])
         );
 
         $http503Exception = new RuntimeException('Service Unavailable', 503);
@@ -311,24 +312,18 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineNotFindableAuthenticationException = new MachineActionFailedException(
             self::MACHINE_ID,
             MachineAction::FIND,
-            [
-                $authenticationException,
-            ]
+            new Stack([$authenticationException])
         );
 
         $machineNotFindableServiceUnavailableException = new MachineActionFailedException(
             self::MACHINE_ID,
             MachineAction::FIND,
-            [
-                $serviceUnavailableException,
-            ]
+            new Stack([$serviceUnavailableException])
         );
 
         return [
             'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException([
-                    $http401Exception,
-                ]),
+                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotFindableAuthenticationException->getMessage(),
                     $machineNotFindableAuthenticationException->getCode(),

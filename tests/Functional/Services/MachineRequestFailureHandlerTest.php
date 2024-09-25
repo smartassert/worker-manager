@@ -12,6 +12,7 @@ use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
+use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
@@ -334,7 +335,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                         new MachineActionFailedException(
                             $message->getMachineId(),
                             MachineAction::FIND,
-                            [
+                            new Stack([
                                 new ApiLimitExceededException(
                                     123,
                                     $message->getMachineId(),
@@ -344,7 +345,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                                         429
                                     )
                                 ),
-                            ]
+                            ])
                         ),
                     );
                 },

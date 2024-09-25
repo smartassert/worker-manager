@@ -9,6 +9,7 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\NotFoundRemoteMachineExceptionInterface;
 use App\Exception\MachineProvider\ProviderMachineNotFoundException;
+use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Model\RemoteMachineInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
@@ -33,7 +34,7 @@ readonly class MachineManager
      */
     public function create(Machine $machine): RemoteMachineInterface
     {
-        $exceptionStack = [];
+        $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
@@ -42,7 +43,7 @@ readonly class MachineManager
                         $this->machineNameFactory->create($machine->getId())
                     );
                 } catch (\Throwable $exception) {
-                    $exceptionStack[] = $this->exceptionFactory->create(
+                    $exceptions[] = $this->exceptionFactory->create(
                         $machine->getId(),
                         MachineAction::CREATE,
                         $exception
@@ -51,7 +52,7 @@ readonly class MachineManager
             }
         }
 
-        throw new MachineActionFailedException($machine->getId(), MachineAction::CREATE, $exceptionStack);
+        throw new MachineActionFailedException($machine->getId(), MachineAction::CREATE, new Stack($exceptions));
     }
 
     /**
@@ -99,7 +100,7 @@ readonly class MachineManager
      */
     public function remove(string $machineId): void
     {
-        $exceptionStack = [];
+        $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
@@ -107,14 +108,14 @@ readonly class MachineManager
                 } catch (\Throwable $exception) {
                     $newException = $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
                     if (!$newException instanceof NotFoundRemoteMachineExceptionInterface) {
-                        $exceptionStack[] = $newException;
+                        $exceptions[] = $newException;
                     }
                 }
             }
         }
 
-        if ([] !== $exceptionStack) {
-            throw new MachineActionFailedException($machineId, MachineAction::DELETE, $exceptionStack);
+        if ([] !== $exceptions) {
+            throw new MachineActionFailedException($machineId, MachineAction::DELETE, new Stack($exceptions));
         }
     }
 
@@ -125,7 +126,7 @@ readonly class MachineManager
      */
     public function find(string $machineId): ?RemoteMachineInterface
     {
-        $exceptionStack = [];
+        $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
             if ($machineManager instanceof ProviderMachineManagerInterface) {
                 try {
@@ -135,13 +136,13 @@ readonly class MachineManager
                         return $remoteMachine;
                     }
                 } catch (\Throwable $exception) {
-                    $exceptionStack[] = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
+                    $exceptions[] = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
                 }
             }
         }
 
-        if ([] !== $exceptionStack) {
-            throw new MachineActionFailedException($machineId, MachineAction::FIND, $exceptionStack);
+        if ([] !== $exceptions) {
+            throw new MachineActionFailedException($machineId, MachineAction::FIND, new Stack($exceptions));
         }
 
         return null;

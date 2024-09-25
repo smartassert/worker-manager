@@ -12,6 +12,7 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
@@ -146,7 +147,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
             MachineProvider::DIGITALOCEAN,
             self::MACHINE_ID,
             MachineAction::DELETE,
-            [$http401Exception]
+            new Stack([$http401Exception])
         );
 
         $http503Exception = new RuntimeException('Service Unavailable', 503);
@@ -160,24 +161,18 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineNotRemovableAuthenticationException = new MachineActionFailedException(
             self::MACHINE_ID,
             MachineAction::DELETE,
-            [
-                $authenticationException,
-            ]
+            new Stack([$authenticationException])
         );
 
         $machineNotRemovableServiceUnavailableException = new MachineActionFailedException(
             self::MACHINE_ID,
             MachineAction::DELETE,
-            [
-                $serviceUnavailableException,
-            ]
+            new Stack([$serviceUnavailableException])
         );
 
         return [
             'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException([
-                    $http401Exception,
-                ]),
+                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
                 'expectedException' => new UnrecoverableMessageHandlingException(
                     $machineNotRemovableAuthenticationException->getMessage(),
                     $machineNotRemovableAuthenticationException->getCode(),

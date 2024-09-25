@@ -21,6 +21,7 @@ use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
+use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
@@ -110,7 +111,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineProvider::DIGITALOCEAN,
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    [new \Exception()],
+                    new Stack([new \Exception()]),
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
