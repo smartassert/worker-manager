@@ -135,7 +135,9 @@ services:
 
     App\Services\MachineManager\DigitalOcean\ClientPool:
         arguments:
-            $clients: !tagged_iterator 'app.services.machine_manager.digitalocean.client'
+            $clients:
+                - '@app.services.machine_manager.digitalocean.client.primary'
+                - '@app.services.machine_manager.digitalocean.client.secondary'
 
     App\Services\ExceptionIdentifier\ExceptionIdentifier:
         arguments:
