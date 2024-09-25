@@ -219,7 +219,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN,
-                    MachineAction::FIND,
+                    MachineAction::GET,
                     [
                         'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]

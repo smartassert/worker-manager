@@ -102,7 +102,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
                 $throwable = $throwable->getExceptionStack()[0];
             }
 
-            $this->actionFailureFactory->create($machine, MachineAction::FIND, $throwable);
+            $this->actionFailureFactory->create($machine, MachineAction::GET, $throwable);
         }
 
         $this->machineRepository->add($machine);
