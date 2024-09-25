@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Message;
 
+use App\Enum\MachineAction;
 use App\Enum\MachineState;
 
-class FindMachine extends AbstractRemoteMachineRequest
+class FindMachine extends AbstractRemoteMachineRequest implements MachineActionInterface
 {
     private MachineState $onNotFoundState = MachineState::FIND_NOT_FOUND;
     private bool $reDispatchOnSuccess = false;
@@ -35,5 +36,10 @@ class FindMachine extends AbstractRemoteMachineRequest
     public function getReDispatchOnSuccess(): bool
     {
         return $this->reDispatchOnSuccess;
+    }
+
+    public function getAction(): MachineAction
+    {
+        return MachineAction::FIND;
     }
 }
