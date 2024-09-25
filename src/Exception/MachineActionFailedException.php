@@ -9,24 +9,15 @@ class MachineActionFailedException extends \Exception implements
     UnrecoverableExceptionInterface
 {
     /**
-     * @var \Throwable[]
-     */
-    private array $exceptionStack;
-
-    /**
-     * @param non-empty-string $machineId
-     * @param \Throwable[]     $exceptionStack
+     * @param non-empty-string            $machineId
+     * @param non-empty-array<\Throwable> $exceptionStack
      */
     public function __construct(
         string $machineId,
         private readonly MachineAction $action,
-        array $exceptionStack = []
+        private readonly array $exceptionStack
     ) {
         parent::__construct(sprintf('Action "%s" on machine "%s" failed', $action->value, $machineId));
-
-        $this->exceptionStack = array_filter($exceptionStack, function ($item) {
-            return $item instanceof \Throwable;
-        });
     }
 
     public function getAction(): MachineAction
@@ -35,7 +26,7 @@ class MachineActionFailedException extends \Exception implements
     }
 
     /**
-     * @return \Throwable[]
+     * @return non-empty-array<\Throwable>
      */
     public function getExceptionStack(): array
     {

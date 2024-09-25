@@ -8,7 +8,7 @@ use App\Enum\MachineProvider;
 class AuthenticationException extends Exception implements AuthenticationExceptionInterface
 {
     /**
-     * @param \Throwable[] $exceptions
+     * @param non-empty-array<\Throwable> $exceptions
      */
     public function __construct(
         private readonly MachineProvider $provider,
@@ -24,6 +24,9 @@ class AuthenticationException extends Exception implements AuthenticationExcepti
         return $this->provider;
     }
 
+    /**
+     * @return non-empty-array<\Throwable>
+     */
     public function getExceptionStack(): array
     {
         return $this->exceptions;

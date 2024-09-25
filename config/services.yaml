@@ -31,9 +31,6 @@ services:
             $healthCheckLogger: '@monolog.logger.health_check'
 
     _instanceof:
-        App\Services\MachineManager\ProviderMachineManagerInterface:
-            tags: ['app.machine_manager.provider_machine_manager']
-
         App\Services\ExceptionFactory\MachineProvider\ExceptionFactoryInterface:
             tags: ['app.machine_provider.exception_factory']
 
@@ -113,7 +110,8 @@ services:
 
     App\Services\MachineManager\MachineManager:
         arguments:
-            $providerMachineManagers: !tagged_iterator 'app.machine_manager.provider_machine_manager'
+            $providerMachineManagers:
+                - '@App\Services\MachineManager\DigitalOcean\MachineManager'
 
     DigitalOceanV2\HttpClient\Builder:
         arguments:
@@ -135,7 +133,9 @@ services:
 
     App\Services\MachineManager\DigitalOcean\ClientPool:
         arguments:
-            $clients: !tagged_iterator 'app.services.machine_manager.digitalocean.client'
+            $clients:
+                - '@app.services.machine_manager.digitalocean.client.primary'
+                - '@app.services.machine_manager.digitalocean.client.secondary'
 
     App\Services\ExceptionIdentifier\ExceptionIdentifier:
         arguments:

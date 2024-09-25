@@ -18,10 +18,10 @@ use App\Services\MachineNameFactory;
 readonly class MachineManager
 {
     /**
-     * @param ProviderMachineManagerInterface[] $providerMachineManagers
+     * @param non-empty-array<ProviderMachineManagerInterface> $providerMachineManagers
      */
     public function __construct(
-        private iterable $providerMachineManagers,
+        private array $providerMachineManagers,
         private MachineNameFactory $machineNameFactory,
         private ExceptionFactory $exceptionFactory,
         private ExceptionIdentifier $exceptionIdentifier,

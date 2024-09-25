@@ -11,9 +11,9 @@ use DigitalOceanV2\Exception\RuntimeException;
 readonly class ClientPool
 {
     /**
-     * @param iterable<Client> $clients
+     * @param non-empty-array<Client> $clients
      */
-    public function __construct(private iterable $clients)
+    public function __construct(private array $clients)
     {
     }
 

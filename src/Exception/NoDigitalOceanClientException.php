@@ -5,24 +5,16 @@ namespace App\Exception;
 class NoDigitalOceanClientException extends \Exception implements StackedExceptionInterface
 {
     /**
-     * @var \Throwable[]
+     * @param non-empty-array<\Throwable> $exceptionStack
      */
-    private array $exceptionStack;
-
-    /**
-     * @param \Throwable[] $exceptionStack
-     */
-    public function __construct(array $exceptionStack)
+    public function __construct(private readonly array $exceptionStack)
     {
         parent::__construct('', 0);
-
-        foreach ($exceptionStack as $exception) {
-            if ($exception instanceof \Throwable) {
-                $this->exceptionStack[] = $exception;
-            }
-        }
     }
 
+    /**
+     * @return non-empty-array<\Throwable>
+     */
     public function getExceptionStack(): array
     {
         return $this->exceptionStack;
