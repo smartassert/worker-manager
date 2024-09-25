@@ -3,14 +3,13 @@
 namespace App\Services;
 
 use App\Entity\Machine;
-use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
-use App\Message\MachineRequestInterface;
+use App\Message\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use Psr\Log\LoggerInterface;
@@ -36,7 +35,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         }
 
         $message = $envelope->getMessage();
-        if (!$message instanceof MachineRequestInterface) {
+        if (!$message instanceof MachineActionInterface) {
             return;
         }
 
@@ -63,47 +62,26 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
 
         if ($message instanceof CreateMachine) {
             $machine->setState(MachineState::CREATE_FAILED);
-
-            // @todo fix in #514
-            if ($throwable instanceof MachineActionFailedException) {
-                $throwable = $throwable->getExceptionStack()[0];
-            }
-
-            $this->actionFailureFactory->create($machine, MachineAction::CREATE, $throwable);
         }
 
         if ($message instanceof DeleteMachine) {
             $machine->setState(MachineState::DELETE_FAILED);
-
-            // @todo fix in #514
-            if ($throwable instanceof MachineActionFailedException) {
-                $throwable = $throwable->getExceptionStack()[0];
-            }
-
-            $this->actionFailureFactory->create($machine, MachineAction::DELETE, $throwable);
         }
 
         if ($message instanceof FindMachine) {
             $machine->setState(MachineState::FIND_NOT_FINDABLE);
-
-            // @todo fix in #514
-            if ($throwable instanceof MachineActionFailedException) {
-                $throwable = $throwable->getExceptionStack()[0];
-            }
-
-            $this->actionFailureFactory->create($machine, MachineAction::FIND, $throwable);
         }
 
         if ($message instanceof GetMachine) {
             $machine->setState(MachineState::FIND_NOT_FOUND);
-
-            // @todo fix in #514
-            if ($throwable instanceof MachineActionFailedException) {
-                $throwable = $throwable->getExceptionStack()[0];
-            }
-
-            $this->actionFailureFactory->create($machine, MachineAction::GET, $throwable);
         }
+
+        // @todo fix in #514
+        if ($throwable instanceof MachineActionFailedException) {
+            $throwable = $throwable->getExceptionStack()[0];
+        }
+
+        $this->actionFailureFactory->create($machine, $message->getAction(), $throwable);
 
         $this->machineRepository->add($machine);
     }
