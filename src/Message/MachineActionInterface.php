@@ -6,7 +6,7 @@ namespace App\Message;
 
 use App\Enum\MachineAction;
 
-interface MachineActionInterface
+interface MachineActionInterface extends MachineRequestInterface
 {
     public function getAction(): MachineAction;
 }
