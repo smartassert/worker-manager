@@ -42,4 +42,9 @@ class FindMachine extends AbstractRemoteMachineRequest implements MachineActionI
     {
         return MachineAction::FIND;
     }
+
+    public function getFailureState(): MachineState
+    {
+        return MachineState::FIND_NOT_FINDABLE;
+    }
 }

@@ -3,12 +3,7 @@
 namespace App\Services;
 
 use App\Entity\Machine;
-use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
-use App\Message\CreateMachine;
-use App\Message\DeleteMachine;
-use App\Message\FindMachine;
-use App\Message\GetMachine;
 use App\Message\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
@@ -60,21 +55,8 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             );
         }
 
-        if ($message instanceof CreateMachine) {
-            $machine->setState(MachineState::CREATE_FAILED);
-        }
-
-        if ($message instanceof DeleteMachine) {
-            $machine->setState(MachineState::DELETE_FAILED);
-        }
-
-        if ($message instanceof FindMachine) {
-            $machine->setState(MachineState::FIND_NOT_FINDABLE);
-        }
-
-        if ($message instanceof GetMachine) {
-            $machine->setState(MachineState::FIND_NOT_FOUND);
-        }
+        $machine->setState($message->getFailureState());
+        $this->machineRepository->add($machine);
 
         // @todo fix in #514
         if ($throwable instanceof MachineActionFailedException) {
@@ -82,7 +64,5 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         }
 
         $this->actionFailureFactory->create($machine, $message->getAction(), $throwable);
-
-        $this->machineRepository->add($machine);
     }
 }
