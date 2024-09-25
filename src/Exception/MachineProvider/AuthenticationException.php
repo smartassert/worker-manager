@@ -4,19 +4,17 @@ namespace App\Exception\MachineProvider;
 
 use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
+use App\Exception\Stack;
 
 class AuthenticationException extends Exception implements AuthenticationExceptionInterface
 {
-    /**
-     * @param non-empty-array<\Throwable> $exceptions
-     */
     public function __construct(
         private readonly MachineProvider $provider,
         string $machineId,
         MachineAction $action,
-        private readonly array $exceptions,
+        private readonly Stack $exceptions,
     ) {
-        parent::__construct($machineId, $action, $exceptions[0]);
+        parent::__construct($machineId, $action, $exceptions->first());
     }
 
     public function getMachineProvider(): MachineProvider
@@ -24,10 +22,7 @@ class AuthenticationException extends Exception implements AuthenticationExcepti
         return $this->provider;
     }
 
-    /**
-     * @return non-empty-array<\Throwable>
-     */
-    public function getExceptionStack(): array
+    public function getExceptionStack(): Stack
     {
         return $this->exceptions;
     }

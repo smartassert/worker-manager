@@ -13,6 +13,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use DigitalOceanV2\Entity\RateLimit;
@@ -76,14 +77,12 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
             NoDigitalOceanClientException::class => [
-                'exception' => new NoDigitalOceanClientException([
-                    $runtimeException401,
-                ]),
+                'exception' => new NoDigitalOceanClientException(new Stack([$runtimeException401])),
                 'expectedException' => new AuthenticationException(
                     MachineProvider::DIGITALOCEAN,
                     self::ID,
                     self::ACTION,
-                    [$runtimeException401]
+                    new Stack([$runtimeException401])
                 ),
             ],
             ValidationFailedException::class . ' generic' => [

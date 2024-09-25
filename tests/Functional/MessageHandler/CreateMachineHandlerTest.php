@@ -14,6 +14,7 @@ use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -187,9 +188,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         return [
             'NoDigitalOceanClientException as a result of HTTP 401' => [
                 'vendorExceptionCreator' => function () {
-                    return new NoDigitalOceanClientException([
+                    return new NoDigitalOceanClientException(new Stack([
                         new VendorRuntimeException('Unauthorized', 401),
-                    ]);
+                    ]));
                 },
                 'expectedExceptionCreator' => function (Machine $machine) {
                     return new UnrecoverableMessageHandlingException(
@@ -198,14 +199,14 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         new MachineActionFailedException(
                             $machine->getId(),
                             MachineAction::CREATE,
-                            [
+                            new Stack([
                                 new AuthenticationException(
                                     MachineProvider::DIGITALOCEAN,
                                     $machine->getId(),
                                     MachineAction::CREATE,
-                                    [new VendorRuntimeException('Unauthorized', 401)]
+                                    new Stack([new VendorRuntimeException('Unauthorized', 401)])
                                 ),
-                            ]
+                            ])
                         )
                     );
                 },
@@ -221,14 +222,14 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         new MachineActionFailedException(
                             $machine->getId(),
                             MachineAction::CREATE,
-                            [
+                            new Stack([
                                 new UnknownRemoteMachineException(
                                     MachineProvider::DIGITALOCEAN,
                                     $machine->getId(),
                                     MachineAction::CREATE,
                                     new ResourceNotFoundException(),
                                 ),
-                            ]
+                            ])
                         )
                     );
                 },
@@ -244,14 +245,14 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         new MachineActionFailedException(
                             $machine->getId(),
                             MachineAction::CREATE,
-                            [
+                            new Stack([
                                 new ApiLimitExceededException(
                                     789,
                                     $machine->getId(),
                                     MachineAction::CREATE,
                                     $vendorApiLimitExceededException
                                 ),
-                            ]
+                            ])
                         )
                     );
                 },
@@ -267,13 +268,13 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         new MachineActionFailedException(
                             $machine->getId(),
                             MachineAction::CREATE,
-                            [
+                            new Stack([
                                 new HttpException(
                                     $machine->getId(),
                                     MachineAction::CREATE,
                                     new VendorRuntimeException('Service Unavailable', 503)
                                 ),
-                            ]
+                            ])
                         )
                     );
                 },

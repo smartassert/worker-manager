@@ -3,6 +3,7 @@
 namespace App\Services\MachineManager\DigitalOcean;
 
 use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
 use DigitalOceanV2\Api\Droplet;
 use DigitalOceanV2\Client;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -46,6 +47,6 @@ readonly class ClientPool
             }
         }
 
-        throw new NoDigitalOceanClientException($exceptions);
+        throw new NoDigitalOceanClientException(new Stack($exceptions));
     }
 }

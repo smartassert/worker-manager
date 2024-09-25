@@ -4,8 +4,5 @@ namespace App\Exception;
 
 interface StackedExceptionInterface
 {
-    /**
-     * @return non-empty-array<\Throwable>
-     */
-    public function getExceptionStack(): array;
+    public function getExceptionStack(): Stack;
 }
