@@ -9,15 +9,15 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\Stack;
 use App\Services\MessageHandlerExceptionStackFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class MessageHandlerExceptionStackFactoryTest extends TestCase
 {
     /**
-     * @dataProvider createDataProvider
-     *
      * @param \Throwable[] $expected
      */
+    #[DataProvider('createDataProvider')]
     public function testCreate(\Throwable $throwable, array $expected): void
     {
         $factory = new MessageHandlerExceptionStackFactory();
@@ -28,7 +28,7 @@ class MessageHandlerExceptionStackFactoryTest extends TestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $plainException = new \Exception('plain exception');
         $remoteException = new \Exception('remote exception');

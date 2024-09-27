@@ -14,6 +14,7 @@ use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Tests\Application\AbstractMachineTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MachineTest extends AbstractMachineTestCase
 {
@@ -33,10 +34,9 @@ class MachineTest extends AbstractMachineTestCase
     }
 
     /**
-     * @dataProvider createSuccessDataProvider
-     *
      * @param string[] $expectedResponseIpAddresses
      */
+    #[DataProvider('createSuccessDataProvider')]
     public function testCreateSuccess(
         ?Machine $existingMachine,
         array $expectedResponseIpAddresses,
@@ -70,7 +70,7 @@ class MachineTest extends AbstractMachineTestCase
     /**
      * @return array<mixed>
      */
-    public function createSuccessDataProvider(): array
+    public static function createSuccessDataProvider(): array
     {
         return [
             'no existing machine' => [

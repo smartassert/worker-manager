@@ -29,6 +29,7 @@ use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -77,12 +78,11 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider invokeSuccessDataProvider
-     *
      * @param DropletEntity[]                                           $expectedGetAllOutcome
      * @param callable(FindMachine $message): MachineRequestInterface[] $expectedMachineRequestCollectionCreator
      * @param callable(TestMachineRequestFactory $factory): FindMachine $messageCreator
      */
+    #[DataProvider('invokeSuccessDataProvider')]
     public function testInvokeSuccess(
         Machine $machine,
         array $expectedGetAllOutcome,
@@ -118,7 +118,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeSuccessDataProvider(): array
+    public static function invokeSuccessDataProvider(): array
     {
         $upNewDropletEntity = new DropletEntity([
             'status' => RemoteMachine::STATE_NEW,
@@ -259,9 +259,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
         self::assertNull($this->machineRepository->find($machineId));
     }
 
-    /**
-     * @dataProvider invokeThrowsExceptionDataProvider
-     */
+    #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
@@ -290,7 +288,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeThrowsExceptionDataProvider(): array
+    public static function invokeThrowsExceptionDataProvider(): array
     {
         $http401Exception = new RuntimeException('Unauthorized', 401);
 

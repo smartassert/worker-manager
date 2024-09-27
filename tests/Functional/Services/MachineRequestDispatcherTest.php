@@ -9,6 +9,7 @@ use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
@@ -57,10 +58,9 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider dispatchDataProvider
-     *
      * @param callable(int $checkMachineIsActiveDispatchDelay): StampInterface[] $expectedStampsCreator
      */
+    #[DataProvider('dispatchDataProvider')]
     public function testDispatch(MachineRequestInterface $request, callable $expectedStampsCreator): void
     {
         $expectedStamps = $expectedStampsCreator($this->checkMachineIsActiveDispatchDelay);
@@ -90,7 +90,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function dispatchDataProvider(): array
+    public static function dispatchDataProvider(): array
     {
         return [
             'with delay' => [

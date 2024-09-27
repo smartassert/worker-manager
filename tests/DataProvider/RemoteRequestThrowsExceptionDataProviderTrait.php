@@ -16,7 +16,7 @@ trait RemoteRequestThrowsExceptionDataProviderTrait
     /**
      * @return array<mixed>
      */
-    public function remoteRequestThrowsExceptionDataProvider(): array
+    public static function remoteRequestThrowsExceptionDataProvider(): array
     {
         return [
             VendorApiLimitExceededException::class => [

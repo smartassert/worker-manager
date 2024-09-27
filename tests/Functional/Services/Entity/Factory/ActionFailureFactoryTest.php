@@ -29,6 +29,7 @@ use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ActionFailureFactoryTest extends AbstractEntityTestCase
 {
@@ -48,9 +49,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
         }
     }
 
-    /**
-     * @dataProvider createDataProvider
-     */
+    #[DataProvider('createDataProvider')]
     public function testCreate(Machine $machine, \Throwable $throwable, ActionFailure $expectedActionFailure): void
     {
         $actionFailure = $this->factory->create($machine, MachineAction::CREATE, $throwable);
@@ -68,7 +67,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $unprocessableReason = UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED;
         $digitalOceanMachine = new Machine(self::MACHINE_ID);

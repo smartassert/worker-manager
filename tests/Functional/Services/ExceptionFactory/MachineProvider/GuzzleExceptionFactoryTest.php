@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\ExceptionInterface;
 use App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use GuzzleHttp\Exception\ConnectException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\RequestInterface;
 
 class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
@@ -35,9 +36,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
         self::assertFalse($this->factory->handles(new \Exception()));
     }
 
-    /**
-     * @dataProvider createDataProvider
-     */
+    #[DataProvider('createDataProvider')]
     public function testCreate(ConnectException $exception, ExceptionInterface $expectedException): void
     {
         self::assertEquals(
@@ -49,7 +48,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $request = \Mockery::mock(RequestInterface::class);
 

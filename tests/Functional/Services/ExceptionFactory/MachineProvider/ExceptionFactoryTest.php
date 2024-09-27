@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\ExceptionInterface;
 use App\Services\ExceptionFactory\MachineProvider\ExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use GuzzleHttp\Exception\ConnectException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\RequestInterface;
 
 class ExceptionFactoryTest extends AbstractBaseFunctionalTestCase
@@ -28,9 +29,7 @@ class ExceptionFactoryTest extends AbstractBaseFunctionalTestCase
         $this->factory = $factory;
     }
 
-    /**
-     * @dataProvider createDataProvider
-     */
+    #[DataProvider('createDataProvider')]
     public function testCreate(\Throwable $exception, ExceptionInterface $expectedException): void
     {
         self::assertEquals(
@@ -42,7 +41,7 @@ class ExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $connectException = new ConnectException(
             'cURL error 7: Further non-relevant information including "cURL error: 88"',
