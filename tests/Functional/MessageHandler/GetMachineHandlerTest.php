@@ -29,6 +29,7 @@ use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -74,9 +75,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     /**
      * @param DropletEntity[] $getAllOutcome
-     *
-     * @dataProvider invokeSuccessDataProvider
      */
+    #[DataProvider('invokeSuccessDataProvider')]
     public function testInvokeSuccess(
         array $getAllOutcome,
         Machine $machine,
@@ -239,9 +239,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         self::assertSame($machineState, $machine->getState());
     }
 
-    /**
-     * @dataProvider invokeThrowsExceptionDataProvider
-     */
+    #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);

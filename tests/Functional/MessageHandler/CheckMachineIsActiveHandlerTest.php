@@ -13,6 +13,7 @@ use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
@@ -53,9 +54,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
         self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
     }
 
-    /**
-     * @dataProvider invokeMachineIsActiveOrEndedDataProvider
-     */
+    #[DataProvider('invokeMachineIsActiveOrEndedDataProvider')]
     public function testInvokeMachineIsActiveOrEnded(MachineState $state): void
     {
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
@@ -97,9 +96,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
         ];
     }
 
-    /**
-     * @dataProvider handleMachineIsPreActiveDataProvider
-     */
+    #[DataProvider('handleMachineIsPreActiveDataProvider')]
     public function testHandleMachineIsPreActive(MachineState $state): void
     {
         $this->machine->setState($state);

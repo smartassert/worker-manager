@@ -20,6 +20,7 @@ use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
 {
@@ -37,9 +38,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
         $this->factory = $factory;
     }
 
-    /**
-     * @dataProvider createDataProvider
-     */
+    #[DataProvider('createDataProvider')]
     public function testCreate(\Throwable $exception, ExceptionInterface $expectedException): void
     {
         self::assertEquals(

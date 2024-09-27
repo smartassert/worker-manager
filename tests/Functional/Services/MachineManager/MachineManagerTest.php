@@ -24,6 +24,7 @@ use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MachineManagerTest extends AbstractBaseFunctionalTestCase
 {
@@ -86,10 +87,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider remoteRequestThrowsExceptionDataProvider
-     *
      * @param class-string $expectedExceptionClass
      */
+    #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
     public function testCreateThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
         try {
@@ -178,10 +178,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider remoteRequestThrowsExceptionDataProvider
-     *
      * @param class-string $expectedExceptionClass
      */
+    #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
     public function testGetThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
         $machine = new Machine(self::MACHINE_ID);
@@ -198,9 +197,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         }
     }
 
-    /**
-     * @dataProvider removeSuccessDataProvider
-     */
+    #[DataProvider('removeSuccessDataProvider')]
     public function testRemoveSuccess(?\Exception $exception): void
     {
         $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $exception);
@@ -226,10 +223,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider remoteRequestThrowsExceptionDataProvider
-     *
      * @param class-string $expectedExceptionClass
      */
+    #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
     public function testRemoveThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
         try {

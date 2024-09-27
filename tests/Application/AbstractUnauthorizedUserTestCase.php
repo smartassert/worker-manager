@@ -6,13 +6,12 @@ namespace App\Tests\Application;
 
 use App\Tests\Model\Machine;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 
 abstract class AbstractUnauthorizedUserTestCase extends AbstractApplicationTestCase
 {
-    /**
-     * @dataProvider unauthorizedUserDataProvider
-     */
+    #[DataProvider('unauthorizedUserDataProvider')]
     public function testMachineCreateUnauthorizedUser(?string $token): void
     {
         $response = $this->applicationClient->makeMachineCreateRequest($token, Machine::createId());
@@ -20,9 +19,7 @@ abstract class AbstractUnauthorizedUserTestCase extends AbstractApplicationTestC
         $this->assertUnauthorizedResponse($response);
     }
 
-    /**
-     * @dataProvider unauthorizedUserDataProvider
-     */
+    #[DataProvider('unauthorizedUserDataProvider')]
     public function testMachineStatusUnauthorizedUser(?string $token): void
     {
         $response = $this->applicationClient->makeMachineStatusRequest($token, Machine::createId());
@@ -30,9 +27,7 @@ abstract class AbstractUnauthorizedUserTestCase extends AbstractApplicationTestC
         $this->assertUnauthorizedResponse($response);
     }
 
-    /**
-     * @dataProvider unauthorizedUserDataProvider
-     */
+    #[DataProvider('unauthorizedUserDataProvider')]
     public function testMachineDeleteUnauthorizedUser(?string $token): void
     {
         $response = $this->applicationClient->makeMachineDeleteRequest($token, Machine::createId());

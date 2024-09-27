@@ -6,16 +6,16 @@ namespace App\Tests\Unit\Model\DigitalOcean;
 
 use App\Model\DigitalOcean\RemoteMachine;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class RemoteMachineTest extends TestCase
 {
     /**
-     * @dataProvider getIpAddressesDataProvider
-     *
      * @param array<mixed> $dropletData
      * @param string[]     $expectedIpAddresses
      */
+    #[DataProvider('getIpAddressesDataProvider')]
     public function testGetIpAddresses(array $dropletData, array $expectedIpAddresses): void
     {
         $dropletEntity = new DropletEntity($dropletData);

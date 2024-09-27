@@ -10,6 +10,7 @@ use App\Enum\MachineAction;
 use App\Repository\ActionFailureRepository;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ActionFailureTest extends AbstractEntityTestCase
 {
@@ -36,9 +37,7 @@ class ActionFailureTest extends AbstractEntityTestCase
         self::assertCount(1, $repository->findAll());
     }
 
-    /**
-     * @dataProvider retrieveDataProvider
-     */
+    #[DataProvider('retrieveDataProvider')]
     public function testRetrieve(ActionFailure $entity): void
     {
         $this->entityManager->persist($entity);
@@ -57,7 +56,7 @@ class ActionFailureTest extends AbstractEntityTestCase
     /**
      * @return array<mixed>
      */
-    public static  function retrieveDataProvider(): array
+    public static function retrieveDataProvider(): array
     {
         return [
             'without context' => [

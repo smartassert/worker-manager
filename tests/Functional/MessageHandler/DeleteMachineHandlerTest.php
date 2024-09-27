@@ -25,6 +25,7 @@ use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -110,9 +111,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         ($handler)(new DeleteMachine('id0', 'invalid machine id'));
     }
 
-    /**
-     * @dataProvider invokeThrowsExceptionDataProvider
-     */
+    #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);

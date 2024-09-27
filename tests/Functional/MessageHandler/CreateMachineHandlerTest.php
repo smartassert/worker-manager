@@ -33,6 +33,7 @@ use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceeded
 use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Uid\Ulid;
@@ -145,11 +146,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider invokeThrowsExceptionDataProvider
-     *
      * @param callable(Machine): \Throwable $vendorExceptionCreator
      * @param callable(Machine): \Throwable $expectedExceptionCreator
      */
+    #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(
         callable $vendorExceptionCreator,
         callable $expectedExceptionCreator,

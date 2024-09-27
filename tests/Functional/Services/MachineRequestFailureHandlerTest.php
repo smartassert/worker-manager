@@ -31,6 +31,7 @@ use Beste\Psr\Log\Records;
 use Beste\Psr\Log\TestLogger;
 use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -78,9 +79,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
         );
     }
 
-    /**
-     * @dataProvider handleWorkerMessageFailedEventDataProvider
-     */
+    #[DataProvider('handleWorkerMessageFailedEventDataProvider')]
     public function testHandleWorkerMessageFailedEvent(
         MachineRequestInterface $message,
         \Throwable $throwable,
@@ -230,11 +229,10 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @dataProvider exceptionLoggingDataProvider
-     *
      * @param callable(MachineRequestInterface): \Throwable $throwableCreator
      * @param callable(MachineRequestInterface): Records    $expectedCreator
      */
+    #[DataProvider('exceptionLoggingDataProvider')]
     public function testExceptionLogging(callable $throwableCreator, callable $expectedCreator): void
     {
         $actionFailureFactory = self::getContainer()->get(ActionFailureFactory::class);
