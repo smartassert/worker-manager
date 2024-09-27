@@ -57,7 +57,7 @@ class ActionFailureTest extends AbstractEntityTestCase
     /**
      * @return array<mixed>
      */
-    public function retrieveDataProvider(): array
+    public static  function retrieveDataProvider(): array
     {
         return [
             'without context' => [

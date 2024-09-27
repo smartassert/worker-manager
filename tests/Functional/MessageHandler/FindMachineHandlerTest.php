@@ -118,7 +118,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeSuccessDataProvider(): array
+    public static function invokeSuccessDataProvider(): array
     {
         $upNewDropletEntity = new DropletEntity([
             'status' => RemoteMachine::STATE_NEW,
@@ -290,7 +290,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeThrowsExceptionDataProvider(): array
+    public static function invokeThrowsExceptionDataProvider(): array
     {
         $http401Exception = new RuntimeException('Unauthorized', 401);
 

@@ -28,7 +28,7 @@ class MessageHandlerExceptionStackFactoryTest extends TestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $plainException = new \Exception('plain exception');
         $remoteException = new \Exception('remote exception');

@@ -49,7 +49,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $request = \Mockery::mock(RequestInterface::class);
 

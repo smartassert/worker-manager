@@ -42,7 +42,7 @@ class ExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $connectException = new ConnectException(
             'cURL error 7: Further non-relevant information including "cURL error: 88"',

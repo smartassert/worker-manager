@@ -107,7 +107,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function handleWorkerMessageFailedEventDataProvider(): array
+    public static function handleWorkerMessageFailedEventDataProvider(): array
     {
         return [
             'create, api limit exceeded' => [
@@ -280,7 +280,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function exceptionLoggingDataProvider(): array
+    public static function exceptionLoggingDataProvider(): array
     {
         return [
             'Not UnrecoverableMessageHandlingException, no previous' => [

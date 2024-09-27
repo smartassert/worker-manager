@@ -70,7 +70,7 @@ class MachineTest extends AbstractMachineTestCase
     /**
      * @return array<mixed>
      */
-    public function createSuccessDataProvider(): array
+    public static  function createSuccessDataProvider(): array
     {
         return [
             'no existing machine' => [

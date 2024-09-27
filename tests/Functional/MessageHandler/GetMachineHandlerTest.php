@@ -105,7 +105,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeSuccessDataProvider(): array
+    public static function invokeSuccessDataProvider(): array
     {
         $ipAddresses = [
             '10.0.0.1',
@@ -269,7 +269,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeThrowsExceptionDataProvider(): array
+    public static function invokeThrowsExceptionDataProvider(): array
     {
         $http401Exception = new RuntimeException('Unauthorized', 401);
         $authenticationException = new AuthenticationException(

@@ -73,7 +73,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeMachineIsActiveOrEndedDataProvider(): array
+    public static function invokeMachineIsActiveOrEndedDataProvider(): array
     {
         return [
             MachineState::CREATE_FAILED->value => [
@@ -129,7 +129,7 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function handleMachineIsPreActiveDataProvider(): array
+    public static function handleMachineIsPreActiveDataProvider(): array
     {
         return [
             MachineState::CREATE_RECEIVED->value => [

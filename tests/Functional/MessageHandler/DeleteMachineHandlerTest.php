@@ -139,7 +139,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeThrowsExceptionDataProvider(): array
+    public static function invokeThrowsExceptionDataProvider(): array
     {
         $http401Exception = new RuntimeException('Unauthorized', 401);
 

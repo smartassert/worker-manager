@@ -173,7 +173,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function invokeThrowsExceptionDataProvider(): array
+    public static function invokeThrowsExceptionDataProvider(): array
     {
         $vendorApiLimitExceededException = new VendorApiLimitExceededException(
             'Too Many Requests',

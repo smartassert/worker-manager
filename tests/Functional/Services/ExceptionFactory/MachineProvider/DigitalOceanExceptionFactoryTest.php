@@ -51,7 +51,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function createDataProvider(): array
+    public static function createDataProvider(): array
     {
         $runtimeException400 = new RuntimeException('message', 400);
         $runtimeException401 = new RuntimeException('message', 401);

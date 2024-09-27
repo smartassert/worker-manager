@@ -201,9 +201,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     /**
      * @dataProvider removeSuccessDataProvider
      */
-    public function testRemoveSuccess(?\Exception $dropletApiException): void
+    public function testRemoveSuccess(?\Exception $exception): void
     {
-        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
+        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $exception);
 
         $this->expectNotToPerformAssertions();
 
@@ -213,7 +213,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function removeSuccessDataProvider(): array
+    public static function removeSuccessDataProvider(): array
     {
         return [
             'removed' => [

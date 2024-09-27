@@ -27,7 +27,7 @@ class RemoteMachineTest extends TestCase
     /**
      * @return array<mixed>
      */
-    public function getIpAddressesDataProvider(): array
+    public static function getIpAddressesDataProvider(): array
     {
         return [
             'empty' => [

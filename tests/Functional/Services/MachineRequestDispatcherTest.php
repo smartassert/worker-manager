@@ -90,7 +90,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public function dispatchDataProvider(): array
+    public static function dispatchDataProvider(): array
     {
         return [
             'with delay' => [
