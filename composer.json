@@ -102,10 +102,10 @@
             "@cs-phpcs"
         ],
         "static-analysis": "XDEBUG_MODE=off ./vendor/bin/phpstan analyse --ansi",
-        "test-unit": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Unit",
-        "test-functional": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always tests/Functional",
+        "test-unit": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always --display-deprecations --display-phpunit-deprecations tests/Unit",
+        "test-functional": "XDEBUG_MODE=off ./vendor/bin/phpunit --colors=always --display-deprecations --display-phpunit-deprecations tests/Functional",
         "test-integration-application": [
-            "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Application"
+            "XDEBUG_MODE=off ./vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations tests/Integration/Application"
         ],
         "test-integration-live": [
             "XDEBUG_MODE=off ./vendor/bin/phpunit tests/Integration/Live"
