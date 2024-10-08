@@ -4,10 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
+use App\Response\MachineResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -50,7 +50,7 @@ class MachineController
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
-        return new JsonResponse(new MachineModel($machine), 202);
+        return new MachineResponse($machine, null, 202);
     }
 
     /**
@@ -71,7 +71,7 @@ class MachineController
             );
         }
 
-        return new JsonResponse(new MachineModel($machine, $actionFailureRepository->find($id)));
+        return new MachineResponse($machine, $actionFailureRepository->find($id));
     }
 
     /**
@@ -94,6 +94,6 @@ class MachineController
             $this->machineRequestFactory->createDelete($id)
         );
 
-        return new JsonResponse(new MachineModel($machine), 202);
+        return new MachineResponse($machine, null, 202);
     }
 }
