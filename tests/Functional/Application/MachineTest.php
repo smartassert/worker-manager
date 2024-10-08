@@ -51,10 +51,16 @@ class MachineTest extends AbstractMachineTestCase
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->machineResponseAsserter->assertCreateResponse(
-            $response,
-            self::MACHINE_ID,
-            $expectedResponseIpAddresses
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => $expectedResponseIpAddresses,
+                'state' => MachineState::CREATE_RECEIVED,
+                'state_category' => MachineStateCategory::PRE_ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);

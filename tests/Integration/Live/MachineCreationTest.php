@@ -13,10 +13,17 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
     public function testCreateRemoteMachine(): void
     {
         $response = $this->makeValidCreateRequest($this->machineId);
-        $this->machineResponseAsserter->assertCreateResponse(
-            $response,
-            $this->machineId,
-            null
+
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => $this->machineId,
+                'ip_addresses' => [],
+                'state' => MachineState::CREATE_RECEIVED,
+                'state_category' => MachineStateCategory::PRE_ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
 
         $this->assertEventualMachineState(MachineState::UP_ACTIVE);
@@ -27,11 +34,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
     public function testStatusForMissingLocalMachine(): void
     {
         $createResponse = $this->makeValidCreateRequest($this->machineId);
-        $this->machineResponseAsserter->assertCreateResponse(
-            $createResponse,
-            $this->machineId,
-            []
-        );
+        self::assertSame(202, $createResponse->getStatusCode());
 
         sleep(3);
 
