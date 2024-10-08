@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Live;
 
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use App\Tests\Integration\AbstractIntegrationMachineTestCase;
 
 class MachineCreationTest extends AbstractIntegrationMachineTestCase
@@ -70,6 +71,17 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
     private function deleteMachine(): void
     {
         $response = $this->makeValidDeleteRequest($this->machineId);
-        $this->machineResponseAsserter->assertDeleteResponse($response, $this->machineId, null);
+
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => $this->machineId,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
+        );
     }
 }

@@ -18,24 +18,6 @@ class MachineResponseAsserter
     /**
      * @param null|string[] $expectedIpAddresses
      */
-    public function assertDeleteResponse(
-        ResponseInterface $response,
-        string $expectedMachineId,
-        ?array $expectedIpAddresses,
-    ): void {
-        $this->assertResponse(
-            $response,
-            202,
-            $expectedMachineId,
-            MachineState::DELETE_RECEIVED,
-            MachineStateCategory::ENDING,
-            $expectedIpAddresses
-        );
-    }
-
-    /**
-     * @param null|string[] $expectedIpAddresses
-     */
     public function assertCreateResponse(
         ResponseInterface $response,
         string $expectedMachineId,

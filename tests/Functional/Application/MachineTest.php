@@ -225,7 +225,17 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
+        );
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -235,7 +245,17 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
+        );
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);
