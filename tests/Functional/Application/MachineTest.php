@@ -59,6 +59,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => $expectedResponseIpAddresses,
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
@@ -138,6 +139,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::FIND_RECEIVED,
                 'state_category' => MachineStateCategory::FINDING,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
@@ -157,6 +159,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
@@ -221,6 +224,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::UP_ACTIVE,
                 'state_category' => MachineStateCategory::ACTIVE,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
@@ -240,6 +244,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
@@ -260,6 +265,7 @@ class MachineTest extends AbstractMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );

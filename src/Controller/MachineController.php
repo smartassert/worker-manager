@@ -50,7 +50,7 @@ class MachineController
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
-        return new JsonResponse($machine, 202);
+        return new JsonResponse(array_merge($machine->jsonSerialize(), ['action_failure' => null]), 202);
     }
 
     /**
@@ -74,9 +74,9 @@ class MachineController
         $responseData = $machine->jsonSerialize();
 
         $actionFailure = $actionFailureRepository->find($id);
-        if ($actionFailure instanceof ActionFailure) {
-            $responseData['action_failure'] = $actionFailure->jsonSerialize();
-        }
+        $responseData['action_failure'] = $actionFailure instanceof ActionFailure
+            ? $actionFailure->jsonSerialize()
+            : null;
 
         return new JsonResponse($responseData);
     }
@@ -101,6 +101,6 @@ class MachineController
             $this->machineRequestFactory->createDelete($id)
         );
 
-        return new JsonResponse($machine, 202);
+        return new JsonResponse(array_merge($machine->jsonSerialize(), ['action_failure' => null]), 202);
     }
 }

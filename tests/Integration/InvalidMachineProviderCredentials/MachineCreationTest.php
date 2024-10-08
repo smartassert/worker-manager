@@ -26,6 +26,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
