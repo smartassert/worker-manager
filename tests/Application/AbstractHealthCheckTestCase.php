@@ -10,15 +10,18 @@ abstract class AbstractHealthCheckTestCase extends AbstractApplicationTestCase
     {
         $this->getHealthCheckSetup();
 
-        $this->jsonResponseAsserter->assertJsonResponse(
-            $this->applicationClient->makeGetHealthCheckRequest(),
-            200,
-            [
+        $response = $this->applicationClient->makeGetHealthCheckRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
                 'database_connection' => true,
                 'database_entities' => true,
                 'message_queue' => true,
                 'machine_provider_digital_ocean' => true,
-            ]
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
