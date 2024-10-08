@@ -77,9 +77,6 @@ services:
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
             $statusUrl: '%health_check_bundle_status_path%'
 
-    App\Tests\Services\Asserter\JsonResponseAsserter:
-        public: true
-
     App\Services\MachineManager\DigitalOcean\ClientPool:
         arguments:
             $clients:

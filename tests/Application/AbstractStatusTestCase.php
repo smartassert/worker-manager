@@ -8,13 +8,16 @@ abstract class AbstractStatusTestCase extends AbstractApplicationTestCase
 {
     public function testGetStatus(): void
     {
-        $this->jsonResponseAsserter->assertJsonResponse(
-            $this->applicationClient->makeGetStatusRequest(),
-            200,
-            [
+        $response = $this->applicationClient->makeGetStatusRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
                 'version' => $this->getExpectedVersion(),
                 'ready' => $this->getExpectedReadyValue(),
-            ]
+            ]),
+            $response->getBody()->getContents()
         );
     }
 

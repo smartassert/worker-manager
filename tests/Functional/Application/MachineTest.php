@@ -114,14 +114,15 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $this->jsonResponseAsserter->assertJsonResponse(
-            $response,
-            400,
-            [
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
                 'type' => 'machine-create-request',
                 'message' => 'id taken',
                 'code' => 100,
-            ]
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
