@@ -16,33 +16,6 @@ class MachineResponseAsserter
     }
 
     /**
-     * @param null|string[]     $expectedIpAddresses
-     * @param null|array<mixed> $expectedActionFailureData
-     */
-    public function assertStatusResponse(
-        ResponseInterface $response,
-        string $expectedMachineId,
-        MachineState $expectedState,
-        MachineStateCategory $expectedStateCategory,
-        ?array $expectedIpAddresses,
-        ?array $expectedActionFailureData = null
-    ): void {
-        $expectedAdditionalData = null === $expectedActionFailureData
-            ? null :
-            ['action_failure' => $expectedActionFailureData];
-
-        $this->assertResponse(
-            $response,
-            200,
-            $expectedMachineId,
-            $expectedState,
-            $expectedStateCategory,
-            $expectedIpAddresses,
-            $expectedAdditionalData
-        );
-    }
-
-    /**
      * @param null|string[] $expectedIpAddresses
      */
     public function assertDeleteResponse(
