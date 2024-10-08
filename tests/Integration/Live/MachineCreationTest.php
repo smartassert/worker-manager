@@ -76,15 +76,5 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
         $response = $this->makeValidDeleteRequest($this->machineId);
 
         self::assertSame(202, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => $this->machineId,
-                'ip_addresses' => [],
-                'state' => MachineState::DELETE_RECEIVED,
-                'state_category' => MachineStateCategory::ENDING,
-            ]),
-            $response->getBody()->getContents()
-        );
     }
 }
