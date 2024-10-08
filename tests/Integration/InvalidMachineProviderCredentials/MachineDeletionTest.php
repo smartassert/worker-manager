@@ -26,6 +26,7 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                 'ip_addresses' => [],
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
+                'action_failure' => null,
             ]),
             $response->getBody()->getContents()
         );
