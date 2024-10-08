@@ -8,6 +8,7 @@ use App\Entity\ActionFailure;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use App\Repository\ActionFailureRepository;
 use App\Tests\Integration\AbstractIntegrationMachineTestCase;
 
@@ -16,10 +17,17 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
     public function testDeleteRemoteMachineMachineProviderAuthenticationFailure(): void
     {
         $response = $this->makeValidDeleteRequest($this->machineId);
-        $this->machineResponseAsserter->assertDeleteResponse(
-            $response,
-            $this->machineId,
-            null
+
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => $this->machineId,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
         );
 
         $this->assertEventualMachineState(MachineState::DELETE_FAILED);

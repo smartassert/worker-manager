@@ -51,10 +51,16 @@ class MachineTest extends AbstractMachineTestCase
         \assert($entityManager instanceof EntityManagerInterface);
         $entityManager->close();
 
-        $this->machineResponseAsserter->assertCreateResponse(
-            $response,
-            self::MACHINE_ID,
-            $expectedResponseIpAddresses
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => $expectedResponseIpAddresses,
+                'state' => MachineState::CREATE_RECEIVED,
+                'state_category' => MachineStateCategory::PRE_ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
@@ -123,12 +129,16 @@ class MachineTest extends AbstractMachineTestCase
     {
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertStatusResponse(
-            $response,
-            self::MACHINE_ID,
-            MachineState::FIND_RECEIVED,
-            MachineStateCategory::FINDING,
-            []
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::FIND_RECEIVED,
+                'state_category' => MachineStateCategory::FINDING,
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
@@ -138,12 +148,16 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertStatusResponse(
-            $response,
-            self::MACHINE_ID,
-            MachineState::CREATE_RECEIVED,
-            MachineStateCategory::PRE_ACTIVE,
-            []
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::CREATE_RECEIVED,
+                'state_category' => MachineStateCategory::PRE_ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
@@ -169,20 +183,24 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertStatusResponse(
-            $response,
-            self::MACHINE_ID,
-            MachineState::CREATE_FAILED,
-            MachineStateCategory::END,
-            [],
-            [
-                'type' => 'vendor_request_limit_exceeded',
-                'action' => 'create',
-                'context' => [
-                    'reset-timestamp' => 123,
-                    'provider' => $machine->getProvider()?->value,
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::CREATE_FAILED,
+                'state_category' => MachineStateCategory::END,
+                'action_failure' => [
+                    'type' => 'vendor_request_limit_exceeded',
+                    'action' => 'create',
+                    'context' => [
+                        'reset-timestamp' => 123,
+                        'provider' => $machine->getProvider()?->value,
+                    ],
                 ],
-            ]
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
@@ -194,12 +212,16 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertStatusResponse(
-            $response,
-            self::MACHINE_ID,
-            MachineState::UP_ACTIVE,
-            MachineStateCategory::ACTIVE,
-            []
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::UP_ACTIVE,
+                'state_category' => MachineStateCategory::ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
     }
 
@@ -209,7 +231,17 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
+        );
     }
 
     public function testDeleteLocalMachineDoesNotExist(): void
@@ -219,7 +251,17 @@ class MachineTest extends AbstractMachineTestCase
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
-        $this->machineResponseAsserter->assertDeleteResponse($response, self::MACHINE_ID, []);
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => self::MACHINE_ID,
+                'ip_addresses' => [],
+                'state' => MachineState::DELETE_RECEIVED,
+                'state_category' => MachineStateCategory::ENDING,
+            ]),
+            $response->getBody()->getContents()
+        );
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
         self::assertInstanceOf(Machine::class, $machine);

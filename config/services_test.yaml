@@ -80,9 +80,6 @@ services:
     App\Tests\Services\Asserter\JsonResponseAsserter:
         public: true
 
-    App\Tests\Services\Asserter\MachineResponseAsserter:
-        public: true
-
     App\Services\MachineManager\DigitalOcean\ClientPool:
         arguments:
             $clients:

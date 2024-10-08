@@ -8,6 +8,7 @@ use App\Entity\ActionFailure;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
+use App\Enum\MachineStateCategory;
 use App\Repository\ActionFailureRepository;
 use App\Tests\Integration\AbstractIntegrationMachineTestCase;
 
@@ -16,10 +17,17 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
     public function testCreateRemoteMachineMachineProviderAuthenticationFailure(): void
     {
         $response = $this->makeValidCreateRequest($this->machineId);
-        $this->machineResponseAsserter->assertCreateResponse(
-            $response,
-            $this->machineId,
-            null
+
+        self::assertSame(202, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+        self::assertJsonStringEqualsJsonString(
+            (string) json_encode([
+                'id' => $this->machineId,
+                'ip_addresses' => [],
+                'state' => MachineState::CREATE_RECEIVED,
+                'state_category' => MachineStateCategory::PRE_ACTIVE,
+            ]),
+            $response->getBody()->getContents()
         );
 
         $this->assertEventualMachineState(MachineState::FIND_NOT_FINDABLE);
