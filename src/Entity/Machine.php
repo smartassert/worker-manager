@@ -8,16 +8,8 @@ use App\Enum\MachineStateCategory;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @phpstan-type SerializedMachine array{
- *   id: non-empty-string,
- *   state: non-empty-string,
- *   ip_addresses: string[],
- *   state_category: non-empty-string
- * }
- */
 #[ORM\Entity]
-class Machine implements \JsonSerializable
+class Machine
 {
     private const NAME = 'worker-%s';
 
@@ -104,20 +96,7 @@ class Machine implements \JsonSerializable
         return $this->provider;
     }
 
-    /**
-     * @return SerializedMachine
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'id' => $this->id,
-            'state' => $this->state->value,
-            'ip_addresses' => $this->ip_addresses,
-            'state_category' => $this->getStateCategory()->value,
-        ];
-    }
-
-    private function getStateCategory(): MachineStateCategory
+    public function getStateCategory(): MachineStateCategory
     {
         if (in_array($this->state, MachineState::FINDING_STATES)) {
             return MachineStateCategory::FINDING;

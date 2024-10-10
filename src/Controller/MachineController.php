@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\ActionFailure;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
+use App\Response\MachineResponse;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -50,7 +50,7 @@ class MachineController
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
-        return new JsonResponse(array_merge($machine->jsonSerialize(), ['action_failure' => null]), 202);
+        return new MachineResponse($machine, null, 202);
     }
 
     /**
@@ -71,14 +71,7 @@ class MachineController
             );
         }
 
-        $responseData = $machine->jsonSerialize();
-
-        $actionFailure = $actionFailureRepository->find($id);
-        $responseData['action_failure'] = $actionFailure instanceof ActionFailure
-            ? $actionFailure->jsonSerialize()
-            : null;
-
-        return new JsonResponse($responseData);
+        return new MachineResponse($machine, $actionFailureRepository->find($id));
     }
 
     /**
@@ -101,6 +94,6 @@ class MachineController
             $this->machineRequestFactory->createDelete($id)
         );
 
-        return new JsonResponse(array_merge($machine->jsonSerialize(), ['action_failure' => null]), 202);
+        return new MachineResponse($machine, null, 202);
     }
 }
