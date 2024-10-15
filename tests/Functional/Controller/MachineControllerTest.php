@@ -84,9 +84,12 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
 
     public function testStatusMachineFoundDoesNotCallMachineRequestDispatcher(): void
     {
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
+
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
+        $machineRepository->add($machine);
 
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
         $machineRequestDispatcher

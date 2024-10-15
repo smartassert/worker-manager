@@ -134,16 +134,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         return [
             'remote machine found and updated, no existing provider' => [
-                'machine' => new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED),
+                'machine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_RECEIVED);
+
+                    return $machine;
+                })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_STARTED,
-                        [
-                            '10.0.0.1',
-                        ]
-                    );
+                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -160,20 +160,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
             ],
             'remote machine found and updated, has existing provider' => [
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_RECEIVED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_STARTED,
-                        [
-                            '10.0.0.1',
-                        ]
-                    );
+                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -190,14 +186,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
             ],
             'remote machine not found, create requested' => [
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_RECEIVED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
                 'expectedGetAllOutcome' => [],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::FIND_NOT_FOUND);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_NOT_FOUND);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -214,20 +212,16 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
             ],
             'remote machine found, re-dispatch self' => [
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_RECEIVED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_STARTED,
-                        [
-                            '10.0.0.1',
-                        ]
-                    );
+                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -262,7 +256,8 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
         $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);

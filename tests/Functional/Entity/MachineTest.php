@@ -26,7 +26,8 @@ class MachineTest extends AbstractEntityTestCase
         $repository = $this->entityManager->getRepository(Machine::class);
         self::assertCount(0, $repository->findAll());
 
-        $entity = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $entity = new Machine(self::MACHINE_ID);
+        $entity->setState(MachineState::CREATE_RECEIVED);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

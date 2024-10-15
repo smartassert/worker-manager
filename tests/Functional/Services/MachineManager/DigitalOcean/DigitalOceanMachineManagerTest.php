@@ -50,7 +50,8 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machine->setState(MachineState::CREATE_RECEIVED);
         $machineRepository->add($this->machine);
     }
 

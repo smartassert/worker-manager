@@ -43,7 +43,8 @@ class CheckMachineIsActiveHandlerTest extends AbstractBaseFunctionalTestCase
             $entityRemover->removeAllForEntity(Machine::class);
         }
 
-        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machine->setState(MachineState::CREATE_RECEIVED);
         $this->machineRepository->add($this->machine);
     }
 

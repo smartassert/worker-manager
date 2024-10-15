@@ -59,7 +59,8 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID, MachineState::DELETE_RECEIVED);
+        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machine->setState(MachineState::DELETE_RECEIVED);
         $machineRepository->add($this->machine);
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);

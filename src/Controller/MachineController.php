@@ -39,11 +39,11 @@ class MachineController
             if (!in_array($machine->getState(), MachineState::RESETTABLE_STATES)) {
                 return BadMachineCreateRequestResponse::createIdTakenResponse();
             }
-            $machine->setState(MachineState::CREATE_RECEIVED);
         } else {
-            $machine = new Machine($id, MachineState::CREATE_RECEIVED);
+            $machine = new Machine($id);
         }
 
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $this->machineRepository->add($machine);
 
         $this->machineRequestDispatcher->dispatch(
@@ -63,7 +63,8 @@ class MachineController
     {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($id, MachineState::FIND_RECEIVED);
+            $machine = new Machine($id);
+            $machine->setState(MachineState::FIND_RECEIVED);
             $this->machineRepository->add($machine);
 
             $this->machineRequestDispatcher->dispatch(
@@ -83,12 +84,11 @@ class MachineController
     public function delete(string $id): JsonResponse
     {
         $machine = $this->machineRepository->find($id);
-        if ($machine instanceof Machine) {
-            $machine->setState(MachineState::DELETE_RECEIVED);
-        } else {
-            $machine = new Machine($id, MachineState::DELETE_RECEIVED);
+        if (!$machine instanceof Machine) {
+            $machine = new Machine($id);
         }
 
+        $machine->setState(MachineState::DELETE_RECEIVED);
         $this->machineRepository->add($machine);
 
         $this->machineRequestDispatcher->dispatch(

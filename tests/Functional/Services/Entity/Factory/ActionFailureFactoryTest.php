@@ -71,12 +71,18 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     public static function createDataProvider(): array
     {
         $unprocessableReason = UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED;
-        $digitalOceanMachine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $digitalOceanMachine = new Machine(self::MACHINE_ID);
+        $digitalOceanMachine->setState(MachineState::CREATE_RECEIVED);
         $digitalOceanMachine->setProvider(MachineProvider::DIGITALOCEAN);
 
         return [
             UnsupportedProviderException::class => [
-                'machine' => new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED),
+                'machine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
+
+                    return $machine;
+                })(),
                 'throwable' => new UnsupportedProviderException(null),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
