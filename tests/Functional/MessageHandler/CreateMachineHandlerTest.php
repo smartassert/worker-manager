@@ -68,7 +68,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $machineId = (string) new Ulid();
         \assert('' !== $machineId);
-        $this->machine = new Machine($machineId, MachineState::CREATE_RECEIVED);
+        $this->machine = new Machine($machineId);
+        $this->machine->setState(MachineState::CREATE_RECEIVED);
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);

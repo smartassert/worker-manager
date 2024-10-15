@@ -36,13 +36,10 @@ class Machine
      * @param non-empty-string $id
      * @param string[]         $ipAddresses
      */
-    public function __construct(
-        string $id,
-        MachineState $state,
-        array $ipAddresses = [],
-    ) {
+    public function __construct(string $id, array $ipAddresses = [])
+    {
         $this->id = $id;
-        $this->state = $state;
+        $this->state = MachineState::UNKNOWN;
         $this->ip_addresses = $ipAddresses;
         $this->provider = null;
     }

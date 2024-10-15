@@ -85,22 +85,30 @@ class MachineTest extends AbstractMachineTestCase
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: find/not-found' => [
-                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::FIND_NOT_FOUND),
+                'existingMachine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_NOT_FOUND);
+
+                    return $machine;
+                })(),
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, no ip addresses' => [
-                'existingMachine' => new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED),
+                'existingMachine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_FAILED);
+
+                    return $machine;
+                })(),
                 'expectedResponseIpAddresses' => [],
             ],
             'existing machine state: create/failed, has ip addresses' => [
-                'existingMachine' => new Machine(
-                    self::MACHINE_ID,
-                    MachineState::CREATE_FAILED,
-                    [
-                        '127.0.0.1',
-                        '10.0.0.1',
-                    ]
-                ),
+                'existingMachine' => (function () {
+                    $machine = new Machine(self::MACHINE_ID, ['127.0.0.1', '10.0.0.1']);
+                    $machine->setState(MachineState::CREATE_FAILED);
+
+                    return $machine;
+                })(),
                 'expectedResponseIpAddresses' => [
                     '127.0.0.1',
                     '10.0.0.1',
@@ -111,7 +119,9 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testCreateIdTaken(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
+        $this->machineRepository->add($machine);
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
@@ -147,7 +157,9 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testStatusWithoutActionFailure(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
+        $this->machineRepository->add($machine);
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
@@ -167,7 +179,9 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testStatusWithActionFailure(): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_FAILED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_FAILED);
+        $this->machineRepository->add($machine);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         $this->machineRepository->add($machine);
@@ -210,8 +224,8 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testStatusHasActiveState(): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::UP_ACTIVE);
-
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::UP_ACTIVE);
         $this->machineRepository->add($machine);
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
@@ -232,7 +246,9 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testDeleteLocalMachineExists(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
+        $this->machineRepository->add($machine);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 

@@ -155,16 +155,15 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'updated within initial remote id and initial remote state' => [
                 'getAllOutcome' => [$createdDropletEntity],
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
                 'expectedMachine' => (function () {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_STARTED,
-                    );
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -173,17 +172,15 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'updated within initial ip addresses' => [
                 'getAllOutcome' => [$upNewDropletEntity],
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED);
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })(),
                 'expectedMachine' => (function (array $ipAddresses) {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_STARTED,
-                        $ipAddresses
-                    );
+                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -192,17 +189,15 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'updated within active remote state' => [
                 'getAllOutcome' => [$upActiveDropletEntity],
                 'machine' => (function (array $ipAddresses) {
-                    $machine = new Machine(self::MACHINE_ID, MachineState::UP_STARTED, $ipAddresses);
+                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine->setState(MachineState::UP_STARTED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })($ipAddresses),
                 'expectedMachine' => (function (array $ipAddresses) {
-                    $machine = new Machine(
-                        self::MACHINE_ID,
-                        MachineState::UP_ACTIVE,
-                        $ipAddresses
-                    );
+                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine->setState(MachineState::UP_ACTIVE);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -213,7 +208,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     public function testInvokeUnsupportedProvider(): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
         $message = new GetMachine('id0', $machine->getId());
@@ -242,7 +238,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::FIND_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::FIND_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
         $this->machineRepository->add($machine);
 

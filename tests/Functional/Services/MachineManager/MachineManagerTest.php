@@ -81,7 +81,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         $droplet = new DropletEntity($dropletData);
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
 
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $remoteMachine = $this->machineManager->create($machine);
 
         self::assertEquals(new RemoteMachine($droplet), $remoteMachine);
@@ -94,7 +95,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     public function testCreateThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
         try {
-            $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+            $machine = new Machine(self::MACHINE_ID);
+            $machine->setState(MachineState::CREATE_RECEIVED);
 
             $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
             $this->machineManager->create($machine);
@@ -118,7 +120,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
 
         $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
 
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
 
         try {
             $this->machineManager->create($machine);
@@ -152,7 +155,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         $expectedDropletEntity = new DropletEntity($dropletData);
         $this->dropletApiProxy->withGetAllCall($this->machineName, [$expectedDropletEntity]);
 
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         $remoteMachine = $this->machineManager->get($machine);
@@ -167,7 +171,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             []
         );
 
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         self::expectExceptionObject(new ProviderMachineNotFoundException(
@@ -184,7 +189,8 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
     public function testGetThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
     {
-        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState(MachineState::CREATE_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
         try {
