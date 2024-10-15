@@ -66,7 +66,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
             $entityRemover->removeAllForEntity(ActionFailure::class);
         }
 
-        $machine = new Machine(self::MACHINE_ID);
+        $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
         $this->machineRepository->add($machine);
     }
@@ -249,7 +249,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
         $machineId = (string) new Ulid();
         \assert('' !== $machineId);
 
-        $machine = new Machine($machineId);
+        $machine = new Machine($machineId, MachineState::CREATE_RECEIVED);
         $machineRepository->add($machine);
 
         $messageId = (string) new Ulid();

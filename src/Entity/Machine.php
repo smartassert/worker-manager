@@ -38,7 +38,7 @@ class Machine
      */
     public function __construct(
         string $id,
-        MachineState $state = MachineState::CREATE_RECEIVED,
+        MachineState $state,
         array $ipAddresses = [],
     ) {
         $this->id = $id;

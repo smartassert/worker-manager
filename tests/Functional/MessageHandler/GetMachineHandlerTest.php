@@ -155,7 +155,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'updated within initial remote id and initial remote state' => [
                 'getAllOutcome' => [$createdDropletEntity],
                 'machine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID);
+                    $machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;

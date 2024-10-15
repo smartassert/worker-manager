@@ -9,6 +9,7 @@ use App\Entity\Machine;
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
+use App\Enum\MachineState;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
@@ -70,12 +71,12 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     public static function createDataProvider(): array
     {
         $unprocessableReason = UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED;
-        $digitalOceanMachine = new Machine(self::MACHINE_ID);
+        $digitalOceanMachine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $digitalOceanMachine->setProvider(MachineProvider::DIGITALOCEAN);
 
         return [
             UnsupportedProviderException::class => [
-                'machine' => new Machine(self::MACHINE_ID),
+                'machine' => new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED),
                 'throwable' => new UnsupportedProviderException(null),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,

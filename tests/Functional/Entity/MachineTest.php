@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Entity;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 
@@ -25,7 +26,7 @@ class MachineTest extends AbstractEntityTestCase
         $repository = $this->entityManager->getRepository(Machine::class);
         self::assertCount(0, $repository->findAll());
 
-        $entity = new Machine(self::MACHINE_ID);
+        $entity = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

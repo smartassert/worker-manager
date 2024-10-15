@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Services\MachineManager\DigitalOcean;
 
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\MachineManager;
@@ -49,7 +50,7 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $this->machine = new Machine(self::MACHINE_ID);
+        $this->machine = new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED);
         $machineRepository->add($this->machine);
     }
 
