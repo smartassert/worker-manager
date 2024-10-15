@@ -23,6 +23,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );

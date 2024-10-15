@@ -47,4 +47,10 @@ enum MachineState: string
         self::DELETE_RECEIVED,
         self::DELETE_REQUESTED,
     ];
+
+    public const FAILED_STATES = [
+        self::CREATE_FAILED,
+        self::FIND_NOT_FINDABLE,
+        self::FIND_NOT_FOUND,
+    ];
 }

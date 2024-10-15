@@ -116,4 +116,9 @@ class Machine
 
         return MachineStateCategory::UNKNOWN;
     }
+
+    public function hasFailedState(): bool
+    {
+        return in_array($this->state, MachineState::FAILED_STATES);
+    }
 }
