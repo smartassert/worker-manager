@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\Controller\MachineController;
 use App\Entity\Machine;
+use App\Enum\MachineState;
 use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
@@ -85,7 +86,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
     {
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
-        $machineRepository->add(new Machine(self::MACHINE_ID));
+        $machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
 
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
         $machineRequestDispatcher

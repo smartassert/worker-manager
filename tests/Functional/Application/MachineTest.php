@@ -111,7 +111,7 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testCreateIdTaken(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
@@ -147,7 +147,7 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testStatusWithoutActionFailure(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
@@ -232,7 +232,7 @@ class MachineTest extends AbstractMachineTestCase
 
     public function testDeleteLocalMachineExists(): void
     {
-        $this->machineRepository->add(new Machine(self::MACHINE_ID));
+        $this->machineRepository->add(new Machine(self::MACHINE_ID, MachineState::CREATE_RECEIVED));
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
