@@ -19,6 +19,7 @@ class MachineResponse extends JsonResponse
                 'ip_addresses' => $machine->getIpAddresses(),
                 'state_category' => $machine->getStateCategory(),
                 'action_failure' => $actionFailure,
+                'has_failed_state' => $machine->hasFailedState(),
             ],
             $statusCode
         );

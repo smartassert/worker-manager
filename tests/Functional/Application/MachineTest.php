@@ -60,6 +60,7 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -151,6 +152,7 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::FIND_RECEIVED,
                 'state_category' => MachineStateCategory::FINDING,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -173,6 +175,7 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::CREATE_RECEIVED,
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -218,6 +221,7 @@ class MachineTest extends AbstractMachineTestCase
                         'provider' => $machine->getProvider()?->value,
                     ],
                 ],
+                'has_failed_state' => true,
             ]),
             $response->getBody()->getContents()
         );
@@ -240,9 +244,93 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::UP_ACTIVE,
                 'state_category' => MachineStateCategory::ACTIVE,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
+    }
+
+    #[DataProvider('statusHasFailedStateDataProvider')]
+    public function testStatusHasFailedState(MachineState $state, bool $expected): void
+    {
+        $machine = new Machine(self::MACHINE_ID);
+        $machine->setState($state);
+        $this->machineRepository->add($machine);
+
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('content-type'));
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+        \assert(is_array($responseData) && array_key_exists('has_failed_state', $responseData));
+
+        self::assertSame($expected, $responseData['has_failed_state']);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function statusHasFailedStateDataProvider(): array
+    {
+        return [
+            MachineState::UNKNOWN->value => [
+                'state' => MachineState::UNKNOWN,
+                'expected' => false,
+            ],
+            MachineState::FIND_RECEIVED->value => [
+                'state' => MachineState::FIND_RECEIVED,
+                'expected' => false,
+            ],
+            MachineState::FIND_FINDING->value => [
+                'state' => MachineState::FIND_FINDING,
+                'expected' => false,
+            ],
+            MachineState::FIND_NOT_FOUND->value => [
+                'state' => MachineState::FIND_NOT_FOUND,
+                'expected' => true,
+            ],
+            MachineState::FIND_NOT_FINDABLE->value => [
+                'state' => MachineState::FIND_NOT_FINDABLE,
+                'expected' => true,
+            ],
+            MachineState::CREATE_RECEIVED->value => [
+                'state' => MachineState::CREATE_RECEIVED,
+                'expected' => false,
+            ],
+            MachineState::CREATE_REQUESTED->value => [
+                'state' => MachineState::CREATE_REQUESTED,
+                'expected' => false,
+            ],
+            MachineState::CREATE_FAILED->value => [
+                'state' => MachineState::CREATE_FAILED,
+                'expected' => true,
+            ],
+            MachineState::UP_STARTED->value => [
+                'state' => MachineState::UP_STARTED,
+                'expected' => false,
+            ],
+            MachineState::UP_ACTIVE->value => [
+                'state' => MachineState::UP_ACTIVE,
+                'expected' => false,
+            ],
+            MachineState::DELETE_RECEIVED->value => [
+                'state' => MachineState::DELETE_RECEIVED,
+                'expected' => false,
+            ],
+            MachineState::DELETE_REQUESTED->value => [
+                'state' => MachineState::DELETE_REQUESTED,
+                'expected' => false,
+            ],
+            MachineState::DELETE_FAILED->value => [
+                'state' => MachineState::DELETE_FAILED,
+                'expected' => false,
+            ],
+            MachineState::DELETE_DELETED->value => [
+                'state' => MachineState::DELETE_DELETED,
+                'expected' => false,
+            ],
+        ];
     }
 
     public function testDeleteLocalMachineExists(): void
@@ -262,6 +350,7 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -283,6 +372,7 @@ class MachineTest extends AbstractMachineTestCase
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
                 'action_failure' => null,
+                'has_failed_state' => false,
             ]),
             $response->getBody()->getContents()
         );
