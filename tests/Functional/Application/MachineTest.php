@@ -104,8 +104,9 @@ class MachineTest extends AbstractMachineTestCase
             ],
             'existing machine state: create/failed, has ip addresses' => [
                 'existingMachine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, ['127.0.0.1', '10.0.0.1']);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::CREATE_FAILED);
+                    $machine->setIpAddresses(['127.0.0.1', '10.0.0.1']);
 
                     return $machine;
                 })(),
