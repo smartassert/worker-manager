@@ -142,8 +142,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
+                    $machine->setIpAddresses(['10.0.0.1']);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -168,8 +169,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
+                    $machine->setIpAddresses(['10.0.0.1']);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -220,8 +222,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 })(),
                 'expectedGetAllOutcome' => [$upNewDropletEntity],
                 'expectedMachine' => (function () {
-                    $machine = new Machine(self::MACHINE_ID, ['10.0.0.1']);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
+                    $machine->setIpAddresses(['10.0.0.1']);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;

@@ -179,8 +179,9 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                     return $machine;
                 })(),
                 'expectedMachine' => (function (array $ipAddresses) {
-                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
+                    $machine->setIpAddresses($ipAddresses);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
@@ -189,15 +190,17 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             'updated within active remote state' => [
                 'getAllOutcome' => [$upActiveDropletEntity],
                 'machine' => (function (array $ipAddresses) {
-                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
+                    $machine->setIpAddresses($ipAddresses);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;
                 })($ipAddresses),
                 'expectedMachine' => (function (array $ipAddresses) {
-                    $machine = new Machine(self::MACHINE_ID, $ipAddresses);
+                    $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_ACTIVE);
+                    $machine->setIpAddresses($ipAddresses);
                     $machine->setProvider(MachineProvider::DIGITALOCEAN);
 
                     return $machine;

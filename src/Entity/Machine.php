@@ -34,13 +34,12 @@ class Machine
 
     /**
      * @param non-empty-string $id
-     * @param string[]         $ipAddresses
      */
-    public function __construct(string $id, array $ipAddresses = [])
+    public function __construct(string $id)
     {
         $this->id = $id;
         $this->state = MachineState::UNKNOWN;
-        $this->ip_addresses = $ipAddresses;
+        $this->ip_addresses = [];
         $this->provider = null;
     }
 
