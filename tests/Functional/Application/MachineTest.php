@@ -61,6 +61,9 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => false,
+                'has_ending_state' => false,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -153,6 +156,9 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::FINDING,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => false,
+                'has_ending_state' => false,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -176,6 +182,9 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::PRE_ACTIVE,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => false,
+                'has_ending_state' => false,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -222,6 +231,9 @@ class MachineTest extends AbstractMachineTestCase
                     ],
                 ],
                 'has_failed_state' => true,
+                'has_active_state' => false,
+                'has_ending_state' => false,
+                'has_end_state' => true,
             ]),
             $response->getBody()->getContents()
         );
@@ -245,14 +257,22 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::ACTIVE,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => true,
+                'has_ending_state' => false,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
     }
 
-    #[DataProvider('statusHasFailedStateDataProvider')]
-    public function testStatusHasFailedState(MachineState $state, bool $expected): void
-    {
+    #[DataProvider('statusHasStateBooleansDataProvider')]
+    public function testStatusHasStateBooleans(
+        MachineState $state,
+        bool $expectedHasFailedState,
+        bool $expectedHasActiveState,
+        bool $expectedHasEndingState,
+        bool $expectedHasEndState
+    ): void {
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState($state);
         $this->machineRepository->add($machine);
@@ -265,70 +285,154 @@ class MachineTest extends AbstractMachineTestCase
         $responseData = json_decode($response->getBody()->getContents(), true);
         \assert(is_array($responseData) && array_key_exists('has_failed_state', $responseData));
 
-        self::assertSame($expected, $responseData['has_failed_state']);
+        self::assertSame(
+            $expectedHasFailedState,
+            $responseData['has_failed_state'],
+            sprintf(
+                '\'%s\' expected %s, actual %s',
+                'has_failed_state',
+                $expectedHasFailedState ? 'true' : 'false',
+                $responseData['has_failed_state'] ? 'true' : 'false',
+            )
+        );
+
+        self::assertSame(
+            $expectedHasActiveState,
+            $responseData['has_active_state'],
+            sprintf(
+                '\'%s\' expected %s, actual %s',
+                'has_active_state',
+                $expectedHasActiveState ? 'true' : 'false',
+                $responseData['has_active_state'] ? 'true' : 'false',
+            )
+        );
+
+        self::assertSame(
+            $expectedHasEndingState,
+            $responseData['has_ending_state'],
+            sprintf(
+                '\'%s\' expected %s, actual %s',
+                'has_ending_state',
+                $expectedHasEndingState ? 'true' : 'false',
+                $responseData['has_ending_state'] ? 'true' : 'false',
+            )
+        );
+
+        self::assertSame(
+            $expectedHasEndState,
+            $responseData['has_end_state'],
+            sprintf(
+                '\'%s\' expected %s, actual %s',
+                'has_end_state',
+                $expectedHasEndState ? 'true' : 'false',
+                $responseData['has_end_state'] ? 'true' : 'false',
+            )
+        );
     }
 
     /**
      * @return array<mixed>
      */
-    public static function statusHasFailedStateDataProvider(): array
+    public static function statusHasStateBooleansDataProvider(): array
     {
         return [
             MachineState::UNKNOWN->value => [
                 'state' => MachineState::UNKNOWN,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::FIND_RECEIVED->value => [
                 'state' => MachineState::FIND_RECEIVED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::FIND_FINDING->value => [
                 'state' => MachineState::FIND_FINDING,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::FIND_NOT_FOUND->value => [
                 'state' => MachineState::FIND_NOT_FOUND,
-                'expected' => true,
+                'expectedHasFailedState' => true,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => true,
             ],
             MachineState::FIND_NOT_FINDABLE->value => [
                 'state' => MachineState::FIND_NOT_FINDABLE,
-                'expected' => true,
+                'expectedHasFailedState' => true,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => true,
             ],
             MachineState::CREATE_RECEIVED->value => [
                 'state' => MachineState::CREATE_RECEIVED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::CREATE_REQUESTED->value => [
                 'state' => MachineState::CREATE_REQUESTED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::CREATE_FAILED->value => [
                 'state' => MachineState::CREATE_FAILED,
-                'expected' => true,
+                'expectedHasFailedState' => true,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => true,
             ],
             MachineState::UP_STARTED->value => [
                 'state' => MachineState::UP_STARTED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::UP_ACTIVE->value => [
                 'state' => MachineState::UP_ACTIVE,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => true,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => false,
             ],
             MachineState::DELETE_RECEIVED->value => [
                 'state' => MachineState::DELETE_RECEIVED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => true,
+                'expectedHasEndState' => false,
             ],
             MachineState::DELETE_REQUESTED->value => [
                 'state' => MachineState::DELETE_REQUESTED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => true,
+                'expectedHasEndState' => false,
             ],
             MachineState::DELETE_FAILED->value => [
                 'state' => MachineState::DELETE_FAILED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => true,
             ],
             MachineState::DELETE_DELETED->value => [
                 'state' => MachineState::DELETE_DELETED,
-                'expected' => false,
+                'expectedHasFailedState' => false,
+                'expectedHasActiveState' => false,
+                'expectedHasEndingState' => false,
+                'expectedHasEndState' => true,
             ],
         ];
     }
@@ -351,6 +455,9 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::ENDING,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => false,
+                'has_ending_state' => true,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
@@ -373,6 +480,9 @@ class MachineTest extends AbstractMachineTestCase
                 'state_category' => MachineStateCategory::ENDING,
                 'action_failure' => null,
                 'has_failed_state' => false,
+                'has_active_state' => false,
+                'has_ending_state' => true,
+                'has_end_state' => false,
             ]),
             $response->getBody()->getContents()
         );
