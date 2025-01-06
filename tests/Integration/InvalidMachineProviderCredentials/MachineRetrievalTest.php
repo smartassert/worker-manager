@@ -23,7 +23,6 @@ class MachineRetrievalTest extends AbstractIntegrationMachineTestCase
         \assert($actionFailureRepository instanceof ActionFailureRepository);
 
         $actionFailure = $actionFailureRepository->findAll()[0];
-        self::assertInstanceOf(ActionFailure::class, $actionFailure);
 
         self::assertEquals(
             new ActionFailure(

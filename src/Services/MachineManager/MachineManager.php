@@ -36,19 +36,17 @@ readonly class MachineManager
     {
         $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
-            if ($machineManager instanceof ProviderMachineManagerInterface) {
-                try {
-                    return $machineManager->create(
-                        $machine->getId(),
-                        $this->machineNameFactory->create($machine->getId())
-                    );
-                } catch (\Throwable $exception) {
-                    $exceptions[] = $this->exceptionFactory->create(
-                        $machine->getId(),
-                        MachineAction::CREATE,
-                        $exception
-                    );
-                }
+            try {
+                return $machineManager->create(
+                    $machine->getId(),
+                    $this->machineNameFactory->create($machine->getId())
+                );
+            } catch (\Throwable $exception) {
+                $exceptions[] = $this->exceptionFactory->create(
+                    $machine->getId(),
+                    MachineAction::CREATE,
+                    $exception
+                );
             }
         }
 
@@ -102,14 +100,12 @@ readonly class MachineManager
     {
         $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
-            if ($machineManager instanceof ProviderMachineManagerInterface) {
-                try {
-                    $machineManager->remove($machineId, $this->machineNameFactory->create($machineId));
-                } catch (\Throwable $exception) {
-                    $newException = $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
-                    if (!$newException instanceof NotFoundRemoteMachineExceptionInterface) {
-                        $exceptions[] = $newException;
-                    }
+            try {
+                $machineManager->remove($machineId, $this->machineNameFactory->create($machineId));
+            } catch (\Throwable $exception) {
+                $newException = $this->exceptionFactory->create($machineId, MachineAction::DELETE, $exception);
+                if (!$newException instanceof NotFoundRemoteMachineExceptionInterface) {
+                    $exceptions[] = $newException;
                 }
             }
         }
@@ -128,16 +124,14 @@ readonly class MachineManager
     {
         $exceptions = [];
         foreach ($this->providerMachineManagers as $machineManager) {
-            if ($machineManager instanceof ProviderMachineManagerInterface) {
-                try {
-                    $remoteMachine = $machineManager->get($machineId, $this->machineNameFactory->create($machineId));
+            try {
+                $remoteMachine = $machineManager->get($machineId, $this->machineNameFactory->create($machineId));
 
-                    if ($remoteMachine instanceof RemoteMachineInterface) {
-                        return $remoteMachine;
-                    }
-                } catch (\Throwable $exception) {
-                    $exceptions[] = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
+                if ($remoteMachine instanceof RemoteMachineInterface) {
+                    return $remoteMachine;
                 }
+            } catch (\Throwable $exception) {
+                $exceptions[] = $this->exceptionFactory->create($machineId, MachineAction::FIND, $exception);
             }
         }
 
@@ -151,10 +145,7 @@ readonly class MachineManager
     private function findProvider(MachineProvider $machineProvider): ?ProviderMachineManagerInterface
     {
         foreach ($this->providerMachineManagers as $machineManager) {
-            if (
-                $machineManager instanceof ProviderMachineManagerInterface
-                && $machineManager->supports($machineProvider)
-            ) {
+            if ($machineManager->supports($machineProvider)) {
                 return $machineManager;
             }
         }

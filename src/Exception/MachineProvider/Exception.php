@@ -30,11 +30,8 @@ class Exception extends \Exception implements ExceptionInterface
 
     private static function createMessage(string $machineId, MachineAction $action): string
     {
-        $className = '';
         $classNameParts = explode('\\', static::class);
-        if (is_array($classNameParts)) {
-            $className = array_pop($classNameParts);
-        }
+        $className = array_pop($classNameParts);
 
         return sprintf(
             '%s Unable to perform action "%s" for resource "%s"',

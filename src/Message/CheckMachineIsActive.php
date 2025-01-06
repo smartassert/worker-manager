@@ -28,13 +28,8 @@ class CheckMachineIsActive extends AbstractMachineRequest implements ChainedMach
     ) {
         parent::__construct($uniqueId, $machineId);
 
-        $this->onSuccessCollection = array_filter($onSuccessCollection, function ($value) {
-            return $value instanceof MachineRequestInterface;
-        });
-
-        $this->onFailureCollection = array_filter($onFailureCollection, function ($value) {
-            return $value instanceof MachineRequestInterface;
-        });
+        $this->onSuccessCollection = $onSuccessCollection;
+        $this->onFailureCollection = $onFailureCollection;
     }
 
     /**

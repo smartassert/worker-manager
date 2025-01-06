@@ -14,7 +14,7 @@ class ExceptionFactory
     private array $factories = [];
 
     /**
-     * @param ExceptionFactoryInterface[] $factories
+     * @param iterable<mixed> $factories
      */
     public function __construct(iterable $factories)
     {
