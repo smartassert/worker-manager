@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Services;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 
 class EntityRemover
 {
@@ -21,14 +20,12 @@ class EntityRemover
     {
         $repository = $this->entityManager->getRepository($className);
 
-        if ($repository instanceof EntityRepository) {
-            $entities = $repository->findAll();
+        $entities = $repository->findAll();
 
-            foreach ($entities as $entity) {
-                $this->entityManager->remove($entity);
-            }
-
-            $this->entityManager->flush();
+        foreach ($entities as $entity) {
+            $this->entityManager->remove($entity);
         }
+
+        $this->entityManager->flush();
     }
 }

@@ -29,7 +29,7 @@ class GuzzleExceptionFactory implements ExceptionFactoryInterface
     private function findCurlCode(ConnectException $exception): int
     {
         $parts = explode(':', $exception->getMessage());
-        $curlErrorPart = $parts[0] ?? '';
+        $curlErrorPart = $parts[0];
 
         return str_starts_with($curlErrorPart, self::CURL_ERROR_PREFIX)
             ? (int) str_replace(self::CURL_ERROR_PREFIX, '', $parts[0])

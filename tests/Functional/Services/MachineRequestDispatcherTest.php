@@ -36,7 +36,6 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
 
     public function testDispatchDelayConfiguration(): void
     {
-        self::assertIsInt($this->checkMachineIsActiveDispatchDelay);
         self::assertGreaterThan(0, $this->checkMachineIsActiveDispatchDelay);
 
         self::assertSame(

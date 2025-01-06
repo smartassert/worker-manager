@@ -46,9 +46,7 @@ class MachineRequestDispatcher
         $envelopes = [];
 
         foreach ($collection as $request) {
-            if ($request instanceof MachineRequestInterface) {
-                $envelopes[] = $this->dispatch($request);
-            }
+            $envelopes[] = $this->dispatch($request);
         }
 
         return $envelopes;

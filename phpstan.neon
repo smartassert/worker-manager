@@ -1,8 +1,28 @@
 parameters:
-  level: 9
+  level: 10
   paths:
     - bin
     - public
     - src
     - tests
   inferPrivatePropertyTypeFromConstructor: true
+  ignoreErrors:
+    -
+      message: "#Trying to invoke mixed but it's not a callable#"
+      path: src/Kernel.php
+
+    -
+      message: '#Call to static method .*::assertInstanceOf.* with .*AuthenticationException#'
+      path: tests/Unit/Exception/MachineProvider/AuthenticationExceptionTest.php
+
+    -
+      message: '#Call to static method .*::assertInstanceOf.* with .*ApiLimitExceededException#'
+      path: tests/Unit/Exception/MachineProvider/DigitalOcean/ApiLimitExceededExceptionTest.php
+
+    -
+      message: '#Call to static method .*::assertInstanceOf.* with .*DropletLimitExceededException#'
+      path: tests/Unit/Exception/MachineProvider/DigitalOcean/DropletLimitExceededExceptionTest.php
+
+    -
+      message: '#Call to static method .*::assertInstanceOf.* with .*UnsupportedProviderException#'
+      path: tests/Unit/Exception/UnsupportedProviderExceptionTest.php

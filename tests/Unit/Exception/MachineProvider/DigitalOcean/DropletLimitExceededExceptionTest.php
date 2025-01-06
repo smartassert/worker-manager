@@ -37,14 +37,6 @@ class DropletLimitExceededExceptionTest extends TestCase
         );
     }
 
-    public function testGetReason(): void
-    {
-        self::assertSame(
-            UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED,
-            $this->exception->getReason()
-        );
-    }
-
     public function testIsUnrecoverable(): void
     {
         self::assertInstanceOf(UnrecoverableExceptionInterface::class, $this->exception);
