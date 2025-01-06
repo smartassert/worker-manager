@@ -1,5 +1,5 @@
 parameters:
-  level: 9
+  level: 10
   paths:
     - bin
     - public
@@ -7,6 +7,10 @@ parameters:
     - tests
   inferPrivatePropertyTypeFromConstructor: true
   ignoreErrors:
+    -
+      message: "#Trying to invoke mixed but it's not a callable#"
+      path: src/Kernel.php
+
     -
       message: '#Call to static method .*::assertInstanceOf.* with .*AuthenticationException#'
       path: tests/Unit/Exception/MachineProvider/AuthenticationExceptionTest.php
