@@ -17,7 +17,28 @@ readonly class DropletFactory
      *
      * @throws InvalidEntityDataException
      */
-    public function create(array $data): Droplet
+    public function createFromSingleCollection(array $data): Droplet
+    {
+        $dropletsData = $data['droplets'] ?? null;
+        $dropletsData = is_array($dropletsData) ? $dropletsData : null;
+
+        if (
+            null === $dropletsData
+            || 1 !== count($dropletsData)
+            || !is_array($dropletsData[0])
+        ) {
+            throw new InvalidEntityDataException('droplet_as_collection', $data);
+        }
+
+        return $this->create($dropletsData[0]);
+    }
+
+    /**
+     * @param array<mixed> $data
+     *
+     * @throws InvalidEntityDataException
+     */
+    private function create(array $data): Droplet
     {
         $id = $data['id'] ?? null;
         $id = (is_int($id) && $id > 0) ? $id : null;
