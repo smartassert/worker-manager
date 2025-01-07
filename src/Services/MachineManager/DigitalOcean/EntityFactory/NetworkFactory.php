@@ -22,12 +22,7 @@ readonly class NetworkFactory
             throw new InvalidEntityDataException('network', $data);
         }
 
-        $isPublic = $data['is_public'] ?? null;
-        $isPublic = is_bool($isPublic) ? $isPublic : null;
-
-        if (null === $isPublic) {
-            throw new InvalidEntityDataException('network', $data);
-        }
+        $isPublic = 'public' === ($data['type'] ?? null);
 
         return new Network($ipAddress, $isPublic, $ipVersion);
     }
