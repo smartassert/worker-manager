@@ -5,7 +5,7 @@ namespace App\Services\MachineManager\DigitalOcean\Entity;
 readonly class NetworkCollection
 {
     /**
-     * @param non-empty-array<Network> $networks
+     * @param Network[] $networks
      */
     public function __construct(
         public array $networks,
