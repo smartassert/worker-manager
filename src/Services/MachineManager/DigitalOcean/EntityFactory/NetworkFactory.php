@@ -9,10 +9,11 @@ readonly class NetworkFactory
 {
     /**
      * @param array<mixed> $data
+     * @param positive-int $ipVersion
      *
      * @throws InvalidEntityDataException
      */
-    public function create(array $data): Network
+    public function create(array $data, int $ipVersion): Network
     {
         $ipAddress = $data['ip_address'] ?? null;
         $ipAddress = (is_string($ipAddress) && '' !== $ipAddress) ? $ipAddress : null;
@@ -28,6 +29,6 @@ readonly class NetworkFactory
             throw new InvalidEntityDataException('network', $data);
         }
 
-        return new Network($ipAddress, $isPublic);
+        return new Network($ipAddress, $isPublic, $ipVersion);
     }
 }
