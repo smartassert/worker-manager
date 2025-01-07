@@ -3,6 +3,7 @@
 namespace App\Services\MachineManager\DigitalOcean\EntityFactory;
 
 use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
+use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 
 readonly class DropletFactory
@@ -16,17 +17,22 @@ readonly class DropletFactory
      * @param array<mixed> $data
      *
      * @throws InvalidEntityDataException
+     * @throws EmptyDropletCollectionException
      */
     public function createFromSingleCollection(array $data): Droplet
     {
         $dropletsData = $data['droplets'] ?? null;
         $dropletsData = is_array($dropletsData) ? $dropletsData : null;
 
-        if (
-            null === $dropletsData
-            || 1 !== count($dropletsData)
-            || !is_array($dropletsData[0])
-        ) {
+        if (null === $dropletsData) {
+            throw new InvalidEntityDataException('droplet_as_collection', $data);
+        }
+
+        if (0 === count($dropletsData)) {
+            throw new EmptyDropletCollectionException();
+        }
+
+        if (1 !== count($dropletsData) || !is_array($dropletsData[0])) {
             throw new InvalidEntityDataException('droplet_as_collection', $data);
         }
 
