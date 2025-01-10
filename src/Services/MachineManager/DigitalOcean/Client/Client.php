@@ -10,6 +10,9 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
+use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
+use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
+use App\Services\MachineManager\DigitalOcean\Request\RequestInterface;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -21,9 +24,6 @@ use Psr\Http\Message\ResponseInterface;
 
 readonly class Client
 {
-    private const int DROPLETS_PER_PAGE = 1;
-    private const int DROPLET_PAGE = 1;
-
     /**
      * @var non-empty-string
      */
@@ -53,14 +53,7 @@ readonly class Client
      */
     public function getDroplet(string $name): Droplet
     {
-        $url = sprintf(
-            '/droplets?tag_name=%s&page=%d&per_page=%d',
-            $name,
-            self::DROPLET_PAGE,
-            self::DROPLETS_PER_PAGE,
-        );
-
-        $responseData = $this->getResponseData('GET', $url);
+        $responseData = $this->getResponseData(new GetDropletRequest($name));
 
         return $this->dropletFactory->createFromSingleCollection($responseData);
     }
@@ -75,7 +68,7 @@ readonly class Client
     {
         $url = sprintf('/droplets?tag_name=%s', $name);
 
-        $response = $this->getResponse('DELETE', $url);
+        $response = $this->getResponse(new RemoveDropletRequest($name));
         $statusCode = $response->getStatusCode();
 
         if (204 === $statusCode) {
@@ -106,11 +99,11 @@ readonly class Client
      * @throws NoDigitalOceanClientException
      * @throws ErrorException
      */
-    private function getResponseData(string $method, string $url): array
+    private function getResponseData(RequestInterface $request): array
     {
         $responseData = [];
 
-        $response = $this->getResponse($method, $url);
+        $response = $this->getResponse($request);
         $statusCode = $response->getStatusCode();
 
         if ('application/json' === $response->getHeaderLine('Content-Type')) {
@@ -132,10 +125,10 @@ readonly class Client
      * @throws ClientExceptionInterface
      * @throws NoDigitalOceanClientException
      */
-    private function getResponse(string $method, string $url): ResponseInterface
+    private function getResponse(RequestInterface $request): ResponseInterface
     {
         foreach ($this->tokens as $token) {
-            $httpRequest = $this->createRequest($token, $method, $url);
+            $httpRequest = $this->createRequest($token, $request->getMethod(), $request->getUrl());
 
             $response = $this->httpClient->sendRequest($httpRequest);
             $statusCode = $response->getStatusCode();
