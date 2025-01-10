@@ -166,7 +166,10 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
     public function testRemoveSuccess(): void
     {
-        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+        $mockHandler->append(new Response(204));
+
         $this->machineManager->remove(self::MACHINE_ID, $this->machineName);
 
         self::expectNotToPerformAssertions();
