@@ -9,6 +9,7 @@ use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -65,6 +66,40 @@ readonly class Client
     }
 
     /**
+     * @throws ClientExceptionInterface
+     * @throws ErrorException
+     * @throws NoDigitalOceanClientException
+     * @throws MissingDropletException
+     */
+    public function deleteDroplet(string $name): void
+    {
+        $url = sprintf('/droplets?tag_name=%s', $name);
+
+        $response = $this->getResponse('DELETE', $url);
+        $statusCode = $response->getStatusCode();
+
+        if (204 === $statusCode) {
+            return;
+        }
+
+        if (404 === $statusCode) {
+            throw new MissingDropletException();
+        }
+
+        $responseData = [];
+
+        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+            $responseContent = $response->getBody()->getContents();
+            $response->getBody()->rewind();
+
+            $responseData = json_decode($responseContent, true);
+            $responseData = is_array($responseData) ? $responseData : [];
+        }
+
+        throw $this->createErrorException($responseData, $statusCode);
+    }
+
+    /**
      * @return array<mixed>
      *
      * @throws ClientExceptionInterface
@@ -73,9 +108,32 @@ readonly class Client
      */
     private function getResponseData(string $method, string $url): array
     {
-        $statusCode = 0;
         $responseData = [];
 
+        $response = $this->getResponse($method, $url);
+        $statusCode = $response->getStatusCode();
+
+        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+            $responseContent = $response->getBody()->getContents();
+            $response->getBody()->rewind();
+
+            $responseData = json_decode($responseContent, true);
+            $responseData = is_array($responseData) ? $responseData : [];
+
+            if (200 === $statusCode) {
+                return $responseData;
+            }
+        }
+
+        throw $this->createErrorException($responseData, $statusCode);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws NoDigitalOceanClientException
+     */
+    private function getResponse(string $method, string $url): ResponseInterface
+    {
         foreach ($this->tokens as $token) {
             $httpRequest = $this->createRequest($token, $method, $url);
 
@@ -86,25 +144,13 @@ readonly class Client
                 throw $this->createApiLimitExceededException($response);
             }
 
-            if ('application/json' === $response->getHeaderLine('Content-Type')) {
-                $responseContent = $response->getBody()->getContents();
-                $response->getBody()->rewind();
-
-                $responseData = json_decode($responseContent, true);
-                $responseData = is_array($responseData) ? $responseData : [];
-
-                if (200 === $statusCode) {
-                    return $responseData;
-                }
+            if (401 !== $statusCode) {
+                return $response;
             }
         }
 
-        if (401 === $statusCode) {
-            // @todo replace in #601
-            throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
-        }
-
-        throw $this->createErrorException($responseData, $statusCode);
+        // @todo replace in #601
+        throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
     }
 
     /**

@@ -10,22 +10,26 @@ use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
+use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException as LocalApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\NoDigitalOceanClientException;
 use App\Exception\Stack;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
+use DigitalOceanV2\Entity\RateLimit;
+use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -36,21 +40,11 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
     private const MACHINE_ID = 'id';
 
     private Machine $machine;
-    private DropletApiProxy $dropletApiProxy;
-    private MachineNameFactory $machineNameFactory;
     private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
-
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineNameFactory = $machineNameFactory;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -79,9 +73,9 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
     {
         self::assertSame(MachineState::DELETE_RECEIVED, $this->machine->getState());
 
-        $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
-
-        $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+        $mockHandler->append(new Response(204));
 
         $message = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
@@ -113,16 +107,19 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
-    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
+    public function testInvokeThrowsException(ResponseInterface $httpResponse, \Exception $expectedException): void
     {
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
+
         $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
         $machineRequestDispatcher->shouldNotReceive('dispatch');
         $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
 
         $handler = $this->createHandler($machineRequestDispatcher);
-
-        $expectedMachineName = $this->machineNameFactory->create(self::MACHINE_ID);
-        $this->dropletApiProxy->withRemoveTaggedCall($expectedMachineName, $vendorException);
 
         $message = new DeleteMachine('id0', self::MACHINE_ID);
 
@@ -141,50 +138,136 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
      */
     public static function invokeThrowsExceptionDataProvider(): array
     {
-        $http401Exception = new RuntimeException('Unauthorized', 401);
+        $rateLimitReset = (\time() + 1000);
 
-        $authenticationException = new AuthenticationException(
-            MachineProvider::DIGITALOCEAN,
-            self::MACHINE_ID,
-            MachineAction::DELETE,
-            new Stack([$http401Exception])
-        );
+        $internalServerErrorId = md5((string) rand());
+        $internalServerErrorMessage = md5((string) rand());
 
-        $http503Exception = new RuntimeException('Service Unavailable', 503);
-
-        $serviceUnavailableException = new HttpException(
-            self::MACHINE_ID,
-            MachineAction::DELETE,
-            $http503Exception
-        );
-
-        $machineNotRemovableAuthenticationException = new MachineActionFailedException(
-            self::MACHINE_ID,
-            MachineAction::DELETE,
-            new Stack([$authenticationException])
-        );
-
-        $machineNotRemovableServiceUnavailableException = new MachineActionFailedException(
-            self::MACHINE_ID,
-            MachineAction::DELETE,
-            new Stack([$serviceUnavailableException])
-        );
+        $serviceUnavailableErrorId = md5((string) rand());
+        $serviceUnavailableErrorMessage = md5((string) rand());
 
         return [
-            'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
+            'unauthorized' => [
+                'httpResponse' => new Response(401),
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $machineNotRemovableAuthenticationException->getMessage(),
-                    $machineNotRemovableAuthenticationException->getCode(),
-                    $machineNotRemovableAuthenticationException
+                    'Action "delete" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::DELETE,
+                        new Stack([
+                            new AuthenticationException(
+                                MachineProvider::DIGITALOCEAN,
+                                self::MACHINE_ID,
+                                MachineAction::DELETE,
+                                new Stack([
+                                    new RuntimeException('Unauthorized', 401),
+                                ])
+                            ),
+                        ])
+                    )
                 ),
             ],
-            'HTTP 503' => [
-                'vendorException' => $http503Exception,
+            'api limit exceeded' => [
+                'httpResponse' => new Response(
+                    429,
+                    [
+                        'Content-Type' => 'application/json',
+                        'RateLimit-limit' => '5000',
+                        'RateLimit-Remaining' => '0',
+                        'RateLimit-Reset' => (string) $rateLimitReset,
+                        'Retry-After' => '1000',
+                    ],
+                    (string) json_encode([
+                        'id' => 'too_many_requests',
+                        'message' => 'API Rate limit exceeded',
+                    ])
+                ),
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $machineNotRemovableServiceUnavailableException->getMessage(),
-                    $machineNotRemovableServiceUnavailableException->getCode(),
-                    $machineNotRemovableServiceUnavailableException
+                    'Action "delete" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::DELETE,
+                        new Stack([
+                            new LocalApiLimitExceededException(
+                                $rateLimitReset,
+                                self::MACHINE_ID,
+                                MachineAction::DELETE,
+                                new VendorApiLimitExceededException(
+                                    'API Rate limit exceeded',
+                                    429,
+                                    new RateLimit([
+                                        'reset' => $rateLimitReset,
+                                        'remaining' => 0,
+                                        'limit' => 5000,
+                                    ])
+                                ),
+                            )
+                        ])
+                    )
+                ),
+            ],
+            'internal server error' => [
+                'httpResponse' => new Response(
+                    500,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $internalServerErrorId,
+                        'message' => $internalServerErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "delete" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::DELETE,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::DELETE,
+                                new ErrorException(
+                                    $internalServerErrorId,
+                                    $internalServerErrorMessage,
+                                    500
+                                )
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'service unavailable' => [
+                'httpResponse' => new Response(
+                    503,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $serviceUnavailableErrorId,
+                        'message' => $serviceUnavailableErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "delete" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::DELETE,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::DELETE,
+                                new ErrorException(
+                                    $serviceUnavailableErrorId,
+                                    $serviceUnavailableErrorMessage,
+                                    503
+                                )
+                            ),
+                        ])
+                    )
                 ),
             ],
         ];
