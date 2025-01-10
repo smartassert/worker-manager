@@ -28,8 +28,6 @@ use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ResourceNotFoundException;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
@@ -226,7 +224,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     /**
      * @param class-string $expectedExceptionClass
      */
-    #[DataProvider('getThrowsExceptionDataProvider')]
+    #[DataProvider('getDeleteThrowsExceptionDataProvider')]
     public function testGetThrowsException(ResponseInterface $httpResponse, string $expectedExceptionClass): void
     {
         $machine = new Machine(self::MACHINE_ID);
@@ -254,7 +252,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     /**
      * @return array<mixed>
      */
-    public static function getThrowsExceptionDataProvider(): array
+    public static function getDeleteThrowsExceptionDataProvider(): array
     {
         $rateLimitReset = (\time() + 1000);
 
@@ -284,9 +282,13 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('removeSuccessDataProvider')]
-    public function testRemoveSuccess(?\Exception $exception): void
+    public function testRemoveSuccess(ResponseInterface $httpResponse): void
     {
-        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $exception);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $this->expectNotToPerformAssertions();
 
@@ -300,10 +302,10 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     {
         return [
             'removed' => [
-                'exception' => null,
+                'httpResponse' => new Response(204),
             ],
             'not found' => [
-                'exception' => new ResourceNotFoundException(),
+                'httpResponse' => new Response(404),
             ],
         ];
     }
@@ -311,30 +313,56 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     /**
      * @param class-string $expectedExceptionClass
      */
-    #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
-    public function testRemoveThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
+    #[DataProvider('getDeleteThrowsExceptionDataProvider')]
+    public function testRemoveThrowsException(ResponseInterface $httpResponse, string $expectedExceptionClass): void
     {
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
+
+        $exception = null;
+
         try {
-            $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $dropletApiException);
             $this->machineManager->remove(self::MACHINE_ID);
-            self::fail($dropletApiException::class . ' not thrown');
         } catch (MachineActionFailedException $exception) {
-            $innerException = $exception->getExceptionStack()->first();
-            self::assertInstanceOf(ExceptionInterface::class, $innerException);
-            self::assertSame($expectedExceptionClass, $innerException::class);
-            self::assertSame(MachineAction::DELETE, $innerException->getAction());
-            self::assertEquals($dropletApiException, $innerException->getRemoteException());
         }
+
+        self::assertInstanceOf(MachineActionFailedException::class, $exception);
+
+        $innerException = $exception->getExceptionStack()->first();
+
+        self::assertInstanceOf(ExceptionInterface::class, $innerException);
+        self::assertSame($expectedExceptionClass, $innerException::class);
+        self::assertSame(MachineAction::DELETE, $innerException->getAction());
     }
 
     public function testRemoveThrowsMachineNotRemovableException(): void
     {
-        $httpException = new RuntimeException('Service Unavailable', 503);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
 
-        $this->dropletApiProxy->withRemoveTaggedCall($this->machineName, $httpException);
+        $httpResponse = new Response(
+            503,
+            [
+                'Content-Type' => 'application/json',
+            ],
+            (string) json_encode([
+                'id' => 'service_unavailable',
+                'message' => 'Service unavailable',
+            ])
+        );
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $expectedExceptionStack = new Stack([
-            new HttpException(self::MACHINE_ID, MachineAction::DELETE, $httpException),
+            new HttpException(
+                self::MACHINE_ID,
+                MachineAction::DELETE,
+                new ErrorException('service_unavailable', 'Service unavailable', 503)
+            ),
         ]);
 
         try {
