@@ -73,9 +73,32 @@ readonly class Client
      */
     private function getResponseData(string $method, string $url): array
     {
-        $statusCode = 0;
         $responseData = [];
 
+        $response = $this->getResponse($method, $url);
+        $statusCode = $response->getStatusCode();
+
+        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+            $responseContent = $response->getBody()->getContents();
+            $response->getBody()->rewind();
+
+            $responseData = json_decode($responseContent, true);
+            $responseData = is_array($responseData) ? $responseData : [];
+
+            if (200 === $statusCode) {
+                return $responseData;
+            }
+        }
+
+        throw $this->createErrorException($responseData, $statusCode);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws NoDigitalOceanClientException
+     */
+    private function getResponse(string $method, string $url): ResponseInterface
+    {
         foreach ($this->tokens as $token) {
             $httpRequest = $this->createRequest($token, $method, $url);
 
@@ -86,25 +109,13 @@ readonly class Client
                 throw $this->createApiLimitExceededException($response);
             }
 
-            if ('application/json' === $response->getHeaderLine('Content-Type')) {
-                $responseContent = $response->getBody()->getContents();
-                $response->getBody()->rewind();
-
-                $responseData = json_decode($responseContent, true);
-                $responseData = is_array($responseData) ? $responseData : [];
-
-                if (200 === $statusCode) {
-                    return $responseData;
-                }
+            if (401 !== $statusCode) {
+                return $response;
             }
         }
 
-        if (401 === $statusCode) {
-            // @todo replace in #601
-            throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
-        }
-
-        throw $this->createErrorException($responseData, $statusCode);
+        // @todo replace in #601
+        throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
     }
 
     /**
