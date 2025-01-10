@@ -13,6 +13,8 @@ use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\MissingRemoteMachineException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\NoDigitalOceanClientException;
+use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
@@ -24,7 +26,9 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
     public function handles(\Throwable $exception): bool
     {
-        return $exception instanceof VendorExceptionInterface || $exception instanceof NoDigitalOceanClientException;
+        return $exception instanceof VendorExceptionInterface
+            || $exception instanceof NoDigitalOceanClientException
+            || $exception instanceof ErrorException;
     }
 
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
@@ -56,7 +60,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if ($exception instanceof ResourceNotFoundException) {
+        if ($exception instanceof ResourceNotFoundException || $exception instanceof EmptyDropletCollectionException) {
             if (MachineAction::GET === $action) {
                 return new MissingRemoteMachineException(
                     MachineProvider::DIGITALOCEAN,
@@ -74,7 +78,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if ($exception instanceof RuntimeException) {
+        if ($exception instanceof RuntimeException || $exception instanceof ErrorException) {
             return new HttpException($resourceId, $action, $exception);
         }
 
