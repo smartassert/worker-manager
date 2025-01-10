@@ -6,9 +6,13 @@ use App\Enum\MachineProvider;
 use App\Exception\NoDigitalOceanClientException;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
+use App\Services\MachineManager\DigitalOcean\Client\Client;
+use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\ProviderMachineManagerInterface;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
+use Psr\Http\Client\ClientExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
 readonly class MachineManager implements ProviderMachineManagerInterface
@@ -16,6 +20,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
     public function __construct(
         private Factory $dropletConfigurationFactory,
         private ClientPool $clientPool,
+        private Client $digitalOceanClient,
     ) {
     }
 
@@ -72,15 +77,19 @@ readonly class MachineManager implements ProviderMachineManagerInterface
 
     /**
      * @param non-empty-string $machineId
+     * @param non-empty-string $name
      *
-     * @throws VendorExceptionInterface
+     * @throws InvalidEntityDataException
      * @throws NoDigitalOceanClientException
+     * @throws ClientExceptionInterface
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
-        $droplets = $this->clientPool->droplet()->getAll($name);
-
-        return 1 === count($droplets) ? new RemoteMachine($droplets[0]) : null;
+        try {
+            return new RemoteMachine($this->digitalOceanClient->getDroplet($name));
+        } catch (EmptyDropletCollectionException) {
+            return null;
+        }
     }
 
     public function supports(MachineProvider $provider): bool
