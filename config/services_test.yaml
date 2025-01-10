@@ -81,3 +81,24 @@ services:
         arguments:
             $clients:
                 - '@app.tests.digitalocean.client'
+
+    app.tests.httpclient.mocked.handler:
+        class: GuzzleHttp\Handler\MockHandler
+
+    app.tests.httpclient.mocked.handler_stack:
+        class: GuzzleHttp\HandlerStack
+        arguments:
+            $handler: '@app.tests.httpclient.mocked.handler'
+
+    app.tests.httpclient.mocked.client:
+        public: true
+        class: GuzzleHttp\Client
+        arguments:
+            $config:
+                handler: '@app.tests.httpclient.mocked.handler_stack'
+
+    App\Services\MachineManager\DigitalOcean\Client\Client:
+        arguments:
+            $baseUrl: 'https://api.digitalocean.com/v2'
+            $tokens: ['invalid-token-1', 'invalid-token-2']
+            $httpClient: '@app.tests.httpclient.mocked.client'

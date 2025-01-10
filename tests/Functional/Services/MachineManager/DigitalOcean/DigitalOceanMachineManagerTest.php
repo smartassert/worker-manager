@@ -8,6 +8,9 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
+use App\Services\MachineManager\DigitalOcean\Entity\Network;
+use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use App\Services\MachineManager\DigitalOcean\MachineManager;
 use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -15,6 +18,8 @@ use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
 use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 
 class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 {
@@ -24,6 +29,10 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
     private MachineManager $machineManager;
     private Machine $machine;
+
+    /**
+     * @var non-empty-string
+     */
     private string $machineName;
     private DropletApiProxy $dropletApiProxy;
 
@@ -84,27 +93,51 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
     public function testGetSuccess(): void
     {
-        $ipAddresses = ['10.0.0.1', '127.0.0.1'];
-
         self::assertSame([], $this->machine->getIpAddresses());
 
-        $dropletData = [
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => $ipAddresses[0],
-                        'type' => 'public',
-                    ],
-                    (object) [
-                        'ip_address' => $ipAddresses[1],
-                        'type' => 'public',
+        $ipAddresses = ['10.0.0.1', '127.0.0.1'];
+
+        $dropletId = rand(1, PHP_INT_MAX);
+        $dropletStatus = RemoteMachine::STATE_NEW;
+
+        $expectedDropletEntity = new Droplet(
+            $dropletId,
+            RemoteMachine::STATE_NEW,
+            new NetworkCollection([
+                new Network($ipAddresses[0], true, 4),
+                new Network($ipAddresses[1], true, 4),
+            ])
+        );
+
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode([
+                'droplets' => [
+                    [
+                        'id' => $dropletId,
+                        'status' => $dropletStatus,
+                        'networks' => [
+                            'v4' => [
+                                [
+                                    'ip_address' => $ipAddresses[0],
+                                    'type' => 'public',
+                                ],
+                                [
+                                    'ip_address' => $ipAddresses[1],
+                                    'type' => 'public',
+                                ],
+                            ],
+                        ],
                     ],
                 ],
-            ],
-        ];
-
-        $expectedDropletEntity = new DropletEntity($dropletData);
-        $this->dropletApiProxy->withGetAllCall($this->machineName, [$expectedDropletEntity]);
+            ]),
+        ));
 
         $remoteMachine = $this->machineManager->get(self::MACHINE_ID, $this->machineName);
 
@@ -113,7 +146,18 @@ class DigitalOceanMachineManagerTest extends AbstractBaseFunctionalTestCase
 
     public function testGetMachineNotFound(): void
     {
-        $this->dropletApiProxy->withGetAllCall($this->machineName, []);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode([
+                'droplets' => [],
+            ]),
+        ));
 
         $remoteMachine = $this->machineManager->get(self::MACHINE_ID, $this->machineName);
 
