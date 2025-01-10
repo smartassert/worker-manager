@@ -8,6 +8,7 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
 use App\Services\MachineManager\DigitalOcean\Client\Client;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\ProviderMachineManagerInterface;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
@@ -82,6 +83,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws InvalidEntityDataException
      * @throws NoDigitalOceanClientException
      * @throws ClientExceptionInterface
+     * @throws ErrorException
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
