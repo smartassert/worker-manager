@@ -9,6 +9,7 @@ use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
@@ -62,6 +63,40 @@ readonly class Client
         $responseData = $this->getResponseData('GET', $url);
 
         return $this->dropletFactory->createFromSingleCollection($responseData);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws ErrorException
+     * @throws NoDigitalOceanClientException
+     * @throws MissingDropletException
+     */
+    public function deleteDroplet(string $name): void
+    {
+        $url = sprintf('/droplets?tag_name=%s', $name);
+
+        $response = $this->getResponse('DELETE', $url);
+        $statusCode = $response->getStatusCode();
+
+        if (204 === $statusCode) {
+            return;
+        }
+
+        if (404 === $statusCode) {
+            throw new MissingDropletException();
+        }
+
+        $responseData = [];
+
+        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+            $responseContent = $response->getBody()->getContents();
+            $response->getBody()->rewind();
+
+            $responseData = json_decode($responseContent, true);
+            $responseData = is_array($responseData) ? $responseData : [];
+        }
+
+        throw $this->createErrorException($responseData, $statusCode);
     }
 
     /**

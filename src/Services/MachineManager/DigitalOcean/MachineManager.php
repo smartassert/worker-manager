@@ -10,6 +10,7 @@ use App\Services\MachineManager\DigitalOcean\Client\Client;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use App\Services\MachineManager\ProviderMachineManagerInterface;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
@@ -66,14 +67,14 @@ readonly class MachineManager implements ProviderMachineManagerInterface
     }
 
     /**
-     * @param non-empty-string $machineId
-     *
-     * @throws VendorExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws ErrorException
+     * @throws MissingDropletException
      * @throws NoDigitalOceanClientException
      */
     public function remove(string $machineId, string $name): void
     {
-        $this->clientPool->droplet()->removeTagged($name);
+        $this->digitalOceanClient->deleteDroplet($name);
     }
 
     /**
