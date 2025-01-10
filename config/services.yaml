@@ -140,3 +140,10 @@ services:
     App\Services\ExceptionIdentifier\ExceptionIdentifier:
         arguments:
             $identifiers: !tagged_iterator 'app.exception.identifier'
+
+    App\Services\MachineManager\DigitalOcean\Client\Client:
+        arguments:
+            $baseUrl: 'https://api.digitalocean.com/v2'
+            $tokens:
+                - '%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%'
+                - '%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%'
