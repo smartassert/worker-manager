@@ -16,8 +16,8 @@ use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -51,7 +51,8 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
      */
     public static function createDataProvider(): array
     {
-        $runtimeException400 = new RuntimeException('message', 400);
+        $errorException400 = new ErrorException('bad_request', 'Bad request', 400);
+
         $genericValidationFailedException = new ValidationFailedException('generic');
         $dropletLimitValidationFailedException = new ValidationFailedException(
             'creating this/these droplet(s) will exceed your droplet limit',
@@ -68,9 +69,13 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
         $digitalOceanAuthenticationException = new DigitalOceanAuthenticationException();
 
         return [
-            RuntimeException::class . ' 400' => [
-                'exception' => $runtimeException400,
-                'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
+            ErrorException::class . ' 400' => [
+                'exception' => $errorException400,
+                'expectedException' => new HttpException(
+                    self::ID,
+                    self::ACTION,
+                    $errorException400
+                ),
             ],
             DigitalOceanAuthenticationException::class => [
                 'exception' => $digitalOceanAuthenticationException,

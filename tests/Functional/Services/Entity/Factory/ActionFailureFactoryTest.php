@@ -26,9 +26,9 @@ use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -151,7 +151,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new HttpException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new RuntimeException('', 500)
+                    new ErrorException('internal_server_error', 'Internal server error', 500)
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,

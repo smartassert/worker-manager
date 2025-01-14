@@ -20,7 +20,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use DigitalOceanV2\Exception\ResourceNotFoundException;
-use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
@@ -78,7 +77,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if ($exception instanceof RuntimeException || $exception instanceof ErrorException) {
+        if ($exception instanceof ErrorException) {
             return new HttpException($resourceId, $action, $exception);
         }
 
