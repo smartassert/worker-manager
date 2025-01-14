@@ -1,7 +1,4 @@
 {
-    "clue/stream-filter": {
-        "version": "v1.5.0"
-    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -111,23 +108,8 @@
     "phar-io/version": {
         "version": "3.1.0"
     },
-    "php-http/client-common": {
-        "version": "2.3.0"
-    },
-    "php-http/discovery": {
-        "version": "1.13.0"
-    },
-    "php-http/httplug": {
-        "version": "2.2.0"
-    },
-    "php-http/message": {
-        "version": "1.11.0"
-    },
     "php-http/message-factory": {
         "version": "v1.0.2"
-    },
-    "php-http/promise": {
-        "version": "1.1.0"
     },
     "phpdocumentor/reflection-common": {
         "version": "2.2.0"
@@ -427,9 +409,6 @@
             "config/packages/test/monolog.yaml"
         ]
     },
-    "symfony/options-resolver": {
-        "version": "v5.2.3"
-    },
     "symfony/password-hasher": {
         "version": "v6.0.3"
     },
@@ -533,9 +512,6 @@
     },
     "theseer/tokenizer": {
         "version": "1.2.0"
-    },
-    "toin0u/digitalocean-v2": {
-        "version": "4.2.0"
     },
     "webignition/object-reflector": {
         "version": "1.0"
