@@ -2,8 +2,8 @@
 
 namespace App\Services\ServiceStatusInspector;
 
-use App\Exception\NoDigitalOceanClientException;
 use App\Services\MachineManager\DigitalOcean\Client\Client;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
@@ -22,7 +22,7 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
     }
 
     /**
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws ClientExceptionInterface

@@ -3,10 +3,10 @@
 namespace App\Services\MachineManager\DigitalOcean;
 
 use App\Enum\MachineProvider;
-use App\Exception\NoDigitalOceanClientException;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
 use App\Services\MachineManager\DigitalOcean\Client\Client;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
@@ -30,7 +30,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws EmptyDropletCollectionException
      * @throws ErrorException
      * @throws InvalidEntityDataException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
@@ -54,7 +54,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws ClientExceptionInterface
      * @throws ErrorException
      * @throws MissingDropletException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      */
     public function remove(string $machineId, string $name): void
     {
@@ -66,7 +66,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @param non-empty-string $name
      *
      * @throws InvalidEntityDataException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      * @throws ClientExceptionInterface
      * @throws ErrorException
      */

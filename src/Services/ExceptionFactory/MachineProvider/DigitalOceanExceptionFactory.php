@@ -12,7 +12,8 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\MissingRemoteMachineException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Exception\NoDigitalOceanClientException;
+use App\Exception\Stack;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
@@ -28,7 +29,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
     public function handles(\Throwable $exception): bool
     {
         return $exception instanceof VendorExceptionInterface
-            || $exception instanceof NoDigitalOceanClientException
+            || $exception instanceof DigitalOceanAuthenticationException
             || $exception instanceof ErrorException
             || $exception instanceof MissingDropletException;
     }
@@ -53,12 +54,12 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             return new DropletLimitExceededException($resourceId, $action, $exception);
         }
 
-        if ($exception instanceof NoDigitalOceanClientException) {
+        if ($exception instanceof DigitalOceanAuthenticationException) {
             return new AuthenticationException(
                 MachineProvider::DIGITALOCEAN,
                 $resourceId,
                 $action,
-                $exception->getExceptionStack()
+                new Stack([$exception])
             );
         }
 
