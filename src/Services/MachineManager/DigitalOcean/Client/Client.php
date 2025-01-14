@@ -10,6 +10,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
+use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RequestInterface;
@@ -66,8 +67,6 @@ readonly class Client
      */
     public function deleteDroplet(string $name): void
     {
-        $url = sprintf('/droplets?tag_name=%s', $name);
-
         $response = $this->getResponse(new RemoveDropletRequest($name));
         $statusCode = $response->getStatusCode();
 
@@ -79,17 +78,31 @@ readonly class Client
             throw new MissingDropletException();
         }
 
-        $responseData = [];
+        throw $this->createErrorException($response);
+    }
 
-        if ('application/json' === $response->getHeaderLine('Content-Type')) {
-            $responseContent = $response->getBody()->getContents();
-            $response->getBody()->rewind();
+    /**
+     * @param string[] $tags
+     *
+     * @throws ClientExceptionInterface
+     * @throws EmptyDropletCollectionException
+     * @throws ErrorException
+     * @throws InvalidEntityDataException
+     * @throws NoDigitalOceanClientException
+     */
+    public function createDroplet(
+        string $name,
+        string $region,
+        string $size,
+        string $image,
+        array $tags,
+        string $userData
+    ): Droplet {
+        $responseData = $this->getResponseData(
+            new CreateDropletRequest($name, $region, $size, $image, $tags, $userData)
+        );
 
-            $responseData = json_decode($responseContent, true);
-            $responseData = is_array($responseData) ? $responseData : [];
-        }
-
-        throw $this->createErrorException($responseData, $statusCode);
+        return $this->dropletFactory->createFromSingleCollection($responseData);
     }
 
     /**
@@ -101,24 +114,21 @@ readonly class Client
      */
     private function getResponseData(RequestInterface $request): array
     {
-        $responseData = [];
-
         $response = $this->getResponse($request);
-        $statusCode = $response->getStatusCode();
 
-        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+        if (
+            in_array($response->getStatusCode(), [200, 202])
+            && 'application/json' === $response->getHeaderLine('Content-Type')
+        ) {
             $responseContent = $response->getBody()->getContents();
             $response->getBody()->rewind();
 
             $responseData = json_decode($responseContent, true);
-            $responseData = is_array($responseData) ? $responseData : [];
 
-            if (200 === $statusCode) {
-                return $responseData;
-            }
+            return is_array($responseData) ? $responseData : [];
         }
 
-        throw $this->createErrorException($responseData, $statusCode);
+        throw $this->createErrorException($response);
     }
 
     /**
@@ -128,7 +138,7 @@ readonly class Client
     private function getResponse(RequestInterface $request): ResponseInterface
     {
         foreach ($this->tokens as $token) {
-            $httpRequest = $this->createRequest($token, $request->getMethod(), $request->getUrl());
+            $httpRequest = $this->createRequest($token, $request);
 
             $response = $this->httpClient->sendRequest($httpRequest);
             $statusCode = $response->getStatusCode();
@@ -146,23 +156,21 @@ readonly class Client
         throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
     }
 
-    /**
-     * @param array<mixed> $errorData
-     */
-    private function createErrorException(array $errorData, int $statusCode): ErrorException
+    private function createErrorException(ResponseInterface $response): ErrorException
     {
-        $errorId = '';
-        $errorMessage = '';
-
-        if ([] !== $errorData) {
-            $errorId = $errorData['id'] ?? '';
-            $errorId = is_string($errorId) ? $errorId : '';
-
-            $errorMessage = $errorData['message'] ?? '';
-            $errorMessage = is_string($errorMessage) ? $errorMessage : '';
+        $errorData = [];
+        if ('application/json' === $response->getHeaderLine('Content-Type')) {
+            $errorData = json_decode($response->getBody()->getContents(), true);
+            $errorData = is_array($errorData) ? $errorData : [];
         }
 
-        return new ErrorException($errorId, $errorMessage, $statusCode);
+        $errorId = $errorData['id'] ?? '';
+        $errorId = is_string($errorId) ? $errorId : '';
+
+        $errorMessage = $errorData['message'] ?? '';
+        $errorMessage = is_string($errorMessage) ? $errorMessage : '';
+
+        return new ErrorException($errorId, $errorMessage, $response->getStatusCode());
     }
 
     private function createApiLimitExceededException(ResponseInterface $response): ApiLimitExceededException
@@ -182,15 +190,21 @@ readonly class Client
         );
     }
 
-    private function createRequest(string $token, string $method, string $url): HttpRequestInterface
+    private function createRequest(string $token, RequestInterface $request): HttpRequestInterface
     {
+        $body = null;
+        if (is_array($request->getPayload())) {
+            $body = (string) json_encode($request->getPayload());
+        }
+
         return new Request(
-            $method,
-            $this->baseUrl . $url,
+            $request->getMethod(),
+            $this->baseUrl . $request->getUrl(),
             [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
-            ]
+            ],
+            $body
         );
     }
 }
