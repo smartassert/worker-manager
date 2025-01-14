@@ -22,13 +22,8 @@ use App\Services\MachineManager\DigitalOcean\Entity\Network;
 use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineNameFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use App\Tests\DataProvider\RemoteRequestThrowsExceptionDataProviderTrait;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ValidationFailedException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -36,13 +31,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class MachineManagerTest extends AbstractBaseFunctionalTestCase
 {
-    use RemoteRequestThrowsExceptionDataProviderTrait;
-
     private const MACHINE_ID = 'machine id';
 
     private MachineManager $machineManager;
-    private DropletApiProxy $dropletApiProxy;
-    private string $machineName;
 
     protected function setUp(): void
     {
@@ -51,14 +42,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
         $this->machineManager = $machineManager;
-
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
-
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineName = $machineNameFactory->create(self::MACHINE_ID);
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -70,42 +53,70 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
     {
         $ipAddresses = ['10.0.0.1', '127.0.0.1'];
 
-        $dropletData = [
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => $ipAddresses[0],
-                        'type' => 'public',
-                    ],
-                    (object) [
-                        'ip_address' => $ipAddresses[1],
-                        'type' => 'public',
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $dropletId = rand(1, PHP_INT_MAX);
+        $dropletStatus = RemoteMachine::STATE_NEW;
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode([
+                'droplets' => [
+                    [
+                        'id' => $dropletId,
+                        'status' => $dropletStatus,
+                        'networks' => [
+                            'v4' => [
+                                [
+                                    'ip_address' => $ipAddresses[0],
+                                    'type' => 'public',
+                                ],
+                                [
+                                    'ip_address' => $ipAddresses[1],
+                                    'type' => 'public',
+                                ],
+                            ],
+                        ],
                     ],
                 ],
-            ],
-        ];
+            ]),
+        ));
 
-        $droplet = new DropletEntity($dropletData);
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $droplet);
+        $expectedDropletEntity = new Droplet(
+            $dropletId,
+            RemoteMachine::STATE_NEW,
+            new NetworkCollection([
+                new Network($ipAddresses[0], true, 4),
+                new Network($ipAddresses[1], true, 4),
+            ])
+        );
 
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::CREATE_RECEIVED);
         $remoteMachine = $this->machineManager->create($machine);
 
-        self::assertEquals(new RemoteMachine($droplet), $remoteMachine);
+        self::assertEquals(new RemoteMachine($expectedDropletEntity), $remoteMachine);
     }
 
     /**
      * @param class-string $expectedExceptionClass
      */
-    #[DataProvider('remoteRequestThrowsExceptionDataProvider')]
-    public function testCreateThrowsException(\Exception $dropletApiException, string $expectedExceptionClass): void
+    #[DataProvider('getDeleteThrowsExceptionDataProvider')]
+    public function testCreateThrowsException(ResponseInterface $httpResponse, string $expectedExceptionClass): void
     {
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
+
         try {
             $machine = new Machine(self::MACHINE_ID);
             $machine->setState(MachineState::CREATE_RECEIVED);
 
-            $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
             $this->machineManager->create($machine);
 
             self::fail(MachineActionFailedException::class . ' not thrown');
@@ -114,18 +125,33 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
             self::assertSame($expectedExceptionClass, $innerException::class);
             self::assertSame(MachineAction::CREATE, $innerException->getAction());
-            self::assertEquals($dropletApiException, $innerException->getRemoteException());
         }
     }
 
     public function testCreateThrowsDropletLimitException(): void
     {
-        $dropletApiException = new ValidationFailedException(
-            'creating this/these droplet(s) will exceed your droplet limit',
-            422
+        $rateLimitReset = (\time() + 1000);
+
+        $httpResponse = new Response(
+            422,
+            [
+                'Content-Type' => 'application/json',
+                'RateLimit-limit' => '5000',
+                'RateLimit-Remaining' => '0',
+                'RateLimit-Reset' => (string) $rateLimitReset,
+                'Retry-After' => '1000',
+            ],
+            (string) json_encode([
+                'id' => 'droplet_limit_exceeded',
+                'message' => 'creating this/these droplet(s) will exceed your droplet limit',
+            ])
         );
 
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $dropletApiException);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::CREATE_RECEIVED);
@@ -136,7 +162,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         } catch (MachineActionFailedException $exception) {
             $innerException = $exception->getExceptionStack()->first();
             self::assertInstanceOf(ExceptionInterface::class, $innerException);
-            self::assertSame($dropletApiException, $innerException->getRemoteException());
         }
     }
 
