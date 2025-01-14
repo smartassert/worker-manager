@@ -14,10 +14,9 @@ use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
-use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigtialOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use DigitalOceanV2\Exception\RuntimeException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -59,24 +58,21 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             422
         );
 
-        $vendorApiLimitExceededException = new VendorApiLimitExceededException(
-            'api limit exceeded',
-            429,
-            new RateLimit([
-                'reset' => 123,
-                'limit' => 456,
-                'remaining' => 798,
-            ])
+        $vendorApiLimitExceededException = new DOApiLimitExceededException(
+            'API Rate limit exceeded',
+            123,
+            0,
+            5000
         );
 
-        $digitalOceanAuthenticationException = new DigtialOceanAuthenticationException();
+        $digitalOceanAuthenticationException = new DigitalOceanAuthenticationException();
 
         return [
             RuntimeException::class . ' 400' => [
                 'exception' => $runtimeException400,
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
-            DigtialOceanAuthenticationException::class => [
+            DigitalOceanAuthenticationException::class => [
                 'exception' => $digitalOceanAuthenticationException,
                 'expectedException' => new AuthenticationException(
                     MachineProvider::DIGITALOCEAN,
