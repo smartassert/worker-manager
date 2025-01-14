@@ -18,14 +18,12 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
-use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
     public function handles(\Throwable $exception): bool
     {
-        return $exception instanceof VendorExceptionInterface
-            || $exception instanceof DOApiLimitExceededException
+        return $exception instanceof DOApiLimitExceededException
             || $exception instanceof DOAuthenticationException
             || $exception instanceof ErrorException
             || $exception instanceof MissingDropletException;
