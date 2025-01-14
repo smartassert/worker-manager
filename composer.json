@@ -27,8 +27,7 @@
         "symfony/monolog-bundle": "^3.6",
         "symfony/security-bundle": "7.2.*",
         "symfony/uid": "7.2.*",
-        "symfony/yaml": "7.2.*",
-        "toin0u/digitalocean-v2": "^4.9"
+        "symfony/yaml": "7.2.*"
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",
