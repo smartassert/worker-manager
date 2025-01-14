@@ -77,11 +77,6 @@ services:
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
             $statusUrl: '%health_check_bundle_status_path%'
 
-    App\Services\MachineManager\DigitalOcean\ClientPool:
-        arguments:
-            $clients:
-                - '@app.tests.digitalocean.client'
-
     app.tests.httpclient.mocked.handler:
         class: GuzzleHttp\Handler\MockHandler
 
