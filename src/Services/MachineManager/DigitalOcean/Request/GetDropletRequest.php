@@ -26,4 +26,9 @@ readonly class GetDropletRequest implements RequestInterface
             self::DROPLETS_PER_PAGE,
         );
     }
+
+    public function getPayload(): null
+    {
+        return null;
+    }
 }
