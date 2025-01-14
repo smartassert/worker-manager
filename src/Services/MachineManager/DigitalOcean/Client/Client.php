@@ -4,6 +4,7 @@ namespace App\Services\MachineManager\DigitalOcean\Client;
 
 use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
 use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -13,8 +14,6 @@ use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RequestInterface;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -176,14 +175,11 @@ readonly class Client
         $message = is_array($responseData) ? ($responseData['message'] ?? '') : '';
         $message = is_string($message) ? $message : '';
 
-        throw new ApiLimitExceededException(
+        return new ApiLimitExceededException(
             $message,
-            429,
-            new RateLimit([
-                'reset' => (int) $response->getHeaderLine('RateLimit-Reset'),
-                'remaining' => (int) $response->getHeaderLine('RateLimit-Remaining'),
-                'limit' => (int) $response->getHeaderLine('RateLimit-Limit'),
-            ])
+            (int) $response->getHeaderLine('RateLimit-Reset'),
+            (int) $response->getHeaderLine('RateLimit-Remaining'),
+            (int) $response->getHeaderLine('RateLimit-Limit'),
         );
     }
 
