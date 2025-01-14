@@ -19,7 +19,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
-use DigitalOceanV2\Exception\ResourceNotFoundException;
 use DigitalOceanV2\Exception\ValidationFailedException;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
@@ -56,8 +55,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if (
-            $exception instanceof ResourceNotFoundException
-            || $exception instanceof EmptyDropletCollectionException
+            $exception instanceof EmptyDropletCollectionException
             || $exception instanceof MissingDropletException
         ) {
             if (MachineAction::GET === $action) {
