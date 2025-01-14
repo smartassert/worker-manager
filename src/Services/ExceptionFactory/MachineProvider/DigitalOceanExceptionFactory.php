@@ -48,10 +48,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if (
-            $exception instanceof EmptyDropletCollectionException
-            || $exception instanceof MissingDropletException
-        ) {
+        if ($exception instanceof EmptyDropletCollectionException || $exception instanceof MissingDropletException) {
             if (MachineAction::GET === $action) {
                 return new MissingRemoteMachineException(
                     MachineProvider::DIGITALOCEAN,
