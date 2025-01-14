@@ -17,14 +17,6 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    app.tests.digitalocean.client:
-        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-
-    App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
-        public: true
-        calls:
-            - prepareGetByIdZeroCall: []
-
     GuzzleHttp\Psr7\HttpFactory:
 
     Psr\Http\Message\RequestFactoryInterface:
