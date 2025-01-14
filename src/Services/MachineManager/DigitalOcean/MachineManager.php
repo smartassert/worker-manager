@@ -12,8 +12,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use App\Services\MachineManager\ProviderMachineManagerInterface;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
 
@@ -21,7 +19,6 @@ readonly class MachineManager implements ProviderMachineManagerInterface
 {
     public function __construct(
         private Factory $dropletConfigurationFactory,
-        private ClientPool $clientPool,
         private Client $digitalOceanClient,
     ) {
     }
@@ -29,7 +26,10 @@ readonly class MachineManager implements ProviderMachineManagerInterface
     /**
      * @param non-empty-string $machineId
      *
-     * @throws VendorExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws EmptyDropletCollectionException
+     * @throws ErrorException
+     * @throws InvalidEntityDataException
      * @throws NoDigitalOceanClientException
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
@@ -38,32 +38,16 @@ readonly class MachineManager implements ProviderMachineManagerInterface
         $configuration = $configuration->withNames([$name]);
         $configuration = $configuration->addTags([$name]);
 
-        $namesValue = $configuration->getNames();
-        $namesSize = count($namesValue);
-        if (0 === $namesSize) {
-            $namesValue = '';
-        } elseif (1 === $namesSize) {
-            $namesValue = $namesValue[0];
-        }
-
-        $dropletEntity = $this->clientPool->droplet()->create(
-            $namesValue,
+        $droplet = $this->digitalOceanClient->createDroplet(
+            $name,
             $configuration->getRegion(),
             $configuration->getSize(),
             $configuration->getImage(),
-            $configuration->getBackups(),
-            $configuration->getIpv6(),
-            $configuration->getVpcUuid(),
-            $configuration->getSshKeys(),
-            $configuration->getUserData(),
-            $configuration->getMonitoring(),
-            $configuration->getVolumes(),
-            $configuration->getTags()
+            $configuration->getTags(),
+            $configuration->getUserData()
         );
 
-        return new RemoteMachine(
-            $dropletEntity instanceof DropletEntity ? $dropletEntity : new DropletEntity([])
-        );
+        return new RemoteMachine($droplet);
     }
 
     /**

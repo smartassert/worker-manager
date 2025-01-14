@@ -13,4 +13,9 @@ interface RequestInterface
      * @return non-empty-string
      */
     public function getUrl(): string;
+
+    /**
+     * @return null|array<string, array<string>|string>
+     */
+    public function getPayload(): ?array;
 }

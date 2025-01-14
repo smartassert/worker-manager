@@ -18,4 +18,9 @@ readonly class RemoveDropletRequest implements RequestInterface
     {
         return sprintf('/droplets?tag_name=%s', $this->name);
     }
+
+    public function getPayload(): null
+    {
+        return null;
+    }
 }
