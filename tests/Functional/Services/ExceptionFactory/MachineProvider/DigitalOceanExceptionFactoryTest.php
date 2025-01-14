@@ -12,9 +12,9 @@ use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Exception\NoDigitalOceanClientException;
 use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigtialOceanAuthenticationException;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
@@ -53,7 +53,6 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     public static function createDataProvider(): array
     {
         $runtimeException400 = new RuntimeException('message', 400);
-        $runtimeException401 = new RuntimeException('message', 401);
         $genericValidationFailedException = new ValidationFailedException('generic');
         $dropletLimitValidationFailedException = new ValidationFailedException(
             'creating this/these droplet(s) will exceed your droplet limit',
@@ -70,18 +69,20 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             ])
         );
 
+        $digitalOceanAuthenticationException = new DigtialOceanAuthenticationException();
+
         return [
             RuntimeException::class . ' 400' => [
                 'exception' => $runtimeException400,
                 'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
             ],
-            NoDigitalOceanClientException::class => [
-                'exception' => new NoDigitalOceanClientException(new Stack([$runtimeException401])),
+            DigtialOceanAuthenticationException::class => [
+                'exception' => $digitalOceanAuthenticationException,
                 'expectedException' => new AuthenticationException(
                     MachineProvider::DIGITALOCEAN,
                     self::ID,
                     self::ACTION,
-                    new Stack([$runtimeException401])
+                    new Stack([$digitalOceanAuthenticationException])
                 ),
             ],
             ValidationFailedException::class . ' generic' => [

@@ -17,6 +17,7 @@ use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
@@ -26,7 +27,6 @@ use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -188,7 +188,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineProvider::DIGITALOCEAN,
                                 self::MACHINE_ID,
                                 MachineAction::CREATE,
-                                new Stack([new VendorRuntimeException('Unauthorized', 401)])
+                                new Stack([new DigitalOceanAuthenticationException()])
                             ),
                         ])
                     )

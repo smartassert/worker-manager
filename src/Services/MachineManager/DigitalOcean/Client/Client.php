@@ -2,10 +2,9 @@
 
 namespace App\Services\MachineManager\DigitalOcean\Client;
 
-use App\Exception\NoDigitalOceanClientException;
-use App\Exception\Stack;
 use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
 use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
@@ -16,7 +15,6 @@ use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RequestInterface;
 use DigitalOceanV2\Entity\RateLimit;
 use DigitalOceanV2\Exception\ApiLimitExceededException;
-use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -48,7 +46,7 @@ readonly class Client
      *
      * @throws ClientExceptionInterface
      * @throws InvalidEntityDataException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      * @throws EmptyDropletCollectionException
      * @throws ErrorException
      */
@@ -62,7 +60,7 @@ readonly class Client
     /**
      * @throws ClientExceptionInterface
      * @throws ErrorException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      * @throws MissingDropletException
      */
     public function deleteDroplet(string $name): void
@@ -88,7 +86,7 @@ readonly class Client
      * @throws EmptyDropletCollectionException
      * @throws ErrorException
      * @throws InvalidEntityDataException
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      */
     public function createDroplet(
         string $name,
@@ -109,7 +107,7 @@ readonly class Client
      * @return array<mixed>
      *
      * @throws ClientExceptionInterface
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      * @throws ErrorException
      */
     private function getResponseData(RequestInterface $request): array
@@ -133,7 +131,7 @@ readonly class Client
 
     /**
      * @throws ClientExceptionInterface
-     * @throws NoDigitalOceanClientException
+     * @throws AuthenticationException
      */
     private function getResponse(RequestInterface $request): ResponseInterface
     {
@@ -152,8 +150,7 @@ readonly class Client
             }
         }
 
-        // @todo replace in #601
-        throw new NoDigitalOceanClientException(new Stack([new RuntimeException('Unauthorized', 401)]));
+        throw new AuthenticationException();
     }
 
     private function createErrorException(ResponseInterface $response): ErrorException
