@@ -48,6 +48,7 @@ readonly class Client
      * @throws AuthenticationException
      * @throws EmptyDropletCollectionException
      * @throws ErrorException
+     * @throws ApiLimitExceededException
      */
     public function getDroplet(string $name): Droplet
     {
@@ -61,6 +62,7 @@ readonly class Client
      * @throws ErrorException
      * @throws AuthenticationException
      * @throws MissingDropletException
+     * @throws ApiLimitExceededException
      */
     public function deleteDroplet(string $name): void
     {
@@ -86,6 +88,7 @@ readonly class Client
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
+     * @throws ApiLimitExceededException
      */
     public function createDroplet(
         string $name,
@@ -108,6 +111,7 @@ readonly class Client
      * @throws ClientExceptionInterface
      * @throws AuthenticationException
      * @throws ErrorException
+     * @throws ApiLimitExceededException
      */
     private function getResponseData(RequestInterface $request): array
     {
@@ -131,6 +135,7 @@ readonly class Client
     /**
      * @throws ClientExceptionInterface
      * @throws AuthenticationException
+     * @throws ApiLimitExceededException
      */
     private function getResponse(RequestInterface $request): ResponseInterface
     {
