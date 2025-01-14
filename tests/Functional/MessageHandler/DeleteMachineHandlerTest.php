@@ -10,12 +10,13 @@ use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
-use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException as LocalApiLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\Stack;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\MachineManager;
@@ -23,8 +24,6 @@ use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -188,18 +187,15 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         self::MACHINE_ID,
                         MachineAction::DELETE,
                         new Stack([
-                            new LocalApiLimitExceededException(
+                            new ApiLimitExceededException(
                                 $rateLimitReset,
                                 self::MACHINE_ID,
                                 MachineAction::DELETE,
-                                new VendorApiLimitExceededException(
+                                new DOApiLimitExceededException(
                                     'API Rate limit exceeded',
-                                    429,
-                                    new RateLimit([
-                                        'reset' => $rateLimitReset,
-                                        'remaining' => 0,
-                                        'limit' => 5000,
-                                    ])
+                                    $rateLimitReset,
+                                    0,
+                                    5000
                                 ),
                             )
                         ])
