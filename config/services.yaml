@@ -113,30 +113,6 @@ services:
             $providerMachineManagers:
                 - '@App\Services\MachineManager\DigitalOcean\MachineManager'
 
-    DigitalOceanV2\HttpClient\Builder:
-        arguments:
-            $httpClient: '@Psr\Http\Client\ClientInterface'
-
-    app.services.machine_manager.digitalocean.client.primary:
-        class: DigitalOceanV2\Client
-        calls:
-            - authenticate: ['%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%']
-        tags:
-            - { name: 'app.services.machine_manager.digitalocean.client' }
-
-    app.services.machine_manager.digitalocean.client.secondary:
-        class: DigitalOceanV2\Client
-        calls:
-            - authenticate: ['%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%']
-        tags:
-            - { name: 'app.services.machine_manager.digitalocean.client' }
-
-    App\Services\MachineManager\DigitalOcean\ClientPool:
-        arguments:
-            $clients:
-                - '@app.services.machine_manager.digitalocean.client.primary'
-                - '@app.services.machine_manager.digitalocean.client.secondary'
-
     App\Services\ExceptionIdentifier\ExceptionIdentifier:
         arguments:
             $identifiers: !tagged_iterator 'app.exception.identifier'
