@@ -29,7 +29,6 @@ use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class ActionFailureFactoryTest extends AbstractEntityTestCase
@@ -168,7 +167,8 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new DropletLimitExceededException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new ValidationFailedException(
+                    new ErrorException(
+                        'droplet_limit_exceeded',
                         'creating this/these droplet(s) will exceed your droplet limit',
                         422
                     )

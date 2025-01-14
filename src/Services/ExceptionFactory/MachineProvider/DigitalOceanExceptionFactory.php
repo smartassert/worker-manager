@@ -19,7 +19,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
-use DigitalOceanV2\Exception\ValidationFailedException;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
@@ -38,10 +37,7 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             return new ApiLimitExceededException($exception->rateLimitReset, $resourceId, $action, $exception);
         }
 
-        if (
-            $exception instanceof ValidationFailedException
-            && str_contains($exception->getMessage(), DropletLimitExceededException::MESSAGE_IDENTIFIER)
-        ) {
+        if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
             return new DropletLimitExceededException($resourceId, $action, $exception);
         }
 
