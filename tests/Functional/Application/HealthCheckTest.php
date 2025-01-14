@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application;
 
-use App\Services\ServiceStatusInspector\DigitalOceanMachineProviderInspector;
+use App\Model\DigitalOcean\RemoteMachine;
 use App\Tests\Application\AbstractHealthCheckTestCase;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 
 class HealthCheckTest extends AbstractHealthCheckTestCase
 {
@@ -15,9 +15,24 @@ class HealthCheckTest extends AbstractHealthCheckTestCase
 
     protected function getHealthCheckSetup(): void
     {
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        if ($dropletApiProxy instanceof DropletApiProxy) {
-            $dropletApiProxy->withGetByIdCall(DigitalOceanMachineProviderInspector::DROPLET_ID, new DropletEntity());
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        if (!$mockHandler instanceof MockHandler) {
+            return;
         }
+
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode([
+                'droplets' => [
+                    [
+                        'id' => rand(1, PHP_INT_MAX),
+                        'status' => RemoteMachine::STATE_NEW,
+                    ],
+                ],
+            ]),
+        ));
     }
 }
