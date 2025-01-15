@@ -12,6 +12,7 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
@@ -20,6 +21,7 @@ use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -145,8 +147,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $mockHandler->append($httpResponse);
 
         $message = new CreateMachine('id0', $this->machine->getId());
-        //        $expectedException = $expectedExceptionCreator($this->machine);
-
         $exception = null;
 
         try {
@@ -285,6 +285,60 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                     $serviceUnavailableErrorMessage,
                                     503
                                 )
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'invalid droplet data (empty)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new InvalidEntityResponseException(
+                                MachineProvider::DIGITALOCEAN,
+                                [],
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new InvalidEntityDataException('droplet_as_collection', []),
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'invalid droplet data (lacking fields)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([
+                        'droplets' => [
+                            [
+                                'id' => 123,
+                            ],
+                        ],
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new InvalidEntityResponseException(
+                                MachineProvider::DIGITALOCEAN,
+                                ['id' => '123'],
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new InvalidEntityDataException('droplet', ['id' => '123']),
                             ),
                         ])
                     )
