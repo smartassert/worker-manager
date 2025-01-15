@@ -6,6 +6,7 @@ use App\Enum\MachineProvider;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Model\RemoteMachineInterface;
 use App\Services\MachineManager\DigitalOcean\Client\Client;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -31,6 +32,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
+     * @throws ApiLimitExceededException
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
@@ -55,6 +57,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws ErrorException
      * @throws MissingDropletException
      * @throws AuthenticationException
+     * @throws ApiLimitExceededException
      */
     public function remove(string $machineId, string $name): void
     {
@@ -69,6 +72,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws AuthenticationException
      * @throws ClientExceptionInterface
      * @throws ErrorException
+     * @throws ApiLimitExceededException
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
