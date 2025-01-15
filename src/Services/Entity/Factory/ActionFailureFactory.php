@@ -9,7 +9,9 @@ use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
+use App\Exception\MachineProvider\HttpClientExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
+use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
@@ -72,6 +74,14 @@ readonly class ActionFailureFactory
             return ActionFailureType::UNKNOWN_MACHINE_PROVIDER_ERROR;
         }
 
+        if ($throwable instanceof InvalidEntityResponseExceptionInterface) {
+            return ActionFailureType::INVALID_ENTITY_RESPONSE;
+        }
+
+        if ($throwable instanceof HttpClientExceptionInterface) {
+            return ActionFailureType::HTTP_UNKNOWN;
+        }
+
         return ActionFailureType::UNKNOWN;
     }
 
@@ -101,6 +111,18 @@ readonly class ActionFailureFactory
         if ($throwable instanceof UnprocessableRequestExceptionInterface) {
             return [
                 'provider-reason' => $throwable->getReason(),
+            ];
+        }
+
+        if ($throwable instanceof InvalidEntityResponseExceptionInterface) {
+            return [
+                'data' => (string) json_encode($throwable->getData()),
+            ];
+        }
+
+        if ($throwable instanceof HttpClientExceptionInterface) {
+            return [
+                'exception-class' => $throwable->getRemoteException()::class,
             ];
         }
 

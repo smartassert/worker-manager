@@ -5,7 +5,7 @@ namespace App\Model\DigitalOcean;
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Model\RemoteMachineInterface;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
 
 class RemoteMachine implements RemoteMachineInterface
 {
@@ -13,7 +13,7 @@ class RemoteMachine implements RemoteMachineInterface
     public const STATE_ACTIVE = 'active';
 
     public function __construct(
-        private DropletEntity $droplet
+        private Droplet $droplet
     ) {
     }
 
@@ -32,18 +32,7 @@ class RemoteMachine implements RemoteMachineInterface
      */
     public function getIpAddresses(): array
     {
-        $dropletNetworks = $this->droplet->networks;
-        $ipAddresses = [];
-        foreach ($dropletNetworks as $dropletNetwork) {
-            $network = new Network($dropletNetwork);
-            $networkIp = $network->getPublicIpv4Address();
-
-            if (is_string($networkIp)) {
-                $ipAddresses[] = $networkIp;
-            }
-        }
-
-        return $ipAddresses;
+        return $this->droplet->networks->getPublicIpv4Addresses();
     }
 
     /**

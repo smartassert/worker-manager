@@ -12,6 +12,9 @@ class MachineNameFactory
     ) {
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function create(string $machineId): string
     {
         return sprintf(

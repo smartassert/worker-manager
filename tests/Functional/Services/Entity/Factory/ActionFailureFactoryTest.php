@@ -18,7 +18,11 @@ use App\Exception\MachineProvider\CurlExceptionInterface;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\HttpClientException;
+use App\Exception\MachineProvider\HttpClientExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
+use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
 use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
@@ -26,10 +30,11 @@ use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Exception\RuntimeException;
-use DigitalOceanV2\Exception\ValidationFailedException;
+use GuzzleHttp\Exception\TransferException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class ActionFailureFactoryTest extends AbstractEntityTestCase
@@ -151,7 +156,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new HttpException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new RuntimeException('', 500)
+                    new ErrorException('internal_server_error', 'Internal server error', 500)
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
@@ -168,7 +173,8 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new DropletLimitExceededException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new ValidationFailedException(
+                    new ErrorException(
+                        'droplet_limit_exceeded',
                         'creating this/these droplet(s) will exceed your droplet limit',
                         422
                     )
@@ -208,6 +214,44 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'provider' => $digitalOceanMachine->getProvider()?->value,
+                    ]
+                ),
+            ],
+            InvalidEntityResponseExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
+                'throwable' => new InvalidEntityResponseException(
+                    MachineProvider::DIGITALOCEAN,
+                    [
+                        'id' => 'invalid-entity-id',
+                    ],
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new InvalidEntityDataException('droplet', ['id' => 'invalid-entity-id']),
+                ),
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::INVALID_ENTITY_RESPONSE,
+                    MachineAction::CREATE,
+                    [
+                        'data' => (string) json_encode(['id' => 'invalid-entity-id']),
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
+                ),
+            ],
+            HttpClientExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
+                'throwable' => new HttpClientException(
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new TransferException()
+                ),
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::HTTP_UNKNOWN,
+                    MachineAction::CREATE,
+                    [
+                        'exception-class' => TransferException::class,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],

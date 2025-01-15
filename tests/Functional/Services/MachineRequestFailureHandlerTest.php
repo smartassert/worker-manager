@@ -22,6 +22,7 @@ use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineRequestFailureHandler;
 use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -29,7 +30,6 @@ use App\Tests\Services\EntityRemover;
 use Beste\Psr\Log\Record;
 use Beste\Psr\Log\Records;
 use Beste\Psr\Log\TestLogger;
-use DigitalOceanV2\Exception\RuntimeException;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
@@ -340,10 +340,12 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                                     123,
                                     $message->getMachineId(),
                                     MachineAction::GET,
-                                    new RuntimeException(
+                                    new DOApiLimitExceededException(
                                         'API limit exceeded',
-                                        429
-                                    )
+                                        123,
+                                        0,
+                                        5000
+                                    ),
                                 ),
                             ])
                         ),
@@ -383,7 +385,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                             'message_id' => $message->getUniqueId(),
                             'machine_id' => $message->getMachineId(),
                             'code' => 429,
-                            'exception' => RuntimeException::class,
+                            'exception' => DOApiLimitExceededException::class,
                         ]
                     ));
 

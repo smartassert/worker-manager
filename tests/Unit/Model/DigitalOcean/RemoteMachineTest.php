@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Model\DigitalOcean;
 
 use App\Model\DigitalOcean\RemoteMachine;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
+use App\Services\MachineManager\DigitalOcean\Entity\Network;
+use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class RemoteMachineTest extends TestCase
 {
     /**
-     * @param array<mixed> $dropletData
-     * @param string[]     $expectedIpAddresses
+     * @param string[] $expectedIpAddresses
      */
     #[DataProvider('getIpAddressesDataProvider')]
-    public function testGetIpAddresses(array $dropletData, array $expectedIpAddresses): void
+    public function testGetIpAddresses(Droplet $droplet, array $expectedIpAddresses): void
     {
-        $dropletEntity = new DropletEntity($dropletData);
-        $remoteMachine = new RemoteMachine($dropletEntity);
+        $remoteMachine = new RemoteMachine($droplet);
 
         self::assertSame($expectedIpAddresses, $remoteMachine->getIpAddresses());
     }
@@ -30,72 +30,48 @@ class RemoteMachineTest extends TestCase
     public static function getIpAddressesDataProvider(): array
     {
         return [
-            'empty' => [
-                'dropletData' => [],
-                'expectedIpAddresses' => [],
-            ],
             'no networks' => [
-                'dropletData' => [
-                    'networks' => (object) [],
-                ],
+                'droplet' => new Droplet(
+                    rand(1, PHP_INT_MAX),
+                    md5((string) rand()),
+                    new NetworkCollection([])
+                ),
                 'expectedIpAddresses' => [],
             ],
             'no v4 networks' => [
-                'dropletData' => [
-                    'networks' => (object) [
-                        'v6' => [
-                            (object) [
-                                'ip_address' => '::1',
-                                'netmask' => 64,
-                                'type' => 'public',
-                            ],
-                        ],
-                    ],
-                ],
+                'droplet' => new Droplet(
+                    rand(1, PHP_INT_MAX),
+                    md5((string) rand()),
+                    new NetworkCollection([
+                        new Network('::1', true, 6),
+                    ])
+                ),
                 'expectedIpAddresses' => [],
             ],
             'has v4 networks' => [
-                'dropletData' => [
-                    'networks' => (object) [
-                        'v4' => [
-                            (object) [
-                                'ip_address' => '127.0.0.1',
-                                'type' => 'public',
-                            ],
-                            (object) [
-                                'ip_address' => '10.0.0.1',
-                                'type' => 'public',
-                            ],
-                        ],
-                    ],
-                ],
+                'droplet' => new Droplet(
+                    rand(1, PHP_INT_MAX),
+                    md5((string) rand()),
+                    new NetworkCollection([
+                        new Network('127.0.0.1', true, 4),
+                        new Network('10.0.0.1', true, 4),
+                    ])
+                ),
                 'expectedIpAddresses' => [
                     '127.0.0.1',
                     '10.0.0.1',
                 ],
             ],
             'has v4 and v6 networks' => [
-                'dropletData' => [
-                    'networks' => (object) [
-                        'v4' => [
-                            (object) [
-                                'ip_address' => '127.0.0.1',
-                                'type' => 'public',
-                            ],
-                            (object) [
-                                'ip_address' => '10.0.0.1',
-                                'type' => 'public',
-                            ],
-                        ],
-                        'v6' => [
-                            (object) [
-                                'ip_address' => '::1',
-                                'netmask' => 64,
-                                'type' => 'public',
-                            ],
-                        ],
-                    ],
-                ],
+                'droplet' => new Droplet(
+                    rand(1, PHP_INT_MAX),
+                    md5((string) rand()),
+                    new NetworkCollection([
+                        new Network('127.0.0.1', true, 4),
+                        new Network('10.0.0.1', true, 4),
+                        new Network('::1', true, 6),
+                    ])
+                ),
                 'expectedIpAddresses' => [
                     '127.0.0.1',
                     '10.0.0.1',
