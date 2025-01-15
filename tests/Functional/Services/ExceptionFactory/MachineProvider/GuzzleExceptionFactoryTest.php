@@ -7,9 +7,11 @@ namespace App\Tests\Functional\Services\ExceptionFactory\MachineProvider;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\HttpClientException;
 use App\Services\ExceptionFactory\MachineProvider\GuzzleExceptionFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\TransferException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\RequestInterface;
 
@@ -37,7 +39,7 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('createDataProvider')]
-    public function testCreate(ConnectException $exception, ExceptionInterface $expectedException): void
+    public function testCreate(\Throwable $exception, ExceptionInterface $expectedException): void
     {
         self::assertEquals(
             $expectedException,
@@ -62,6 +64,8 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             $request
         );
 
+        $transferException = new TransferException();
+
         return [
             'curl 7' => [
                 'exception' => $curl7ConnectException,
@@ -70,6 +74,10 @@ class GuzzleExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             'curl 28' => [
                 'exception' => $curl28ConnectException,
                 'expectedException' => new CurlException(28, self::ID, self::ACTION, $curl28ConnectException),
+            ],
+            'transfer exception' => [
+                'exception' => $transferException,
+                'expectedException' => new HttpClientException(self::ID, self::ACTION, $transferException),
             ],
         ];
     }
