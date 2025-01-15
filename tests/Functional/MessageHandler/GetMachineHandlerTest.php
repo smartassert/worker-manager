@@ -11,6 +11,7 @@ use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
@@ -27,6 +28,7 @@ use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -243,8 +245,10 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
-    public function testInvokeThrowsException(ResponseInterface $httpResponse, \Exception $expectedException): void
-    {
+    public function testInvokeThrowsException(
+        ResponseInterface | \Throwable $httpResponse,
+        \Exception $expectedException
+    ): void {
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::FIND_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
@@ -411,6 +415,18 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         self::MACHINE_ID,
                         MachineAction::GET,
                         new InvalidEntityDataException('droplet', ['id' => '123']),
+                    ),
+                ),
+            ],
+            'unknown http client error' => [
+                'httpResponse' => new TransferException(),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'HttpClientException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new HttpClientException(
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new TransferException(),
                     ),
                 ),
             ],

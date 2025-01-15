@@ -18,6 +18,8 @@ use App\Exception\MachineProvider\CurlExceptionInterface;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\HttpClientException;
+use App\Exception\MachineProvider\HttpClientExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
@@ -32,6 +34,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
+use GuzzleHttp\Exception\TransferException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class ActionFailureFactoryTest extends AbstractEntityTestCase
@@ -231,6 +234,23 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'data' => (string) json_encode(['id' => 'invalid-entity-id']),
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
+                ),
+            ],
+            HttpClientExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
+                'throwable' => new HttpClientException(
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new TransferException()
+                ),
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::HTTP_UNKNOWN,
+                    MachineAction::CREATE,
+                    [
+                        'exception-class' => TransferException::class,
                         'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),

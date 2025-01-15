@@ -5,7 +5,9 @@ namespace App\Services\ExceptionFactory\MachineProvider;
 use App\Enum\MachineAction;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\HttpClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class GuzzleExceptionFactory implements ExceptionFactoryInterface
 {
@@ -14,16 +16,20 @@ class GuzzleExceptionFactory implements ExceptionFactoryInterface
 
     public function handles(\Throwable $exception): bool
     {
-        return $exception instanceof ConnectException;
+        return $exception instanceof GuzzleException;
     }
 
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ?ExceptionInterface
     {
-        if (!$exception instanceof ConnectException) {
-            return null;
+        if ($exception instanceof ConnectException) {
+            return new CurlException($this->findCurlCode($exception), $resourceId, $action, $exception);
         }
 
-        return new CurlException($this->findCurlCode($exception), $resourceId, $action, $exception);
+        if ($exception instanceof GuzzleException) {
+            return new HttpClientException($resourceId, $action, $exception);
+        }
+
+        return null;
     }
 
     private function findCurlCode(ConnectException $exception): int

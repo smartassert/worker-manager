@@ -12,6 +12,7 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Message\CreateMachine;
@@ -28,6 +29,7 @@ use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -138,8 +140,10 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
-    public function testInvokeThrowsException(ResponseInterface $httpResponse, \Exception $expectedException): void
-    {
+    public function testInvokeThrowsException(
+        ResponseInterface | \Throwable $httpResponse,
+        \Exception $expectedException
+    ): void {
         $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
         \assert($mockHandler instanceof MockHandler);
 
@@ -339,6 +343,24 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 self::MACHINE_ID,
                                 MachineAction::CREATE,
                                 new InvalidEntityDataException('droplet', ['id' => '123']),
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'unknown http client error' => [
+                'httpResponse' => new TransferException(),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new HttpClientException(
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new TransferException(),
                             ),
                         ])
                     )
