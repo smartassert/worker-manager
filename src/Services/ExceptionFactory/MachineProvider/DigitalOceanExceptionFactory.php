@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\MachineProvider\MissingRemoteMachineException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\Stack;
@@ -17,6 +18,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
@@ -26,7 +28,8 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         return $exception instanceof DOApiLimitExceededException
             || $exception instanceof DOAuthenticationException
             || $exception instanceof ErrorException
-            || $exception instanceof MissingDropletException;
+            || $exception instanceof MissingDropletException
+            || $exception instanceof InvalidEntityDataException;
     }
 
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
@@ -60,6 +63,16 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 
             return new UnknownRemoteMachineException(
                 MachineProvider::DIGITALOCEAN,
+                $resourceId,
+                $action,
+                $exception
+            );
+        }
+
+        if ($exception instanceof InvalidEntityDataException) {
+            return new InvalidEntityResponseException(
+                MachineProvider::DIGITALOCEAN,
+                $exception->data,
                 $resourceId,
                 $action,
                 $exception
