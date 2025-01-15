@@ -19,6 +19,8 @@ use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\HttpExceptionInterface;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
+use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
 use App\Exception\MachineProvider\UnknownException;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
@@ -27,6 +29,7 @@ use App\Exception\UnsupportedProviderException;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -208,6 +211,27 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'provider' => $digitalOceanMachine->getProvider()?->value,
+                    ]
+                ),
+            ],
+            InvalidEntityResponseExceptionInterface::class => [
+                'machine' => $digitalOceanMachine,
+                'throwable' => new InvalidEntityResponseException(
+                    MachineProvider::DIGITALOCEAN,
+                    [
+                        'id' => 'invalid-entity-id',
+                    ],
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new InvalidEntityDataException('droplet', ['id' => 'invalid-entity-id']),
+                ),
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::INVALID_ENTITY_RESPONSE,
+                    MachineAction::CREATE,
+                    [
+                        'data' => (string) json_encode(['id' => 'invalid-entity-id']),
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],

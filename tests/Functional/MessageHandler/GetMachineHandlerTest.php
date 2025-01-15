@@ -11,6 +11,7 @@ use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
@@ -20,6 +21,7 @@ use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -368,6 +370,48 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         $serviceUnavailableErrorMessage,
                         503
                     )
+                ),
+            ],
+            'invalid droplet data (empty)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'InvalidEntityResponseException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new InvalidEntityResponseException(
+                        MachineProvider::DIGITALOCEAN,
+                        [],
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new InvalidEntityDataException('droplet_as_collection', []),
+                    ),
+                ),
+            ],
+            'invalid droplet data (lacking fields)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([
+                        'droplets' => [
+                            [
+                                'id' => 123,
+                            ],
+                        ],
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'InvalidEntityResponseException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new InvalidEntityResponseException(
+                        MachineProvider::DIGITALOCEAN,
+                        ['id' => '123'],
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new InvalidEntityDataException('droplet', ['id' => '123']),
+                    ),
                 ),
             ],
         ];
