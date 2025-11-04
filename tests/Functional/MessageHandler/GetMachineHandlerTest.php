@@ -246,7 +246,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(
-        ResponseInterface | \Throwable $httpResponse,
+        ResponseInterface|\Throwable $httpResponse,
         \Exception $expectedException
     ): void {
         $machine = new Machine(self::MACHINE_ID);
