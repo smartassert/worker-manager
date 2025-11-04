@@ -119,7 +119,7 @@ readonly class Client
 
         if (
             in_array($response->getStatusCode(), [200, 202])
-            && 'application/json' === $response->getHeaderLine('Content-Type')
+            && str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')
         ) {
             $responseContent = $response->getBody()->getContents();
             $response->getBody()->rewind();
@@ -197,7 +197,7 @@ readonly class Client
 
         return new Request(
             $request->getMethod(),
-            $this->baseUrl . $request->getUrl(),
+            $this->baseUrl . ltrim($request->getUrl(), '/'),
             [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
