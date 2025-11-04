@@ -50,7 +50,7 @@ class ActionFailure implements \JsonSerializable
      * @return array{
      *   action: value-of<MachineAction>,
      *   type: value-of<ActionFailureType>,
-     *   context: array<string, int|string|null>
+     *   context: array<string, null|int|string>
      * }
      */
     public function jsonSerialize(): array
