@@ -129,7 +129,7 @@ class DropletApiProxy extends Droplet
     /**
      * @param null|DropletEntity[]|\Exception $outcome
      */
-    public function withGetAllCall(string $name, null | array | \Exception $outcome): self
+    public function withGetAllCall(string $name, array|\Exception|null $outcome): self
     {
         return $this->withCall('getAll', [$name], $outcome);
     }
@@ -144,7 +144,7 @@ class DropletApiProxy extends Droplet
 
     public function prepareCreateCall(
         string $machineName,
-        DropletEntity | \Throwable $outcome
+        DropletEntity|\Throwable $outcome
     ): void {
         $dropletConfiguration = $this->createDropletConfiguration($machineName);
 
