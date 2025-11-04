@@ -141,7 +141,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(
-        ResponseInterface | \Throwable $httpResponse,
+        ResponseInterface|\Throwable $httpResponse,
         \Exception $expectedException
     ): void {
         $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');

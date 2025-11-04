@@ -274,38 +274,6 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         self::assertSame(MachineAction::GET, $exception->getAction());
     }
 
-    /**
-     * @return array<mixed>
-     */
-    public static function getDeleteThrowsExceptionDataProvider(): array
-    {
-        $rateLimitReset = (\time() + 1000);
-
-        return [
-            'unauthorized' => [
-                'httpResponse' => new Response(401),
-                'expectedExceptionClass' => AuthenticationException::class,
-            ],
-            'api limit exceeded' => [
-                'httpResponse' => new Response(
-                    429,
-                    [
-                        'Content-Type' => 'application/json',
-                        'RateLimit-limit' => '5000',
-                        'RateLimit-Remaining' => '0',
-                        'RateLimit-Reset' => (string) $rateLimitReset,
-                        'Retry-After' => '1000',
-                    ],
-                    (string) json_encode([
-                        'id' => 'too_many_requests',
-                        'message' => 'API Rate limit exceeded',
-                    ])
-                ),
-                'expectedExceptionClass' => ApiLimitExceededException::class,
-            ],
-        ];
-    }
-
     #[DataProvider('removeSuccessDataProvider')]
     public function testRemoveSuccess(ResponseInterface $httpResponse): void
     {
@@ -361,6 +329,38 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
         self::assertInstanceOf(ExceptionInterface::class, $innerException);
         self::assertSame($expectedExceptionClass, $innerException::class);
         self::assertSame(MachineAction::DELETE, $innerException->getAction());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function getDeleteThrowsExceptionDataProvider(): array
+    {
+        $rateLimitReset = (\time() + 1000);
+
+        return [
+            'unauthorized' => [
+                'httpResponse' => new Response(401),
+                'expectedExceptionClass' => AuthenticationException::class,
+            ],
+            'api limit exceeded' => [
+                'httpResponse' => new Response(
+                    429,
+                    [
+                        'Content-Type' => 'application/json',
+                        'RateLimit-limit' => '5000',
+                        'RateLimit-Remaining' => '0',
+                        'RateLimit-Reset' => (string) $rateLimitReset,
+                        'Retry-After' => '1000',
+                    ],
+                    (string) json_encode([
+                        'id' => 'too_many_requests',
+                        'message' => 'API Rate limit exceeded',
+                    ])
+                ),
+                'expectedExceptionClass' => ApiLimitExceededException::class,
+            ],
+        ];
     }
 
     public function testRemoveThrowsMachineNotRemovableException(): void
