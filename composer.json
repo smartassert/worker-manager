@@ -12,7 +12,6 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^3.0",
         "guzzlehttp/guzzle": "^7.5",
-        "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/health-check-bundle": "^7.1",
         "smartassert/users-security-bundle": "^10.1",
