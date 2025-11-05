@@ -95,20 +95,18 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 'Content-Type' => 'application/json'
             ],
             (string) json_encode([
-                'droplets' => [
-                    [
-                        'id' => rand(),
-                        'status' => RemoteMachine::STATE_NEW,
-                        'networks' => [
-                            'v4' => [
-                                [
-                                    'ip_address' => $ipAddresses[0],
-                                    'type' => 'public',
-                                ],
-                                [
-                                    'ip_address' => $ipAddresses[1],
-                                    'type' => 'public',
-                                ],
+                'droplet' => [
+                    'id' => rand(),
+                    'status' => RemoteMachine::STATE_NEW,
+                    'networks' => [
+                        'v4' => [
+                            [
+                                'ip_address' => $ipAddresses[0],
+                                'type' => 'public',
+                            ],
+                            [
+                                'ip_address' => $ipAddresses[1],
+                                'type' => 'public',
                             ],
                         ],
                     ],
@@ -312,7 +310,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 [],
                                 self::MACHINE_ID,
                                 MachineAction::CREATE,
-                                new InvalidEntityDataException('droplet_as_collection', []),
+                                new InvalidEntityDataException('droplet', []),
                             ),
                         ])
                     )
@@ -323,10 +321,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                     200,
                     ['Content-Type' => 'application/json'],
                     (string) json_encode([
-                        'droplets' => [
-                            [
-                                'id' => 123,
-                            ],
+                        'droplet' => [
+                            'id' => 123,
                         ],
                     ])
                 ),

@@ -64,20 +64,18 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
                 'Content-Type' => 'application/json'
             ],
             (string) json_encode([
-                'droplets' => [
-                    [
-                        'id' => $dropletId,
-                        'status' => $dropletStatus,
-                        'networks' => [
-                            'v4' => [
-                                [
-                                    'ip_address' => $ipAddresses[0],
-                                    'type' => 'public',
-                                ],
-                                [
-                                    'ip_address' => $ipAddresses[1],
-                                    'type' => 'public',
-                                ],
+                'droplet' => [
+                    'id' => $dropletId,
+                    'status' => $dropletStatus,
+                    'networks' => [
+                        'v4' => [
+                            [
+                                'ip_address' => $ipAddresses[0],
+                                'type' => 'public',
+                            ],
+                            [
+                                'ip_address' => $ipAddresses[1],
+                                'type' => 'public',
                             ],
                         ],
                     ],
