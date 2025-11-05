@@ -52,9 +52,9 @@ readonly class Client
      */
     public function getDroplet(string $name): Droplet
     {
-        $responseData = $this->getResponseData(new GetDropletRequest($name));
+        $dropletCollectionData = $this->getResponseData(new GetDropletRequest($name));
 
-        return $this->dropletFactory->createSingleFromCollection($responseData);
+        return $this->dropletFactory->createSingleFromCollection($dropletCollectionData);
     }
 
     /**
@@ -97,11 +97,11 @@ readonly class Client
         array $tags,
         string $userData
     ): Droplet {
-        $responseData = $this->getResponseData(
+        $dropletData = $this->getResponseData(
             new CreateDropletRequest($name, $region, $size, $image, $tags, $userData)
         );
 
-        return $this->dropletFactory->create($responseData);
+        return $this->dropletFactory->create($dropletData);
     }
 
     /**
