@@ -54,7 +54,7 @@ readonly class Client
     {
         $responseData = $this->getResponseData(new GetDropletRequest($name));
 
-        return $this->dropletFactory->createFromSingleCollection($responseData);
+        return $this->dropletFactory->createSingleFromCollection($responseData);
     }
 
     /**
@@ -84,7 +84,6 @@ readonly class Client
      * @param string[] $tags
      *
      * @throws ClientExceptionInterface
-     * @throws EmptyDropletCollectionException
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
@@ -102,7 +101,7 @@ readonly class Client
             new CreateDropletRequest($name, $region, $size, $image, $tags, $userData)
         );
 
-        return $this->dropletFactory->createFromSingleCollection($responseData);
+        return $this->dropletFactory->create($responseData);
     }
 
     /**
