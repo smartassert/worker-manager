@@ -10,16 +10,13 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
-use App\Exception\NoDigitalOceanClientException;
 use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\RuntimeException;
-use DigitalOceanV2\Exception\ValidationFailedException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
@@ -52,43 +49,42 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
      */
     public static function createDataProvider(): array
     {
-        $runtimeException400 = new RuntimeException('message', 400);
-        $runtimeException401 = new RuntimeException('message', 401);
-        $genericValidationFailedException = new ValidationFailedException('generic');
-        $dropletLimitValidationFailedException = new ValidationFailedException(
+        $errorException400 = new ErrorException('bad_request', 'Bad request', 400);
+
+        $dropletLimitValidationFailedException = new ErrorException(
+            'droplet_limit_exceeded',
             'creating this/these droplet(s) will exceed your droplet limit',
             422
         );
 
-        $vendorApiLimitExceededException = new VendorApiLimitExceededException(
-            'api limit exceeded',
-            429,
-            new RateLimit([
-                'reset' => 123,
-                'limit' => 456,
-                'remaining' => 798,
-            ])
+        $vendorApiLimitExceededException = new DOApiLimitExceededException(
+            'API Rate limit exceeded',
+            123,
+            0,
+            5000
         );
 
+        $digitalOceanAuthenticationException = new DigitalOceanAuthenticationException();
+
         return [
-            RuntimeException::class . ' 400' => [
-                'exception' => $runtimeException400,
-                'expectedException' => new HttpException(self::ID, self::ACTION, $runtimeException400),
+            ErrorException::class . ' 400' => [
+                'exception' => $errorException400,
+                'expectedException' => new HttpException(
+                    self::ID,
+                    self::ACTION,
+                    $errorException400
+                ),
             ],
-            NoDigitalOceanClientException::class => [
-                'exception' => new NoDigitalOceanClientException(new Stack([$runtimeException401])),
+            DigitalOceanAuthenticationException::class => [
+                'exception' => $digitalOceanAuthenticationException,
                 'expectedException' => new AuthenticationException(
                     MachineProvider::DIGITALOCEAN,
                     self::ID,
                     self::ACTION,
-                    new Stack([$runtimeException401])
+                    new Stack([$digitalOceanAuthenticationException])
                 ),
             ],
-            ValidationFailedException::class . ' generic' => [
-                'exception' => $genericValidationFailedException,
-                'expectedException' => new Exception(self::ID, self::ACTION, $genericValidationFailedException),
-            ],
-            ValidationFailedException::class . ' droplet limit will be exceeded' => [
+            ErrorException::class . ' droplet limit will be exceeded' => [
                 'exception' => $dropletLimitValidationFailedException,
                 'expectedException' => new DropletLimitExceededException(
                     self::ID,

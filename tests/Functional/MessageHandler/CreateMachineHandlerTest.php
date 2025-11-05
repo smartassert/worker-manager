@@ -12,41 +12,40 @@ use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Exception\NoDigitalOceanClientException;
+use App\Exception\MachineProvider\HttpClientException;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Message\CreateMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\ResourceNotFoundException;
-use DigitalOceanV2\Exception\RuntimeException as VendorRuntimeException;
+use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Uid\Ulid;
-use webignition\ObjectReflector\ObjectReflector;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 
+    private const MACHINE_ID = 'machine id';
+
     private CreateMachineHandler $handler;
     private Machine $machine;
-    private DropletApiProxy $dropletApiProxy;
-    private string $machineName;
     private TestMachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
@@ -57,27 +56,17 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         \assert($handler instanceof CreateMachineHandler);
         $this->handler = $handler;
 
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
-
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
         }
 
-        $machineId = (string) new Ulid();
-        \assert('' !== $machineId);
-        $this->machine = new Machine($machineId);
+        $this->machine = new Machine(self::MACHINE_ID);
         $this->machine->setState(MachineState::CREATE_RECEIVED);
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $machineRepository->add($this->machine);
-
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineName = $machineNameFactory->create($this->machine->getId());
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
         \assert($machineRequestFactory instanceof TestMachineRequestFactory);
@@ -95,27 +84,35 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
     {
         self::assertSame([], $this->machine->getIpAddresses());
 
-        $dropletId = 123;
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
 
-        $dropletData = [
-            'id' => $dropletId,
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => '10.0.0.1',
-                        'type' => 'public',
-                    ],
-                    (object) [
-                        'ip_address' => '127.0.0.1',
-                        'type' => 'public',
+        $ipAddresses = ['10.0.0.1', '127.0.0.1'];
+
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode([
+                'droplet' => [
+                    'id' => rand(),
+                    'status' => RemoteMachine::STATE_NEW,
+                    'networks' => [
+                        'v4' => [
+                            [
+                                'ip_address' => $ipAddresses[0],
+                                'type' => 'public',
+                            ],
+                            [
+                                'ip_address' => $ipAddresses[1],
+                                'type' => 'public',
+                            ],
+                        ],
                     ],
                 ],
-            ],
-            'status' => RemoteMachine::STATE_NEW,
-        ];
-
-        $expectedDropletEntity = new DropletEntity($dropletData);
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $expectedDropletEntity);
+            ]),
+        ));
 
         $message = $this->machineRequestFactory->createCreate($this->machine->getId());
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
@@ -135,31 +132,23 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $handler = $this->createHandler($machineRequestDispatcher);
         ($handler)($message);
 
-        $expectedRemoteMachine = new RemoteMachine($expectedDropletEntity);
-
-        self::assertSame($expectedRemoteMachine->getState(), $this->machine->getState());
-        self::assertSame(
-            $expectedRemoteMachine->getIpAddresses(),
-            ObjectReflector::getProperty($this->machine, 'ip_addresses')
-        );
-
+        self::assertSame(MachineState::UP_STARTED, $this->machine->getState());
+        self::assertSame($ipAddresses, $this->machine->getIpAddresses());
         self::assertSame(MachineProvider::DIGITALOCEAN, $this->machine->getProvider());
     }
 
-    /**
-     * @param callable(Machine): \Throwable $vendorExceptionCreator
-     * @param callable(Machine): \Throwable $expectedExceptionCreator
-     */
     #[DataProvider('invokeThrowsExceptionDataProvider')]
     public function testInvokeThrowsException(
-        callable $vendorExceptionCreator,
-        callable $expectedExceptionCreator,
+        ResponseInterface|\Throwable $httpResponse,
+        \Exception $expectedException
     ): void {
-        $this->dropletApiProxy->prepareCreateCall($this->machineName, $vendorExceptionCreator($this->machine));
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $message = new CreateMachine('id0', $this->machine->getId());
-        $expectedException = $expectedExceptionCreator($this->machine);
-
         $exception = null;
 
         try {
@@ -176,109 +165,202 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
      */
     public static function invokeThrowsExceptionDataProvider(): array
     {
-        $vendorApiLimitExceededException = new VendorApiLimitExceededException(
-            'Too Many Requests',
-            429,
-            new RateLimit([
-                'limit' => 123,
-                'remaining' => 456,
-                'reset' => 789,
-            ])
-        );
+        $rateLimitReset = (\time() + 1000);
+
+        $internalServerErrorId = md5((string) rand());
+        $internalServerErrorMessage = md5((string) rand());
+
+        $serviceUnavailableErrorId = md5((string) rand());
+        $serviceUnavailableErrorMessage = md5((string) rand());
 
         return [
-            'NoDigitalOceanClientException as a result of HTTP 401' => [
-                'vendorExceptionCreator' => function () {
-                    return new NoDigitalOceanClientException(new Stack([
-                        new VendorRuntimeException('Unauthorized', 401),
-                    ]));
-                },
-                'expectedExceptionCreator' => function (Machine $machine) {
-                    return new UnrecoverableMessageHandlingException(
-                        'Action "create" on machine "' . $machine->getId() . '" failed',
-                        0,
-                        new MachineActionFailedException(
-                            $machine->getId(),
-                            MachineAction::CREATE,
-                            new Stack([
-                                new AuthenticationException(
-                                    MachineProvider::DIGITALOCEAN,
-                                    $machine->getId(),
-                                    MachineAction::CREATE,
-                                    new Stack([new VendorRuntimeException('Unauthorized', 401)])
-                                ),
-                            ])
-                        )
-                    );
-                },
+            'unauthorized' => [
+                'httpResponse' => new Response(401),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new AuthenticationException(
+                                MachineProvider::DIGITALOCEAN,
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new Stack([new DOAuthenticationException()])
+                            ),
+                        ])
+                    )
+                ),
             ],
-            'ResourceNotFoundException as a result of HTTP 404' => [
-                'vendorExceptionCreator' => function () {
-                    return new ResourceNotFoundException();
-                },
-                'expectedExceptionCreator' => function (Machine $machine) {
-                    return new UnrecoverableMessageHandlingException(
-                        'Action "create" on machine "' . $machine->getId() . '" failed',
-                        0,
-                        new MachineActionFailedException(
-                            $machine->getId(),
-                            MachineAction::CREATE,
-                            new Stack([
-                                new UnknownRemoteMachineException(
-                                    MachineProvider::DIGITALOCEAN,
-                                    $machine->getId(),
-                                    MachineAction::CREATE,
-                                    new ResourceNotFoundException(),
+            'api limit exceeded' => [
+                'httpResponse' => new Response(
+                    429,
+                    [
+                        'Content-Type' => 'application/json',
+                        'RateLimit-limit' => '5000',
+                        'RateLimit-Remaining' => '0',
+                        'RateLimit-Reset' => (string) $rateLimitReset,
+                        'Retry-After' => '1000',
+                    ],
+                    (string) json_encode([
+                        'id' => 'too_many_requests',
+                        'message' => 'API Rate limit exceeded',
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new ApiLimitExceededException(
+                                $rateLimitReset,
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new DOApiLimitExceededException(
+                                    'API Rate limit exceeded',
+                                    $rateLimitReset,
+                                    0,
+                                    5000
                                 ),
-                            ])
-                        )
-                    );
-                },
+                            ),
+                        ])
+                    )
+                ),
             ],
-            'HTTP 429' => [
-                'vendorExceptionCreator' => function () use ($vendorApiLimitExceededException) {
-                    return $vendorApiLimitExceededException;
-                },
-                'expectedExceptionCreator' => function (Machine $machine) use ($vendorApiLimitExceededException) {
-                    return new UnrecoverableMessageHandlingException(
-                        'Action "create" on machine "' . $machine->getId() . '" failed',
-                        0,
-                        new MachineActionFailedException(
-                            $machine->getId(),
-                            MachineAction::CREATE,
-                            new Stack([
-                                new ApiLimitExceededException(
-                                    789,
-                                    $machine->getId(),
-                                    MachineAction::CREATE,
-                                    $vendorApiLimitExceededException
-                                ),
-                            ])
-                        )
-                    );
-                },
+            'internal server error' => [
+                'httpResponse' => new Response(
+                    500,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $internalServerErrorId,
+                        'message' => $internalServerErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new ErrorException(
+                                    $internalServerErrorId,
+                                    $internalServerErrorMessage,
+                                    500
+                                )
+                            ),
+                        ])
+                    )
+                ),
             ],
-            'HTTP 503' => [
-                'vendorExceptionCreator' => function () {
-                    return new VendorRuntimeException('Service Unavailable', 503);
-                },
-                'expectedExceptionCreator' => function (Machine $machine) {
-                    return new UnrecoverableMessageHandlingException(
-                        'Action "create" on machine "' . $machine->getId() . '" failed',
-                        0,
-                        new MachineActionFailedException(
-                            $machine->getId(),
-                            MachineAction::CREATE,
-                            new Stack([
-                                new HttpException(
-                                    $machine->getId(),
-                                    MachineAction::CREATE,
-                                    new VendorRuntimeException('Service Unavailable', 503)
-                                ),
-                            ])
-                        )
-                    );
-                },
+            'service unavailable' => [
+                'httpResponse' => new Response(
+                    503,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $serviceUnavailableErrorId,
+                        'message' => $serviceUnavailableErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new ErrorException(
+                                    $serviceUnavailableErrorId,
+                                    $serviceUnavailableErrorMessage,
+                                    503
+                                )
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'invalid droplet data (empty)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new InvalidEntityResponseException(
+                                MachineProvider::DIGITALOCEAN,
+                                [],
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new InvalidEntityDataException('droplet', []),
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'invalid droplet data (lacking fields)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([
+                        'droplet' => [
+                            'id' => 123,
+                        ],
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new InvalidEntityResponseException(
+                                MachineProvider::DIGITALOCEAN,
+                                ['id' => '123'],
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new InvalidEntityDataException('droplet', ['id' => '123']),
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'unknown http client error' => [
+                'httpResponse' => new TransferException(),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "create" on machine "' . self::MACHINE_ID . '" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::CREATE,
+                        new Stack([
+                            new HttpClientException(
+                                self::MACHINE_ID,
+                                MachineAction::CREATE,
+                                new TransferException(),
+                            ),
+                        ])
+                    )
+                ),
             ],
         ];
     }

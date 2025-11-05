@@ -10,53 +10,48 @@ use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\MachineProvider\MissingRemoteMachineException;
 use App\Exception\MachineProvider\UnknownRemoteMachineException;
-use App\Exception\NoDigitalOceanClientException;
-use DigitalOceanV2\Entity\RateLimit;
-use DigitalOceanV2\Exception\ApiLimitExceededException as VendorApiLimitExceededException;
-use DigitalOceanV2\Exception\ExceptionInterface as VendorExceptionInterface;
-use DigitalOceanV2\Exception\ResourceNotFoundException;
-use DigitalOceanV2\Exception\RuntimeException;
-use DigitalOceanV2\Exception\ValidationFailedException;
+use App\Exception\Stack;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 
 class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 {
     public function handles(\Throwable $exception): bool
     {
-        return $exception instanceof VendorExceptionInterface || $exception instanceof NoDigitalOceanClientException;
+        return $exception instanceof DOApiLimitExceededException
+            || $exception instanceof DOAuthenticationException
+            || $exception instanceof ErrorException
+            || $exception instanceof MissingDropletException
+            || $exception instanceof InvalidEntityDataException;
     }
 
     public function create(string $resourceId, MachineAction $action, \Throwable $exception): ExceptionInterface
     {
-        if ($exception instanceof VendorApiLimitExceededException) {
-            $exceptionRateLimit = $exception->rateLimit;
-            if ($exceptionRateLimit instanceof RateLimit) {
-                $rateLimitReset = $exceptionRateLimit->reset;
-            } else {
-                $rateLimitReset = 0;
-            }
-
-            return new ApiLimitExceededException($rateLimitReset, $resourceId, $action, $exception);
+        if ($exception instanceof DOApiLimitExceededException) {
+            return new ApiLimitExceededException($exception->rateLimitReset, $resourceId, $action, $exception);
         }
 
-        if (
-            $exception instanceof ValidationFailedException
-            && str_contains($exception->getMessage(), DropletLimitExceededException::MESSAGE_IDENTIFIER)
-        ) {
+        if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
             return new DropletLimitExceededException($resourceId, $action, $exception);
         }
 
-        if ($exception instanceof NoDigitalOceanClientException) {
+        if ($exception instanceof DOAuthenticationException) {
             return new AuthenticationException(
                 MachineProvider::DIGITALOCEAN,
                 $resourceId,
                 $action,
-                $exception->getExceptionStack()
+                new Stack([$exception])
             );
         }
 
-        if ($exception instanceof ResourceNotFoundException) {
+        if ($exception instanceof EmptyDropletCollectionException || $exception instanceof MissingDropletException) {
             if (MachineAction::GET === $action) {
                 return new MissingRemoteMachineException(
                     MachineProvider::DIGITALOCEAN,
@@ -74,7 +69,17 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             );
         }
 
-        if ($exception instanceof RuntimeException) {
+        if ($exception instanceof InvalidEntityDataException) {
+            return new InvalidEntityResponseException(
+                MachineProvider::DIGITALOCEAN,
+                $exception->data,
+                $resourceId,
+                $action,
+                $exception
+            );
+        }
+
+        if ($exception instanceof ErrorException) {
             return new HttpException($resourceId, $action, $exception);
         }
 

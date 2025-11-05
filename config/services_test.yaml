@@ -17,14 +17,6 @@ services:
     App\Tests\Services\TestMachineRequestFactory:
         public: true
 
-    app.tests.digitalocean.client:
-        class: App\Tests\Proxy\DigitalOceanV2\ClientProxy
-
-    App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy:
-        public: true
-        calls:
-            - prepareGetByIdZeroCall: []
-
     GuzzleHttp\Psr7\HttpFactory:
 
     Psr\Http\Message\RequestFactoryInterface:
@@ -77,7 +69,23 @@ services:
             $healthCheckUrl: '%health_check_bundle_health_check_path%'
             $statusUrl: '%health_check_bundle_status_path%'
 
-    App\Services\MachineManager\DigitalOcean\ClientPool:
+    app.tests.httpclient.mocked.handler:
+        class: GuzzleHttp\Handler\MockHandler
+
+    app.tests.httpclient.mocked.handler_stack:
+        class: GuzzleHttp\HandlerStack
         arguments:
-            $clients:
-                - '@app.tests.digitalocean.client'
+            $handler: '@app.tests.httpclient.mocked.handler'
+
+    app.tests.httpclient.mocked.client:
+        public: true
+        class: GuzzleHttp\Client
+        arguments:
+            $config:
+                handler: '@app.tests.httpclient.mocked.handler_stack'
+
+    App\Services\MachineManager\DigitalOcean\Client\Client:
+        arguments:
+            $baseUrl: 'https://api.digitalocean.com/v2'
+            $tokens: ['invalid-token-1', 'invalid-token-2']
+            $httpClient: '@app.tests.httpclient.mocked.client'

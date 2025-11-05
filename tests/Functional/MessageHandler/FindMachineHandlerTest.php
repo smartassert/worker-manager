@@ -10,26 +10,28 @@ use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
+use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\NoDigitalOceanClientException;
 use App\Exception\Stack;
 use App\Message\FindMachine;
 use App\Message\MachineRequestInterface;
 use App\MessageHandler\FindMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\RuntimeException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -39,8 +41,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     private const MACHINE_ID = 'id';
 
-    private DropletApiProxy $dropletApiProxy;
-    private MachineNameFactory $machineNameFactory;
     private MachineRepository $machineRepository;
     private TestMachineRequestFactory $machineRequestFactory;
 
@@ -51,14 +51,6 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
-
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
-
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineNameFactory = $machineNameFactory;
 
         $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
         \assert($machineRequestFactory instanceof TestMachineRequestFactory);
@@ -78,21 +70,28 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @param DropletEntity[]                                           $expectedGetAllOutcome
+     * @param array<mixed>                                              $responseData
      * @param callable(FindMachine $message): MachineRequestInterface[] $expectedMachineRequestCollectionCreator
      * @param callable(TestMachineRequestFactory $factory): FindMachine $messageCreator
      */
     #[DataProvider('invokeSuccessDataProvider')]
     public function testInvokeSuccess(
         Machine $machine,
-        array $expectedGetAllOutcome,
+        array $responseData,
         Machine $expectedMachine,
         callable $messageCreator,
         callable $expectedMachineRequestCollectionCreator,
     ): void {
-        $expectedMachineName = $this->machineNameFactory->create($machine->getId());
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
 
-        $this->dropletApiProxy->withGetAllCall($expectedMachineName, $expectedGetAllOutcome);
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode($responseData),
+        ));
 
         $this->machineRepository->add($machine);
 
@@ -120,17 +119,22 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
      */
     public static function invokeSuccessDataProvider(): array
     {
-        $upNewDropletEntity = new DropletEntity([
-            'status' => RemoteMachine::STATE_NEW,
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => '10.0.0.1',
-                        'type' => 'public',
+        $machineFoundResponseData = [
+            'droplets' => [
+                [
+                    'id' => rand(),
+                    'status' => RemoteMachine::STATE_NEW,
+                    'networks' => [
+                        'v4' => [
+                            [
+                                'ip_address' => '10.0.0.1',
+                                'type' => 'public',
+                            ],
+                        ],
                     ],
                 ],
             ],
-        ]);
+        ];
 
         return [
             'remote machine found and updated, no existing provider' => [
@@ -140,7 +144,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
                     return $machine;
                 })(),
-                'expectedGetAllOutcome' => [$upNewDropletEntity],
+                'responseData' => $machineFoundResponseData,
                 'expectedMachine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
@@ -167,7 +171,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
                     return $machine;
                 })(),
-                'expectedGetAllOutcome' => [$upNewDropletEntity],
+                'responseData' => $machineFoundResponseData,
                 'expectedMachine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
@@ -194,7 +198,9 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
                     return $machine;
                 })(),
-                'expectedGetAllOutcome' => [],
+                'responseData' => [
+                    'droplets' => [],
+                ],
                 'expectedMachine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::FIND_NOT_FOUND);
@@ -220,7 +226,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
                     return $machine;
                 })(),
-                'expectedGetAllOutcome' => [$upNewDropletEntity],
+                'responseData' => $machineFoundResponseData,
                 'expectedMachine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
@@ -257,13 +263,17 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
-    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
+    public function testInvokeThrowsException(ResponseInterface $httpResponse, \Exception $expectedException): void
     {
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::FIND_RECEIVED);
         $this->machineRepository->add($machine);
 
-        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $message = new FindMachine('id0', $machine->getId());
 
@@ -288,50 +298,131 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
      */
     public static function invokeThrowsExceptionDataProvider(): array
     {
-        $http401Exception = new RuntimeException('Unauthorized', 401);
+        $rateLimitReset = (\time() + 1000);
 
-        $authenticationException = new AuthenticationException(
-            MachineProvider::DIGITALOCEAN,
-            self::MACHINE_ID,
-            MachineAction::FIND,
-            new Stack([$http401Exception])
-        );
+        $internalServerErrorId = md5((string) rand());
+        $internalServerErrorMessage = md5((string) rand());
 
-        $http503Exception = new RuntimeException('Service Unavailable', 503);
-
-        $serviceUnavailableException = new HttpException(
-            self::MACHINE_ID,
-            MachineAction::FIND,
-            $http503Exception
-        );
-
-        $machineNotFindableAuthenticationException = new MachineActionFailedException(
-            self::MACHINE_ID,
-            MachineAction::FIND,
-            new Stack([$authenticationException])
-        );
-
-        $machineNotFindableServiceUnavailableException = new MachineActionFailedException(
-            self::MACHINE_ID,
-            MachineAction::FIND,
-            new Stack([$serviceUnavailableException])
-        );
+        $serviceUnavailableErrorId = md5((string) rand());
+        $serviceUnavailableErrorMessage = md5((string) rand());
 
         return [
-            'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
+            'unauthorized' => [
+                'httpResponse' => new Response(401),
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $machineNotFindableAuthenticationException->getMessage(),
-                    $machineNotFindableAuthenticationException->getCode(),
-                    $machineNotFindableAuthenticationException
+                    'Action "find" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::FIND,
+                        new Stack([
+                            new AuthenticationException(
+                                MachineProvider::DIGITALOCEAN,
+                                self::MACHINE_ID,
+                                MachineAction::FIND,
+                                new Stack([new DigitalOceanAuthenticationException()])
+                            ),
+                        ])
+                    )
                 ),
             ],
-            'HTTP 503' => [
-                'vendorException' => $http503Exception,
+            'api limit exceeded' => [
+                'httpResponse' => new Response(
+                    429,
+                    [
+                        'Content-Type' => 'application/json',
+                        'RateLimit-limit' => '5000',
+                        'RateLimit-Remaining' => '0',
+                        'RateLimit-Reset' => (string) $rateLimitReset,
+                        'Retry-After' => '1000',
+                    ],
+                    (string) json_encode([
+                        'id' => 'too_many_requests',
+                        'message' => 'API Rate limit exceeded',
+                    ])
+                ),
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $machineNotFindableServiceUnavailableException->getMessage(),
-                    $machineNotFindableServiceUnavailableException->getCode(),
-                    $machineNotFindableServiceUnavailableException
+                    'Action "find" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::FIND,
+                        new Stack([
+                            new ApiLimitExceededException(
+                                $rateLimitReset,
+                                self::MACHINE_ID,
+                                MachineAction::FIND,
+                                new DOApiLimitExceededException(
+                                    'API Rate limit exceeded',
+                                    $rateLimitReset,
+                                    0,
+                                    5000
+                                ),
+                            )
+                        ])
+                    )
+                ),
+            ],
+            'internal server error' => [
+                'httpResponse' => new Response(
+                    500,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $internalServerErrorId,
+                        'message' => $internalServerErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "find" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::FIND,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::FIND,
+                                new ErrorException(
+                                    $internalServerErrorId,
+                                    $internalServerErrorMessage,
+                                    500
+                                )
+                            ),
+                        ])
+                    )
+                ),
+            ],
+            'service unavailable' => [
+                'httpResponse' => new Response(
+                    503,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $serviceUnavailableErrorId,
+                        'message' => $serviceUnavailableErrorMessage,
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'Action "find" on machine "id" failed',
+                    0,
+                    new MachineActionFailedException(
+                        self::MACHINE_ID,
+                        MachineAction::FIND,
+                        new Stack([
+                            new HttpException(
+                                self::MACHINE_ID,
+                                MachineAction::FIND,
+                                new ErrorException(
+                                    $serviceUnavailableErrorId,
+                                    $serviceUnavailableErrorMessage,
+                                    503
+                                )
+                            ),
+                        ])
+                    )
                 ),
             ],
         ];

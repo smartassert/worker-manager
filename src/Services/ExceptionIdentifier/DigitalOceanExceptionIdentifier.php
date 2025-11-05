@@ -2,12 +2,12 @@
 
 namespace App\Services\ExceptionIdentifier;
 
-use DigitalOceanV2\Exception\ResourceNotFoundException;
+use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 
 class DigitalOceanExceptionIdentifier implements ExceptionIdentifierInterface
 {
     public function isMachineNotFoundException(\Throwable $throwable): bool
     {
-        return $throwable instanceof ResourceNotFoundException;
+        return $throwable instanceof EmptyDropletCollectionException;
     }
 }

@@ -8,12 +8,10 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-json": "*",
-        "cweagans/composer-patches": "^1.7",
         "doctrine/doctrine-bundle": "^2.5",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^3.0",
         "guzzlehttp/guzzle": "^7.5",
-        "http-interop/http-factory-guzzle": "^1.0",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
         "smartassert/health-check-bundle": "^7.1",
         "smartassert/users-security-bundle": "^10.1",
@@ -27,8 +25,7 @@
         "symfony/monolog-bundle": "^3.6",
         "symfony/security-bundle": "7.2.*",
         "symfony/uid": "7.2.*",
-        "symfony/yaml": "7.2.*",
-        "toin0u/digitalocean-v2": "^4.9"
+        "symfony/yaml": "7.2.*"
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",
@@ -58,8 +55,7 @@
             "composer/package-versions-deprecated": true,
             "phpstan/extension-installer": true,
             "symfony/flex": true,
-            "php-http/discovery": true,
-            "cweagans/composer-patches": true
+            "php-http/discovery": true
         }
     },
     "autoload": {
@@ -169,11 +165,6 @@
         "symfony": {
             "allow-contrib": false,
             "require": "7.2.*"
-        },
-        "patches": {
-            "toin0u/digitalocean-v2": {
-                "Include rate limit data in ApiLimitExceededException": "https://patch-diff.githubusercontent.com/raw/DigitalOceanPHP/Client/pull/327.patch"
-            }
         }
     }
 }

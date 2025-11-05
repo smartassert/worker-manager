@@ -9,27 +9,31 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Exception\MachineProvider\AuthenticationException;
+use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
-use App\Exception\MachineProvider\ProviderMachineNotFoundException;
-use App\Exception\NoDigitalOceanClientException;
+use App\Exception\MachineProvider\HttpClientException;
+use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
+use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineNameFactory;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
-use App\Tests\Proxy\DigitalOceanV2\Api\DropletApiProxy;
 use App\Tests\Services\EntityRemover;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
-use DigitalOceanV2\Exception\ResourceNotFoundException;
-use DigitalOceanV2\Exception\RuntimeException;
+use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -41,8 +45,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     private const REMOTE_ID = 123;
 
     private MachineRepository $machineRepository;
-    private DropletApiProxy $dropletApiProxy;
-    private MachineNameFactory $machineNameFactory;
 
     protected function setUp(): void
     {
@@ -51,14 +53,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
         $this->machineRepository = $machineRepository;
-
-        $dropletApiProxy = self::getContainer()->get(DropletApiProxy::class);
-        \assert($dropletApiProxy instanceof DropletApiProxy);
-        $this->dropletApiProxy = $dropletApiProxy;
-
-        $machineNameFactory = self::getContainer()->get(MachineNameFactory::class);
-        \assert($machineNameFactory instanceof MachineNameFactory);
-        $this->machineNameFactory = $machineNameFactory;
 
         $entityRemover = self::getContainer()->get(EntityRemover::class);
         if ($entityRemover instanceof EntityRemover) {
@@ -74,15 +68,21 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     /**
-     * @param DropletEntity[] $getAllOutcome
+     * @param array<mixed> $responseData
      */
     #[DataProvider('invokeSuccessDataProvider')]
-    public function testInvokeSuccess(
-        array $getAllOutcome,
-        Machine $machine,
-        Machine $expectedMachine,
-    ): void {
-        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $getAllOutcome);
+    public function testInvokeSuccess(array $responseData, Machine $machine, Machine $expectedMachine): void
+    {
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append(new Response(
+            200,
+            [
+                'Content-Type' => 'application/json'
+            ],
+            (string) json_encode($responseData),
+        ));
 
         $this->machineRepository->add($machine);
 
@@ -112,48 +112,16 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             '127.0.0.1',
         ];
 
-        $createdDropletEntity = new DropletEntity([
-            'id' => self::REMOTE_ID,
-            'status' => RemoteMachine::STATE_NEW,
-        ]);
-
-        $upNewDropletEntity = new DropletEntity([
-            'id' => self::REMOTE_ID,
-            'status' => RemoteMachine::STATE_NEW,
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => $ipAddresses[0],
-                        'type' => 'public',
-                    ],
-                    (object) [
-                        'ip_address' => $ipAddresses[1],
-                        'type' => 'public',
-                    ],
-                ],
-            ],
-        ]);
-
-        $upActiveDropletEntity = new DropletEntity([
-            'id' => self::REMOTE_ID,
-            'status' => RemoteMachine::STATE_ACTIVE,
-            'networks' => (object) [
-                'v4' => [
-                    (object) [
-                        'ip_address' => $ipAddresses[0],
-                        'type' => 'public',
-                    ],
-                    (object) [
-                        'ip_address' => $ipAddresses[1],
-                        'type' => 'public',
-                    ],
-                ],
-            ],
-        ]);
-
         return [
             'updated within initial remote id and initial remote state' => [
-                'getAllOutcome' => [$createdDropletEntity],
+                'responseData' => [
+                    'droplets' => [
+                        [
+                            'id' => self::REMOTE_ID,
+                            'status' => RemoteMachine::STATE_NEW,
+                        ],
+                    ],
+                ],
                 'machine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::CREATE_RECEIVED);
@@ -170,7 +138,26 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 })(),
             ],
             'updated within initial ip addresses' => [
-                'getAllOutcome' => [$upNewDropletEntity],
+                'responseData' => [
+                    'droplets' => [
+                        [
+                            'id' => self::REMOTE_ID,
+                            'status' => RemoteMachine::STATE_NEW,
+                            'networks' => [
+                                'v4' => [
+                                    [
+                                        'ip_address' => $ipAddresses[0],
+                                        'type' => 'public',
+                                    ],
+                                    [
+                                        'ip_address' => $ipAddresses[1],
+                                        'type' => 'public',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
                 'machine' => (function () {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
@@ -188,7 +175,26 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 })($ipAddresses),
             ],
             'updated within active remote state' => [
-                'getAllOutcome' => [$upActiveDropletEntity],
+                'responseData' => [
+                    'droplets' => [
+                        [
+                            'id' => self::REMOTE_ID,
+                            'status' => RemoteMachine::STATE_ACTIVE,
+                            'networks' => [
+                                'v4' => [
+                                    [
+                                        'ip_address' => $ipAddresses[0],
+                                        'type' => 'public',
+                                    ],
+                                    [
+                                        'ip_address' => $ipAddresses[1],
+                                        'type' => 'public',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
                 'machine' => (function (array $ipAddresses) {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::UP_STARTED);
@@ -239,14 +245,20 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
-    public function testInvokeThrowsException(\Exception $vendorException, \Exception $expectedException): void
-    {
+    public function testInvokeThrowsException(
+        ResponseInterface|\Throwable $httpResponse,
+        \Exception $expectedException
+    ): void {
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::FIND_RECEIVED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
         $this->machineRepository->add($machine);
 
-        $this->dropletApiProxy->withGetAllCall($this->machineNameFactory->create($machine->getId()), $vendorException);
+        $mockHandler = self::getContainer()->get('app.tests.httpclient.mocked.handler');
+        \assert($mockHandler instanceof MockHandler);
+
+        $mockHandler->append($httpResponse);
+        $mockHandler->append($httpResponse);
 
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
@@ -269,43 +281,153 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
      */
     public static function invokeThrowsExceptionDataProvider(): array
     {
-        $http401Exception = new RuntimeException('Unauthorized', 401);
-        $authenticationException = new AuthenticationException(
-            MachineProvider::DIGITALOCEAN,
-            self::MACHINE_ID,
-            MachineAction::GET,
-            new Stack([$http401Exception])
-        );
+        $rateLimitReset = (\time() + 1000);
 
-        $http404Exception = new ResourceNotFoundException('Not Found', 404);
-        $http503Exception = new RuntimeException('Service Unavailable', 503);
+        $internalServerErrorId = md5((string) rand());
+        $internalServerErrorMessage = md5((string) rand());
+
+        $serviceUnavailableErrorId = md5((string) rand());
+        $serviceUnavailableErrorMessage = md5((string) rand());
 
         return [
-            'HTTP 401' => [
-                'vendorException' => new NoDigitalOceanClientException(new Stack([$http401Exception])),
+            'unauthorized' => [
+                'httpResponse' => new Response(401),
                 'expectedException' => new UnrecoverableMessageHandlingException(
-                    $authenticationException->getMessage(),
-                    $authenticationException->getCode(),
-                    $authenticationException
-                ),
-            ],
-            'HTTP 404' => [
-                'vendorException' => $http404Exception,
-                'expectedException' => new UnrecoverableMessageHandlingException(
-                    'Machine "machine id" not found with provider "digitalocean"',
+                    'AuthenticationException Unable to perform action "get" for resource "machine id"',
                     0,
-                    new ProviderMachineNotFoundException(
+                    new AuthenticationException(
+                        MachineProvider::DIGITALOCEAN,
                         self::MACHINE_ID,
-                        MachineProvider::DIGITALOCEAN->value
+                        MachineAction::GET,
+                        new Stack([new DigitalOceanAuthenticationException()])
                     )
                 ),
             ],
-            'HTTP 503' => [
-                'vendorException' => $http503Exception,
+            'api limit exceeded' => [
+                'httpResponse' => new Response(
+                    429,
+                    [
+                        'Content-Type' => 'application/json',
+                        'RateLimit-limit' => '5000',
+                        'RateLimit-Remaining' => '0',
+                        'RateLimit-Reset' => (string) $rateLimitReset,
+                        'Retry-After' => '1000',
+                    ],
+                    (string) json_encode([
+                        'id' => 'too_many_requests',
+                        'message' => 'API Rate limit exceeded',
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'ApiLimitExceededException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new ApiLimitExceededException(
+                        $rateLimitReset,
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new DOApiLimitExceededException(
+                            'API Rate limit exceeded',
+                            $rateLimitReset,
+                            0,
+                            5000
+                        ),
+                    )
+                ),
+            ],
+            'internal server error' => [
+                'httpResponse' => new Response(
+                    500,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $internalServerErrorId,
+                        'message' => $internalServerErrorMessage,
+                    ])
+                ),
                 'expectedException' => new HttpException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    $http503Exception
+                    new ErrorException(
+                        $internalServerErrorId,
+                        $internalServerErrorMessage,
+                        500
+                    )
+                ),
+            ],
+            'service unavailable' => [
+                'httpResponse' => new Response(
+                    503,
+                    [
+                        'Content-Type' => 'application/json',
+                    ],
+                    (string) json_encode([
+                        'id' => $serviceUnavailableErrorId,
+                        'message' => $serviceUnavailableErrorMessage,
+                    ])
+                ),
+                'expectedException' => new HttpException(
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new ErrorException(
+                        $serviceUnavailableErrorId,
+                        $serviceUnavailableErrorMessage,
+                        503
+                    )
+                ),
+            ],
+            'invalid droplet data (empty)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'InvalidEntityResponseException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new InvalidEntityResponseException(
+                        MachineProvider::DIGITALOCEAN,
+                        [],
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new InvalidEntityDataException('droplet_as_collection', []),
+                    ),
+                ),
+            ],
+            'invalid droplet data (lacking fields)' => [
+                'httpResponse' => new Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    (string) json_encode([
+                        'droplets' => [
+                            [
+                                'id' => 123,
+                            ],
+                        ],
+                    ])
+                ),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'InvalidEntityResponseException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new InvalidEntityResponseException(
+                        MachineProvider::DIGITALOCEAN,
+                        ['id' => '123'],
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new InvalidEntityDataException('droplet', ['id' => '123']),
+                    ),
+                ),
+            ],
+            'unknown http client error' => [
+                'httpResponse' => new TransferException(),
+                'expectedException' => new UnrecoverableMessageHandlingException(
+                    'HttpClientException Unable to perform action "get" for resource "machine id"',
+                    0,
+                    new HttpClientException(
+                        self::MACHINE_ID,
+                        MachineAction::GET,
+                        new TransferException(),
+                    ),
                 ),
             ],
         ];
