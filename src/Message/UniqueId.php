@@ -13,11 +13,6 @@ class UniqueId
      */
     public static function create(): string
     {
-        $id = (string) new Ulid();
-        if ('' === $id) {
-            throw new \RuntimeException('Generated id is empty');
-        }
-
-        return $id;
+        return (string) new Ulid();
     }
 }

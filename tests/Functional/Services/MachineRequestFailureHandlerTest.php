@@ -248,14 +248,12 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
         \assert($machineRepository instanceof MachineRepository);
 
         $machineId = (string) new Ulid();
-        \assert('' !== $machineId);
 
         $machine = new Machine($machineId);
         $machine->setState(MachineState::CREATE_RECEIVED);
         $machineRepository->add($machine);
 
         $messageId = (string) new Ulid();
-        \assert('' !== $messageId);
 
         $message = new GetMachine($messageId, $machineId);
 
