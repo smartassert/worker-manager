@@ -30,3 +30,12 @@ framework:
             'App\Message\FindMachine': find_machine
             'App\Message\DeleteMachine': delete_machine
             'App\Message\CheckMachineIsActive': async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+
+            routing:
+                '*': async
