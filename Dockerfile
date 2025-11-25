@@ -63,7 +63,6 @@ COPY public/index.php public/
 COPY src /app/src
 COPY config/bundles.php config/routes.yaml config/services.yaml /app/config/
 COPY config/packages/*.yaml /app/config/packages/
-COPY config/packages/prod /app/config/packages/prod
 COPY migrations /app/migrations
 
 RUN chown -R www-data:www-data /app/var/log \
