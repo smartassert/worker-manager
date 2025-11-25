@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Live;
 
+use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Tests\Integration\AbstractIntegrationMachineTestCase;
@@ -44,8 +45,8 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
         sleep(3);
 
         shell_exec(sprintf(
-            'docker compose -f tests/build/docker-compose.yml exec -T app php bin/console doctrine:query:sql "%s"',
-            'DELETE From machine;'
+            'docker compose -f tests/build/docker-compose.yml exec -T app php bin/console doctrine:query:dql "%s"',
+            'DELETE FROM ' . Machine::class
         ));
 
         $statusResponse = $this->makeValidStatusRequest($this->machineId);
