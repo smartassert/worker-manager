@@ -18,8 +18,7 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
     public function __construct(
         private readonly Client $digitalOceanClient,
         private readonly string $identifier = self::DEFAULT_IDENTIFIER,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws AuthenticationException

@@ -2,6 +2,4 @@
 
 namespace App\Exception\MachineProvider;
 
-interface UnknownExceptionInterface extends ExceptionInterface
-{
-}
+interface UnknownExceptionInterface extends ExceptionInterface {}

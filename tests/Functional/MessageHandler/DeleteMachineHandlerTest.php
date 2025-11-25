@@ -197,7 +197,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                     0,
                                     5000
                                 ),
-                            )
+                            ),
                         ])
                     )
                 ),

@@ -11,8 +11,7 @@ readonly class MachineUpdater
 {
     public function __construct(
         private MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     public function updateFromRemoteMachine(Machine $machine, RemoteMachineInterface $remoteMachine): Machine
     {

@@ -18,8 +18,7 @@ class CheckMachineIsActiveHandler
     public function __construct(
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ExceptionInterface

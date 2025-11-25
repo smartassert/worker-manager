@@ -2,6 +2,4 @@
 
 namespace App\Exception;
 
-interface UnrecoverableExceptionInterface
-{
-}
+interface UnrecoverableExceptionInterface {}

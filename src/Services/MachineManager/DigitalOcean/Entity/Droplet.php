@@ -12,6 +12,5 @@ readonly class Droplet
         public int $id,
         public string $status,
         public NetworkCollection $networks,
-    ) {
-    }
+    ) {}
 }

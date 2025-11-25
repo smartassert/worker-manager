@@ -10,8 +10,7 @@ readonly class DropletFactory
 {
     public function __construct(
         private NetworkCollectionFactory $networkCollectionFactory,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<mixed> $data

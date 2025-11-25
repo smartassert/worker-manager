@@ -9,8 +9,7 @@ readonly class GetDropletRequest implements RequestInterface
 
     public function __construct(
         private string $name,
-    ) {
-    }
+    ) {}
 
     public function getMethod(): string
     {

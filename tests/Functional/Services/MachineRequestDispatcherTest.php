@@ -96,7 +96,7 @@ class MachineRequestDispatcherTest extends AbstractBaseFunctionalTestCase
                 'request' => new CheckMachineIsActive('uniqueId', 'machineId'),
                 'expectedStampsCreator' => function (int $checkMachineIsActiveDispatchDelay) {
                     return [
-                        new DelayStamp($checkMachineIsActiveDispatchDelay)
+                        new DelayStamp($checkMachineIsActiveDispatchDelay),
                     ];
                 },
             ],

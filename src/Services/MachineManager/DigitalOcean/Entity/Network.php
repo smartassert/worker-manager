@@ -12,8 +12,7 @@ readonly class Network
         public string $ipAddress,
         public bool $isPublic,
         public int $ipVersion,
-    ) {
-    }
+    ) {}
 
     /**
      * @return ?non-empty-string

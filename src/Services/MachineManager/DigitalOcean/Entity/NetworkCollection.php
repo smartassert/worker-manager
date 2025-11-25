@@ -9,8 +9,7 @@ readonly class NetworkCollection
      */
     public function __construct(
         public array $networks,
-    ) {
-    }
+    ) {}
 
     /**
      * @return non-empty-string[]

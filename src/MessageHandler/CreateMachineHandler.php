@@ -23,8 +23,7 @@ class CreateMachineHandler
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineUpdater $machineUpdater,
         private readonly MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Throwable

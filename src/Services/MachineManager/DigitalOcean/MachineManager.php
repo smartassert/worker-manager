@@ -21,8 +21,7 @@ readonly class MachineManager implements ProviderMachineManagerInterface
     public function __construct(
         private Factory $dropletConfigurationFactory,
         private Client $digitalOceanClient,
-    ) {
-    }
+    ) {}
 
     /**
      * @param non-empty-string $machineId

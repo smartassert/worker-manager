@@ -14,8 +14,7 @@ class Client
         private readonly ClientInterface $client,
         private readonly string $healthCheckUrl,
         private readonly string $statusUrl,
-    ) {
-    }
+    ) {}
 
     public function makeMachineCreateRequest(
         ?string $authenticationToken,

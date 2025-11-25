@@ -9,8 +9,7 @@ readonly class ExceptionIdentifier
      */
     public function __construct(
         private iterable $identifiers,
-    ) {
-    }
+    ) {}
 
     public function isMachineNotFoundException(\Throwable $throwable): bool
     {

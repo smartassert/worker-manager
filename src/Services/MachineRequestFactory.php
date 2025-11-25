@@ -14,8 +14,7 @@ readonly class MachineRequestFactory
 {
     public function __construct(
         private RequestIdFactoryInterface $requestIdFactory,
-    ) {
-    }
+    ) {}
 
     /**
      * @param non-empty-string $machineId

@@ -26,8 +26,7 @@ readonly class MachineManager
         private MachineNameFactory $machineNameFactory,
         private ExceptionFactory $exceptionFactory,
         private ExceptionIdentifier $exceptionIdentifier,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws MachineActionFailedException

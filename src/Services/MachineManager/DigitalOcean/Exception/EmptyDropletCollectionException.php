@@ -2,6 +2,4 @@
 
 namespace App\Services\MachineManager\DigitalOcean\Exception;
 
-class EmptyDropletCollectionException extends \Exception
-{
-}
+class EmptyDropletCollectionException extends \Exception {}

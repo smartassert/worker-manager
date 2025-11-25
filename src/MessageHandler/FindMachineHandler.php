@@ -24,8 +24,7 @@ class FindMachineHandler
         private MachineUpdater $machineUpdater,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Throwable

@@ -14,8 +14,7 @@ class Machine
      */
     public function __construct(
         private array $data,
-    ) {
-    }
+    ) {}
 
     public static function createId(): string
     {
