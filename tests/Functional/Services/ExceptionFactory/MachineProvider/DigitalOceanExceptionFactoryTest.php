@@ -99,7 +99,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
                     self::ID,
                     self::ACTION,
                     $vendorApiLimitExceededException
-                )
+                ),
             ],
         ];
     }

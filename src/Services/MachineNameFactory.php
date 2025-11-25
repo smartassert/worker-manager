@@ -9,8 +9,7 @@ class MachineNameFactory
 
     public function __construct(
         private string $environmentPrefix,
-    ) {
-    }
+    ) {}
 
     /**
      * @return non-empty-string

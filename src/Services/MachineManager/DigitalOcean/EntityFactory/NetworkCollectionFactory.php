@@ -10,8 +10,7 @@ readonly class NetworkCollectionFactory
 {
     public function __construct(
         private NetworkFactory $networkFactory,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<mixed> $data

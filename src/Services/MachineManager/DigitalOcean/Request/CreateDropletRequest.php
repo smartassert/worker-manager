@@ -14,8 +14,7 @@ readonly class CreateDropletRequest implements RequestInterface
         private string $image,
         private array $tags,
         private string $userData,
-    ) {
-    }
+    ) {}
 
     public function getMethod(): string
     {

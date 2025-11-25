@@ -79,7 +79,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $mockHandler->append(new Response(
             200,
             [
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
             (string) json_encode($responseData),
         ));

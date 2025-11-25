@@ -14,8 +14,7 @@ class RemoteMachine implements RemoteMachineInterface
 
     public function __construct(
         private Droplet $droplet
-    ) {
-    }
+    ) {}
 
     public function getProvider(): MachineProvider
     {

@@ -88,7 +88,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $mockHandler->append(new Response(
             200,
             [
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
             (string) json_encode($responseData),
         ));
@@ -358,7 +358,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                     0,
                                     5000
                                 ),
-                            )
+                            ),
                         ])
                     )
                 ),

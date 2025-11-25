@@ -21,8 +21,7 @@ readonly class ActionFailureFactory
 {
     public function __construct(
         private ActionFailureRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function create(Machine $machine, MachineAction $action, \Throwable $throwable): ActionFailure
     {

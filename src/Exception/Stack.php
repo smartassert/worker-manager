@@ -12,8 +12,7 @@ readonly class Stack implements \IteratorAggregate
      */
     public function __construct(
         private array $exceptions,
-    ) {
-    }
+    ) {}
 
     /**
      * @return \Throwable[]

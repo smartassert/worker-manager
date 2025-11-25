@@ -21,8 +21,7 @@ class DeleteMachineHandler
         private MachineManager $machineManager,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Throwable

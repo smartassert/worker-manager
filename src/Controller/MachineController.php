@@ -23,8 +23,7 @@ class MachineController
         private readonly MachineRequestDispatcher $machineRequestDispatcher,
         private readonly MachineRequestFactory $machineRequestFactory,
         private readonly MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @param non-empty-string $id

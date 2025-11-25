@@ -20,8 +20,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
-    ) {
-    }
+    ) {}
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
     {

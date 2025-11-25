@@ -13,8 +13,7 @@ abstract class AbstractMachineRequest implements MachineRequestInterface
     public function __construct(
         private readonly string $uniqueId,
         private readonly string $machineId,
-    ) {
-    }
+    ) {}
 
     public function getUniqueId(): string
     {

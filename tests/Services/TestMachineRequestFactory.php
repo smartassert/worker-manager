@@ -14,8 +14,7 @@ readonly class TestMachineRequestFactory
 {
     public function __construct(
         private MachineRequestFactory $factory,
-    ) {
-    }
+    ) {}
 
     /**
      * @param non-empty-string $machineId

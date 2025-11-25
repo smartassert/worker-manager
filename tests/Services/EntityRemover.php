@@ -10,8 +10,7 @@ class EntityRemover
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @param class-string $className

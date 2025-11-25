@@ -16,8 +16,7 @@ class MachineRequestDispatcher
     public function __construct(
         private MessageBusInterface $messageBus,
         private array $dispatchDelays,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ExceptionInterface

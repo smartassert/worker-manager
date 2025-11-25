@@ -11,7 +11,5 @@ class HealthCheckTest extends AbstractHealthCheckTestCase
 {
     use GetApplicationClientTrait;
 
-    protected function getHealthCheckSetup(): void
-    {
-    }
+    protected function getHealthCheckSetup(): void {}
 }
