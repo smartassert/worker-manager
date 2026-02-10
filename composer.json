@@ -43,7 +43,7 @@
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/browser-kit": "7.4.*",
         "symfony/maker-bundle": "^1.29",
-        "symfony/phpunit-bridge": "^7.0",
+        "symfony/phpunit-bridge": "^8.0",
         "webignition/object-reflector": "^1.0"
     },
     "config": {
