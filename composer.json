@@ -29,7 +29,7 @@
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",
-        "friendsofphp/php-cs-fixer": "^3.90",
+        "friendsofphp/php-cs-fixer": "dev-master#32c1c3f8fb65051f27a2d295e9c467b7ebe9de11",
         "mockery/mockery": "^1.4",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
@@ -37,7 +37,7 @@
         "phpstan/phpstan-mockery": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
-        "phpunit/phpunit": "^12",
+        "phpunit/phpunit": "^13",
         "smartassert/symfony-test-client": "^3.1",
         "smartassert/test-authenticaton-provider-bundle": "^6.0",
         "squizlabs/php_codesniffer": "^4.0",
