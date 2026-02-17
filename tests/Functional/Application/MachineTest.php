@@ -70,6 +70,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'has existing machine; find/not-found' => [
@@ -90,6 +94,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'has existing machine; create/failed, no ip addresses' => [
@@ -110,6 +118,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'has existing machine; create/failed, has ip addresses' => [
@@ -131,6 +143,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'failed, id taken' => [
@@ -191,6 +207,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'create/received, no action failure' => [
@@ -209,6 +229,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'create/failed, has action failure' => [
@@ -248,6 +272,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::UNKNOWN->value => [
@@ -266,6 +294,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::FIND_RECEIVED->value => [
@@ -284,6 +316,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::FIND_FINDING->value => [
@@ -302,6 +338,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::FIND_NOT_FOUND->value => [
@@ -320,6 +360,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::FIND_NOT_FINDABLE->value => [
@@ -338,6 +382,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::CREATE_RECEIVED->value => [
@@ -356,6 +404,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::CREATE_REQUESTED->value => [
@@ -374,6 +426,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::CREATE_FAILED->value => [
@@ -392,6 +448,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::UP_STARTED->value => [
@@ -410,6 +470,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::UP_ACTIVE->value => [
@@ -428,6 +492,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => true,
                     'has_ending_state' => false,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::DELETE_RECEIVED->value => [
@@ -446,6 +514,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => true,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::DELETE_REQUESTED->value => [
@@ -464,6 +536,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => true,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'state: ' . MachineState::DELETE_FAILED->value => [
@@ -482,6 +558,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => true,
+                    ],
                 ],
             ],
             'state: ' . MachineState::DELETE_DELETED->value => [
@@ -500,6 +580,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => false,
                     'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => true,
+                    ],
                 ],
             ],
         ];
@@ -547,6 +631,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => true,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
             'local machine does not exist' => [
@@ -561,6 +649,10 @@ class MachineTest extends AbstractMachineTestCase
                     'has_active_state' => false,
                     'has_ending_state' => true,
                     'has_end_state' => false,
+                    'meta_state' => [
+                        'ended' => false,
+                        'succeeded' => false,
+                    ],
                 ],
             ],
         ];
