@@ -31,6 +31,10 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                 'has_active_state' => false,
                 'has_ending_state' => true,
                 'has_end_state' => false,
+                'meta_state' => [
+                    'ended' => false,
+                    'succeeded' => false,
+                ],
             ]),
             $response->getBody()->getContents()
         );
