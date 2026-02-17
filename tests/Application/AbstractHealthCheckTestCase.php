@@ -12,9 +12,9 @@ abstract class AbstractHealthCheckTestCase extends AbstractApplicationTestCase
 
         $response = $this->applicationClient->makeGetHealthCheckRequest();
 
-        ini_set('xdebug.var_display_max_data', '-1');
-        var_dump($response->getStatusCode());
-        var_dump($response->getBody()->getContents());
+//        ini_set('xdebug.var_display_max_data', '-1');
+//        var_dump($response->getStatusCode());
+//        var_dump($response->getBody()->getContents());
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
