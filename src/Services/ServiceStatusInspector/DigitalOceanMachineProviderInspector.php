@@ -26,11 +26,14 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
      * @throws InvalidEntityDataException
      * @throws ClientExceptionInterface
      */
-    public function getStatus(): bool
+    public function getStatus(): bool|string
     {
         try {
             $this->digitalOceanClient->getDroplet(self::DROPLET_NAME);
         } catch (EmptyDropletCollectionException) {
+            return true;
+        } catch  (\Throwable $exception) {
+            return $exception::class;
         }
 
         return true;
