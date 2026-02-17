@@ -9,7 +9,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "doctrine/doctrine-bundle": "^3",
-        "doctrine/doctrine-migrations-bundle": "^3.2",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.0",
         "guzzlehttp/guzzle": "^7.5",
         "smartassert/digitalocean-droplet-configuration": "^1.2",
