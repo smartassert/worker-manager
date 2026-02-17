@@ -28,6 +28,10 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
                 'has_active_state' => false,
                 'has_ending_state' => false,
                 'has_end_state' => false,
+                'meta_state' => [
+                    'ended' => false,
+                    'succeeded' => false,
+                ],
             ]),
             $response->getBody()->getContents()
         );
