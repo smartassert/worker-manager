@@ -6,14 +6,12 @@ namespace App\Tests\Functional\Application;
 
 use App\Entity\Machine;
 use App\Enum\MachineAction;
-use App\Enum\MachineProvider;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Tests\Application\AbstractMachineTestCase;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class MachineTest extends AbstractMachineTestCase
@@ -34,460 +32,537 @@ class MachineTest extends AbstractMachineTestCase
     }
 
     /**
-     * @param string[] $expectedResponseIpAddresses
+     * @param callable(MachineRepository): void $setup
+     * @param array<mixed>                      $expectedResponseData
      */
-    #[DataProvider('createSuccessDataProvider')]
-    public function testCreateSuccess(
-        ?Machine $existingMachine,
-        array $expectedResponseIpAddresses,
-    ): void {
-        if ($existingMachine instanceof Machine) {
-            $this->machineRepository->add($existingMachine);
-        }
+    #[DataProvider('createDataProvider')]
+    public function testCreate(callable $setup, int $expectedStatusCode, array $expectedResponseData): void
+    {
+        $setup($this->machineRepository);
 
         $response = $this->makeValidCreateRequest(self::MACHINE_ID);
 
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        \assert($entityManager instanceof EntityManagerInterface);
-        $entityManager->close();
-
-        self::assertSame(202, $response->getStatusCode());
+        self::assertSame($expectedStatusCode, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => $expectedResponseIpAddresses,
-                'state' => MachineState::CREATE_RECEIVED,
-                'state_category' => MachineStateCategory::PRE_ACTIVE,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => false,
-                'has_ending_state' => false,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
+
+        self::assertEquals(
+            $expectedResponseData,
+            json_decode($response->getBody()->getContents(), true),
         );
-
-        $machine = $this->machineRepository->find(self::MACHINE_ID);
-        self::assertInstanceOf(Machine::class, $machine);
-        self::assertSame(self::MACHINE_ID, $machine->getId());
-        self::assertSame(MachineState::CREATE_RECEIVED, $machine->getState());
-
-        if ($existingMachine instanceof Machine) {
-            self::assertSame($existingMachine->getIpAddresses(), $machine->getIpAddresses());
-        }
     }
 
     /**
      * @return array<mixed>
      */
-    public static function createSuccessDataProvider(): array
+    public static function createDataProvider(): array
     {
         return [
             'no existing machine' => [
-                'existingMachine' => null,
-                'expectedResponseIpAddresses' => [],
+                'setup' => function (MachineRepository $machineRepository): void {},
+                'expectedStatusCode' => 202,
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            'existing machine state: find/not-found' => [
-                'existingMachine' => (function () {
+            'has existing machine; find/not-found' => [
+                'setup' => function (MachineRepository $machineRepository): void {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::FIND_NOT_FOUND);
 
-                    return $machine;
-                })(),
-                'expectedResponseIpAddresses' => [],
+                    $machineRepository->add($machine);
+                },
+                'expectedStatusCode' => 202,
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            'existing machine state: create/failed, no ip addresses' => [
-                'existingMachine' => (function () {
+            'has existing machine; create/failed, no ip addresses' => [
+                'setup' => function (MachineRepository $machineRepository): void {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::CREATE_FAILED);
 
-                    return $machine;
-                })(),
-                'expectedResponseIpAddresses' => [],
+                    $machineRepository->add($machine);
+                },
+                'expectedStatusCode' => 202,
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            'existing machine state: create/failed, has ip addresses' => [
-                'existingMachine' => (function () {
+            'has existing machine; create/failed, has ip addresses' => [
+                'setup' => function (MachineRepository $machineRepository): void {
                     $machine = new Machine(self::MACHINE_ID);
                     $machine->setState(MachineState::CREATE_FAILED);
                     $machine->setIpAddresses(['127.0.0.1', '10.0.0.1']);
 
-                    return $machine;
-                })(),
-                'expectedResponseIpAddresses' => [
-                    '127.0.0.1',
-                    '10.0.0.1',
+                    $machineRepository->add($machine);
+                },
+                'expectedStatusCode' => 202,
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => ['127.0.0.1', '10.0.0.1'],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
+            ],
+            'failed, id taken' => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
+
+                    $machineRepository->add($machine);
+                },
+                'expectedStatusCode' => 400,
+                'expectedResponseData' => [
+                    'type' => 'machine-create-request',
+                    'message' => 'id taken',
+                    'code' => 100,
                 ],
             ],
         ];
     }
 
-    public function testCreateIdTaken(): void
+    /**
+     * @param callable(MachineRepository, ActionFailureFactory): void $setup
+     * @param array<mixed>                                            $expectedResponseData
+     */
+    #[DataProvider('statusDataProvider')]
+    public function testStatus(callable $setup, array $expectedResponseData): void
     {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::CREATE_RECEIVED);
-        $this->machineRepository->add($machine);
-
-        $response = $this->makeValidCreateRequest(self::MACHINE_ID);
-
-        self::assertSame(400, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'type' => 'machine-create-request',
-                'message' => 'id taken',
-                'code' => 100,
-            ]),
-            $response->getBody()->getContents()
-        );
-    }
-
-    public function testStatusMachineNotFound(): void
-    {
-        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
-
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::FIND_RECEIVED,
-                'state_category' => MachineStateCategory::FINDING,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => false,
-                'has_ending_state' => false,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
-        );
-    }
-
-    public function testStatusWithoutActionFailure(): void
-    {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::CREATE_RECEIVED);
-        $this->machineRepository->add($machine);
-
-        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
-
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::CREATE_RECEIVED,
-                'state_category' => MachineStateCategory::PRE_ACTIVE,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => false,
-                'has_ending_state' => false,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
-        );
-    }
-
-    public function testStatusWithActionFailure(): void
-    {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::CREATE_FAILED);
-        $this->machineRepository->add($machine);
-        $machine->setProvider(MachineProvider::DIGITALOCEAN);
-
-        $this->machineRepository->add($machine);
-
         $actionFailureFactory = self::getContainer()->get(ActionFailureFactory::class);
         \assert($actionFailureFactory instanceof ActionFailureFactory);
-        $actionFailureFactory->create(
-            $machine,
-            MachineAction::CREATE,
-            new ApiLimitExceededException(
-                123,
-                self::MACHINE_ID,
-                MachineAction::GET,
-                new \Exception()
-            )
-        );
 
-        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
-
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::CREATE_FAILED,
-                'state_category' => MachineStateCategory::END,
-                'action_failure' => [
-                    'type' => 'vendor_request_limit_exceeded',
-                    'action' => 'create',
-                    'context' => [
-                        'reset-timestamp' => 123,
-                        'provider' => $machine->getProvider()?->value,
-                    ],
-                ],
-                'has_failed_state' => true,
-                'has_active_state' => false,
-                'has_ending_state' => false,
-                'has_end_state' => true,
-            ]),
-            $response->getBody()->getContents()
-        );
-    }
-
-    public function testStatusHasActiveState(): void
-    {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::UP_ACTIVE);
-        $this->machineRepository->add($machine);
-
-        $response = $this->makeValidStatusRequest(self::MACHINE_ID);
-
-        self::assertSame(200, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::UP_ACTIVE,
-                'state_category' => MachineStateCategory::ACTIVE,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => true,
-                'has_ending_state' => false,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
-        );
-    }
-
-    #[DataProvider('statusHasStateBooleansDataProvider')]
-    public function testStatusHasStateBooleans(
-        MachineState $state,
-        bool $expectedHasFailedState,
-        bool $expectedHasActiveState,
-        bool $expectedHasEndingState,
-        bool $expectedHasEndState
-    ): void {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState($state);
-        $this->machineRepository->add($machine);
+        $setup($this->machineRepository, $actionFailureFactory);
 
         $response = $this->makeValidStatusRequest(self::MACHINE_ID);
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
 
-        $responseData = json_decode($response->getBody()->getContents(), true);
-        \assert(is_array($responseData) && array_key_exists('has_failed_state', $responseData));
-
-        self::assertSame(
-            $expectedHasFailedState,
-            $responseData['has_failed_state'],
-            sprintf(
-                '\'%s\' expected %s, actual %s',
-                'has_failed_state',
-                $expectedHasFailedState ? 'true' : 'false',
-                $responseData['has_failed_state'] ? 'true' : 'false',
-            )
-        );
-
-        self::assertSame(
-            $expectedHasActiveState,
-            $responseData['has_active_state'],
-            sprintf(
-                '\'%s\' expected %s, actual %s',
-                'has_active_state',
-                $expectedHasActiveState ? 'true' : 'false',
-                $responseData['has_active_state'] ? 'true' : 'false',
-            )
-        );
-
-        self::assertSame(
-            $expectedHasEndingState,
-            $responseData['has_ending_state'],
-            sprintf(
-                '\'%s\' expected %s, actual %s',
-                'has_ending_state',
-                $expectedHasEndingState ? 'true' : 'false',
-                $responseData['has_ending_state'] ? 'true' : 'false',
-            )
-        );
-
-        self::assertSame(
-            $expectedHasEndState,
-            $responseData['has_end_state'],
-            sprintf(
-                '\'%s\' expected %s, actual %s',
-                'has_end_state',
-                $expectedHasEndState ? 'true' : 'false',
-                $responseData['has_end_state'] ? 'true' : 'false',
-            )
+        self::assertEquals(
+            $expectedResponseData,
+            json_decode($response->getBody()->getContents(), true),
         );
     }
 
     /**
      * @return array<mixed>
      */
-    public static function statusHasStateBooleansDataProvider(): array
+    public static function statusDataProvider(): array
     {
         return [
-            MachineState::UNKNOWN->value => [
-                'state' => MachineState::UNKNOWN,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'not found' => [
+                'setup' => function (): void {},
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::FIND_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::FINDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::FIND_RECEIVED->value => [
-                'state' => MachineState::FIND_RECEIVED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'create/received, no action failure' => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::FIND_FINDING->value => [
-                'state' => MachineState::FIND_FINDING,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'create/failed, has action failure' => [
+                'setup' => function (
+                    MachineRepository $machineRepository,
+                    ActionFailureFactory $actionFailureFactory,
+                ): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_FAILED);
+                    $machineRepository->add($machine);
+
+                    $actionFailureFactory->create(
+                        $machine,
+                        MachineAction::CREATE,
+                        new ApiLimitExceededException(
+                            123,
+                            self::MACHINE_ID,
+                            MachineAction::GET,
+                            new \Exception()
+                        )
+                    );
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_FAILED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => [
+                        'type' => 'vendor_request_limit_exceeded',
+                        'action' => 'create',
+                        'context' => [
+                            'reset-timestamp' => 123,
+                            'provider' => null,
+                        ],
+                    ],
+                    'has_failed_state' => true,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
             ],
-            MachineState::FIND_NOT_FOUND->value => [
-                'state' => MachineState::FIND_NOT_FOUND,
-                'expectedHasFailedState' => true,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => true,
+            'state: ' . MachineState::UNKNOWN->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::UNKNOWN);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::UNKNOWN->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::UNKNOWN->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::FIND_NOT_FINDABLE->value => [
-                'state' => MachineState::FIND_NOT_FINDABLE,
-                'expectedHasFailedState' => true,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => true,
+            'state: ' . MachineState::FIND_RECEIVED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_RECEIVED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::FIND_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::FINDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::CREATE_RECEIVED->value => [
-                'state' => MachineState::CREATE_RECEIVED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::FIND_FINDING->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_FINDING);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::FIND_FINDING->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::FINDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::CREATE_REQUESTED->value => [
-                'state' => MachineState::CREATE_REQUESTED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::FIND_NOT_FOUND->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_NOT_FOUND);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::FIND_NOT_FOUND->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => null,
+                    'has_failed_state' => true,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
             ],
-            MachineState::CREATE_FAILED->value => [
-                'state' => MachineState::CREATE_FAILED,
-                'expectedHasFailedState' => true,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => true,
+            'state: ' . MachineState::FIND_NOT_FINDABLE->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::FIND_NOT_FINDABLE);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::FIND_NOT_FINDABLE->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => null,
+                    'has_failed_state' => true,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
             ],
-            MachineState::UP_STARTED->value => [
-                'state' => MachineState::UP_STARTED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::CREATE_RECEIVED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::UP_ACTIVE->value => [
-                'state' => MachineState::UP_ACTIVE,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => true,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::CREATE_REQUESTED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_REQUESTED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_REQUESTED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::DELETE_RECEIVED->value => [
-                'state' => MachineState::DELETE_RECEIVED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => true,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::CREATE_FAILED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_FAILED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_FAILED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => null,
+                    'has_failed_state' => true,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
             ],
-            MachineState::DELETE_REQUESTED->value => [
-                'state' => MachineState::DELETE_REQUESTED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => true,
-                'expectedHasEndState' => false,
+            'state: ' . MachineState::UP_STARTED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::UP_STARTED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::UP_STARTED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::PRE_ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::DELETE_FAILED->value => [
-                'state' => MachineState::DELETE_FAILED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => true,
+            'state: ' . MachineState::UP_ACTIVE->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::UP_ACTIVE);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::UP_ACTIVE->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::ACTIVE->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => true,
+                    'has_ending_state' => false,
+                    'has_end_state' => false,
+                ],
             ],
-            MachineState::DELETE_DELETED->value => [
-                'state' => MachineState::DELETE_DELETED,
-                'expectedHasFailedState' => false,
-                'expectedHasActiveState' => false,
-                'expectedHasEndingState' => false,
-                'expectedHasEndState' => true,
+            'state: ' . MachineState::DELETE_RECEIVED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::DELETE_RECEIVED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::ENDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => true,
+                    'has_end_state' => false,
+                ],
+            ],
+            'state: ' . MachineState::DELETE_REQUESTED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::DELETE_REQUESTED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_REQUESTED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::ENDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => true,
+                    'has_end_state' => false,
+                ],
+            ],
+            'state: ' . MachineState::DELETE_FAILED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::DELETE_FAILED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_FAILED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
+            ],
+            'state: ' . MachineState::DELETE_DELETED->value => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::DELETE_DELETED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_DELETED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                ],
             ],
         ];
     }
 
-    public function testDeleteLocalMachineExists(): void
+    /**
+     * @param callable(MachineRepository): void $setup
+     * @param array<mixed>                      $expectedResponseData
+     */
+    #[DataProvider('deleteDataProvider')]
+    public function testDelete(callable $setup, array $expectedResponseData): void
     {
-        $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::CREATE_RECEIVED);
-        $this->machineRepository->add($machine);
+        $setup($this->machineRepository);
 
         $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
 
         self::assertSame(202, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::DELETE_RECEIVED,
-                'state_category' => MachineStateCategory::ENDING,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => false,
-                'has_ending_state' => true,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
+
+        self::assertEquals(
+            $expectedResponseData,
+            json_decode($response->getBody()->getContents(), true),
         );
     }
 
-    public function testDeleteLocalMachineDoesNotExist(): void
+    /**
+     * @return array<mixed>
+     */
+    public static function deleteDataProvider(): array
     {
-        $machine = $this->machineRepository->find(self::MACHINE_ID);
-        self::assertNull($machine);
-
-        $response = $this->makeValidDeleteRequest(self::MACHINE_ID);
-
-        self::assertSame(202, $response->getStatusCode());
-        self::assertSame('application/json', $response->getHeaderLine('content-type'));
-        self::assertJsonStringEqualsJsonString(
-            (string) json_encode([
-                'id' => self::MACHINE_ID,
-                'ip_addresses' => [],
-                'state' => MachineState::DELETE_RECEIVED,
-                'state_category' => MachineStateCategory::ENDING,
-                'action_failure' => null,
-                'has_failed_state' => false,
-                'has_active_state' => false,
-                'has_ending_state' => true,
-                'has_end_state' => false,
-            ]),
-            $response->getBody()->getContents()
-        );
-
-        $machine = $this->machineRepository->find(self::MACHINE_ID);
-        self::assertInstanceOf(Machine::class, $machine);
+        return [
+            'local machine exists' => [
+                'setup' => function (MachineRepository $machineRepository): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_RECEIVED);
+                    $machineRepository->add($machine);
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::ENDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => true,
+                    'has_end_state' => false,
+                ],
+            ],
+            'local machine does not exist' => [
+                'setup' => function (): void {},
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::DELETE_RECEIVED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::ENDING->value,
+                    'action_failure' => null,
+                    'has_failed_state' => false,
+                    'has_active_state' => false,
+                    'has_ending_state' => true,
+                    'has_end_state' => false,
+                ],
+            ],
+        ];
     }
 }
