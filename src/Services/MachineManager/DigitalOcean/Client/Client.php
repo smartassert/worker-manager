@@ -19,6 +19,7 @@ use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface as HttpRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 
 readonly class Client
 {
@@ -81,24 +82,16 @@ readonly class Client
     }
 
     /**
-     * @param string[] $tags
-     *
      * @throws ClientExceptionInterface
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
      * @throws ApiLimitExceededException
      */
-    public function createDroplet(
-        string $name,
-        string $region,
-        string $size,
-        string $image,
-        array $tags,
-        string $userData
-    ): Droplet {
+    public function createDroplet(Configuration $configuration): Droplet
+    {
         $dropletData = $this->getResponseData(
-            new CreateDropletRequest($name, $region, $size, $image, $tags, $userData)
+            new CreateDropletRequest($configuration)
         );
 
         return $this->dropletFactory->create($dropletData);
