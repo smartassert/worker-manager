@@ -22,6 +22,7 @@ use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineRequestFailureHandler;
 use App\Services\MessageHandlerExceptionStackFactory;
@@ -339,7 +340,7 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                                     $message->getMachineId(),
                                     MachineAction::GET,
                                     new DOApiLimitExceededException(
-                                        'API limit exceeded',
+                                        new Error(429, 'too_many_requests', 'API limit exceeded'),
                                         123,
                                         0,
                                         5000

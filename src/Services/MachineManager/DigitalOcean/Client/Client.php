@@ -3,6 +3,7 @@
 namespace App\Services\MachineManager\DigitalOcean\Client;
 
 use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
@@ -78,7 +79,7 @@ readonly class Client
             throw new MissingDropletException();
         }
 
-        throw $this->createErrorException($response);
+        throw $this->createErrorException($statusCode, $this->getRawResponseData($response));
     }
 
     /**
@@ -108,20 +109,17 @@ readonly class Client
     private function getResponseData(RequestInterface $request): array
     {
         $response = $this->getResponse($request);
+        $statusCode = $response->getStatusCode();
+        $responseData = $this->getRawResponseData($response);
 
         if (
-            in_array($response->getStatusCode(), [200, 202])
+            (200 === $statusCode || 202 == $statusCode)
             && str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')
         ) {
-            $responseContent = $response->getBody()->getContents();
-            $response->getBody()->rewind();
-
-            $responseData = json_decode($responseContent, true);
-
-            return is_array($responseData) ? $responseData : [];
+            return $responseData;
         }
 
-        throw $this->createErrorException($response);
+        throw $this->createErrorException($statusCode, $responseData);
     }
 
     /**
@@ -149,35 +147,41 @@ readonly class Client
         throw new AuthenticationException();
     }
 
-    private function createErrorException(ResponseInterface $response): ErrorException
+    /**
+     * @param array<mixed> $responseData
+     */
+    private function createErrorException(int $statusCode, array $responseData): ErrorException
     {
-        $errorData = [];
-        if ('application/json' === $response->getHeaderLine('Content-Type')) {
-            $errorData = json_decode($response->getBody()->getContents(), true);
-            $errorData = is_array($errorData) ? $errorData : [];
-        }
-
-        $errorId = $errorData['id'] ?? '';
-        $errorId = is_string($errorId) ? $errorId : '';
-
-        $errorMessage = $errorData['message'] ?? '';
-        $errorMessage = is_string($errorMessage) ? $errorMessage : '';
-
-        return new ErrorException($errorId, $errorMessage, $response->getStatusCode());
+        return new ErrorException(
+            $this->createErrorEntity($statusCode, $responseData)
+        );
     }
 
     private function createApiLimitExceededException(ResponseInterface $response): ApiLimitExceededException
     {
-        $responseData = json_decode($response->getBody()->getContents(), true);
-        $message = is_array($responseData) ? ($responseData['message'] ?? '') : '';
-        $message = is_string($message) ? $message : '';
+        $responseData = $this->getRawResponseData($response);
+        $error = $this->createErrorEntity($response->getStatusCode(), $responseData);
 
         return new ApiLimitExceededException(
-            $message,
+            $error,
             (int) $response->getHeaderLine('RateLimit-Reset'),
             (int) $response->getHeaderLine('RateLimit-Remaining'),
             (int) $response->getHeaderLine('RateLimit-Limit'),
         );
+    }
+
+    /**
+     * @param array<mixed> $responseData
+     */
+    private function createErrorEntity(int $code, array $responseData): Error
+    {
+        $id = $responseData['id'] ?? '';
+        $id = is_string($id) ? $id : '';
+
+        $message = $responseData['message'] ?? '';
+        $message = is_string($message) ? $message : '';
+
+        return new Error($code, $id, $message);
     }
 
     private function createRequest(string $token, RequestInterface $request): HttpRequestInterface
@@ -196,5 +200,23 @@ readonly class Client
             ],
             $body
         );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function getRawResponseData(ResponseInterface $response): array
+    {
+        $responseData = [];
+
+        if (str_starts_with($response->getHeaderLine('Content-Type'), 'application/json')) {
+            $responseContent = $response->getBody()->getContents();
+            $response->getBody()->rewind();
+
+            $responseData = json_decode($responseContent, true);
+            $responseData = is_array($responseData) ? $responseData : [];
+        }
+
+        return $responseData;
     }
 }

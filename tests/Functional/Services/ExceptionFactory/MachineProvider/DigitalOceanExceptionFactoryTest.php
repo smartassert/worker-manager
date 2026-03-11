@@ -13,6 +13,7 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -49,16 +50,20 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
      */
     public static function createDataProvider(): array
     {
-        $errorException400 = new ErrorException('bad_request', 'Bad request', 400);
-
-        $dropletLimitValidationFailedException = new ErrorException(
-            'droplet_limit_exceeded',
-            'creating this/these droplet(s) will exceed your droplet limit',
-            422
+        $errorException400 = new ErrorException(
+            new Error(400, 'bad_request', 'Bad request')
         );
 
+        $dropletLimitExceededError = new Error(
+            422,
+            'droplet_limit_exceeded',
+            'creating this/these droplet(s) will exceed your droplet limit',
+        );
+
+        $dropletLimitValidationFailedException = new ErrorException($dropletLimitExceededError);
+
         $vendorApiLimitExceededException = new DOApiLimitExceededException(
-            'API Rate limit exceeded',
+            $dropletLimitExceededError,
             123,
             0,
             5000

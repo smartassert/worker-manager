@@ -18,6 +18,7 @@ use App\Exception\MachineProvider\ProviderMachineNotFoundException;
 use App\Exception\Stack;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Entity\Network;
 use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -384,7 +385,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             new HttpException(
                 self::MACHINE_ID,
                 MachineAction::DELETE,
-                new ErrorException('service_unavailable', 'Service unavailable', 503)
+                new ErrorException(
+                    new Error(503, 'service_unavailable', 'Service unavailable'),
+                )
             ),
         ]);
 
@@ -449,7 +452,9 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
             new HttpException(
                 self::MACHINE_ID,
                 MachineAction::FIND,
-                new ErrorException('service_unavailable', 'Service unavailable', 503)
+                new ErrorException(
+                    new Error(503, 'service_unavailable', 'Service unavailable'),
+                )
             ),
         ]);
 
