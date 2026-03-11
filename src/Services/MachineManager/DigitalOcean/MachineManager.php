@@ -35,18 +35,12 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
-        $configuration = $this->dropletConfigurationFactory->create();
-        $configuration = $configuration->withNames([$name]);
-        $configuration = $configuration->addTags([$name]);
+        $configuration = $this->dropletConfigurationFactory->create([
+            Factory::KEY_NAME => $name,
+            Factory::KEY_TAGS => [$name],
+        ]);
 
-        $droplet = $this->digitalOceanClient->createDroplet(
-            $name,
-            $configuration->getRegion(),
-            $configuration->getSize(),
-            $configuration->getImage(),
-            $configuration->getTags(),
-            $configuration->getUserData()
-        );
+        $droplet = $this->digitalOceanClient->createDroplet($configuration);
 
         return new RemoteMachine($droplet);
     }
