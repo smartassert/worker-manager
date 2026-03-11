@@ -8,6 +8,7 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\DigitalOcean\UnprocessableEntityException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
@@ -39,7 +40,17 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
-            return new DropletLimitExceededException($resourceId, $action, $exception);
+            if (str_contains($exception->error->message, DropletLimitExceededException::MESSAGE_IDENTIFIER)) {
+                return new DropletLimitExceededException($resourceId, $action, $exception);
+            }
+
+            return new UnprocessableEntityException(
+                $resourceId,
+                $action,
+                $exception,
+                $exception->error->code,
+                $exception->error->message,
+            );
         }
 
         if ($exception instanceof DOAuthenticationException) {
