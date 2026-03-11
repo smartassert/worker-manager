@@ -19,6 +19,7 @@ use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -326,7 +327,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                         self::MACHINE_ID,
                         MachineAction::GET,
                         new DOApiLimitExceededException(
-                            'API Rate limit exceeded',
+                            new Error(429, 'too_many_requests', 'API Rate limit exceeded'),
                             $rateLimitReset,
                             0,
                             5000
@@ -349,9 +350,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new ErrorException(
-                        $internalServerErrorId,
-                        $internalServerErrorMessage,
-                        500
+                        new Error(500, $internalServerErrorId, $internalServerErrorMessage),
                     )
                 ),
             ],
@@ -370,9 +369,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new ErrorException(
-                        $serviceUnavailableErrorId,
-                        $serviceUnavailableErrorMessage,
-                        503
+                        new Error(503, $serviceUnavailableErrorId, $serviceUnavailableErrorMessage),
                     )
                 ),
             ],

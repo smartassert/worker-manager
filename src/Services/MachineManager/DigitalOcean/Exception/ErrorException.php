@@ -2,13 +2,13 @@
 
 namespace App\Services\MachineManager\DigitalOcean\Exception;
 
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
+
 class ErrorException extends \Exception
 {
     public function __construct(
-        public string $id,
-        string $message,
-        int $code
+        public Error $error,
     ) {
-        parent::__construct($message, $code);
+        parent::__construct($this->error->message, $error->code);
     }
 }

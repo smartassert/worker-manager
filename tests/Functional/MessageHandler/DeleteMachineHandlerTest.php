@@ -16,6 +16,7 @@ use App\Exception\Stack;
 use App\Message\DeleteMachine;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
@@ -192,7 +193,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 self::MACHINE_ID,
                                 MachineAction::DELETE,
                                 new DOApiLimitExceededException(
-                                    'API Rate limit exceeded',
+                                    new Error(429, 'too_many_requests', 'API Rate limit exceeded'),
                                     $rateLimitReset,
                                     0,
                                     5000
@@ -224,9 +225,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 self::MACHINE_ID,
                                 MachineAction::DELETE,
                                 new ErrorException(
-                                    $internalServerErrorId,
-                                    $internalServerErrorMessage,
-                                    500
+                                    new Error(500, $internalServerErrorId, $internalServerErrorMessage),
                                 )
                             ),
                         ])
@@ -255,9 +254,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 self::MACHINE_ID,
                                 MachineAction::DELETE,
                                 new ErrorException(
-                                    $serviceUnavailableErrorId,
-                                    $serviceUnavailableErrorMessage,
-                                    503
+                                    new Error(503, $serviceUnavailableErrorId, $serviceUnavailableErrorMessage),
                                 )
                             ),
                         ])

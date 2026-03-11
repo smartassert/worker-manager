@@ -30,6 +30,7 @@ use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Repository\ActionFailureRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Tests\Functional\AbstractEntityTestCase;
@@ -156,7 +157,9 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 'throwable' => new HttpException(
                     self::MACHINE_ID,
                     MachineAction::GET,
-                    new ErrorException('internal_server_error', 'Internal server error', 500)
+                    new ErrorException(
+                        new Error(500, 'internal_server_error', 'Internal server error')
+                    )
                 ),
                 'expectedActionFailure' => new ActionFailure(
                     self::MACHINE_ID,
@@ -174,9 +177,11 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new ErrorException(
-                        'droplet_limit_exceeded',
-                        'creating this/these droplet(s) will exceed your droplet limit',
-                        422
+                        new Error(
+                            422,
+                            'droplet_limit_exceeded',
+                            'creating this/these droplet(s) will exceed your droplet limit',
+                        )
                     )
                 ),
                 'expectedActionFailure' => new ActionFailure(

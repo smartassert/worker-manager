@@ -8,6 +8,7 @@ use App\Enum\MachineAction;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use PHPUnit\Framework\TestCase;
 
@@ -18,9 +19,11 @@ class DropletLimitExceededExceptionTest extends TestCase
     protected function setUp(): void
     {
         $providerException = new ErrorException(
-            'droplet_limit_exceeded',
-            'creating this/these droplet(s) will exceed your droplet limit',
-            422
+            new Error(
+                422,
+                'droplet_limit_exceeded',
+                'creating this/these droplet(s) will exceed your droplet limit',
+            ),
         );
 
         $this->exception = new DropletLimitExceededException(
