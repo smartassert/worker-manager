@@ -3,6 +3,7 @@
 namespace App\Exception\MachineProvider\DigitalOcean;
 
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\Exception;
 
@@ -20,5 +21,10 @@ class ApiLimitExceededException extends Exception implements ApiLimitExceptionIn
     public function getResetTimestamp(): int
     {
         return $this->resetTimestamp;
+    }
+
+    public function getProvider(): MachineProvider
+    {
+        return MachineProvider::DIGITALOCEAN;
     }
 }
