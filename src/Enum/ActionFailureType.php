@@ -12,6 +12,6 @@ enum ActionFailureType: string
     case HTTP_ERROR = 'http_application_error';
     case HTTP_UNKNOWN = 'http_unknown_error';
     case UNPROCESSABLE_REQUEST = 'unprocessable_request';
-    case UNKNOWN_MACHINE_PROVIDER_ERROR = 'unknown_machine_provider)error';
+    case UNKNOWN_MACHINE_PROVIDER_ERROR = 'unknown_machine_provider_error';
     case INVALID_ENTITY_RESPONSE = 'invalid_entity_response';
 }
