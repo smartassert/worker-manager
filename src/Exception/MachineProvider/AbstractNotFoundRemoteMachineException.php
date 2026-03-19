@@ -6,7 +6,7 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\NotFoundRemoteMachineExceptionInterface as NotFoundRemoteMachineException;
 
-abstract class AbstractNotFoundRemoteMachineException extends Exception implements NotFoundRemoteMachineException
+abstract class AbstractNotFoundRemoteMachineException extends Exception implements NotFoundRemoteMachineException, HasMachineProviderInterface
 {
     public function __construct(
         private readonly MachineProvider $provider,

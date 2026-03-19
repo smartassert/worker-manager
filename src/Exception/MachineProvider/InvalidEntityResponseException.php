@@ -25,7 +25,7 @@ class InvalidEntityResponseException extends Exception implements InvalidEntityR
         return $this->data;
     }
 
-    public function getMachineProvider(): MachineProvider
+    public function getProvider(): MachineProvider
     {
         return $this->provider;
     }

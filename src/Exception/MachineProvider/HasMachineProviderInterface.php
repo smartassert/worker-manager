@@ -6,5 +6,5 @@ use App\Enum\MachineProvider;
 
 interface HasMachineProviderInterface
 {
-    public function getMachineProvider(): MachineProvider;
+    public function getProvider(): MachineProvider;
 }

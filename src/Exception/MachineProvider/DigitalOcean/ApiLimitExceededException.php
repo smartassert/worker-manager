@@ -23,7 +23,7 @@ class ApiLimitExceededException extends Exception implements ApiLimitExceptionIn
         return $this->resetTimestamp;
     }
 
-    public function getMachineProvider(): MachineProvider
+    public function getProvider(): MachineProvider
     {
         return MachineProvider::DIGITALOCEAN;
     }

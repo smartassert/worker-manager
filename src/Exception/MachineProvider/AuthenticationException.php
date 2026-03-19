@@ -17,7 +17,7 @@ class AuthenticationException extends Exception implements AuthenticationExcepti
         parent::__construct($machineId, $action, $exceptions->first());
     }
 
-    public function getMachineProvider(): MachineProvider
+    public function getProvider(): MachineProvider
     {
         return $this->provider;
     }
