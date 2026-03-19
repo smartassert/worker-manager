@@ -113,7 +113,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'reset-timestamp' => 123,
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -130,7 +130,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     ActionFailureType::VENDOR_AUTHENTICATION_FAILURE,
                     MachineAction::CREATE,
                     [
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -148,7 +148,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'curl-code' => 7,
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -167,7 +167,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'status-code' => 500,
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -190,7 +190,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     MachineAction::CREATE,
                     [
                         'provider-reason' => $unprocessableReason,
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -206,7 +206,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     ActionFailureType::UNKNOWN_MACHINE_PROVIDER_ERROR,
                     MachineAction::CREATE,
                     [
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
@@ -218,7 +218,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
                     [
-                        'provider' => $digitalOceanMachine->getProvider()?->value,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
                 ),
             ],
