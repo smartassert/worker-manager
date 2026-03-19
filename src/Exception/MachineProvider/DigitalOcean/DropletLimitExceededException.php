@@ -3,6 +3,7 @@
 namespace App\Exception\MachineProvider\DigitalOcean;
 
 use App\Enum\MachineAction;
+use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 
 class DropletLimitExceededException extends UnprocessableEntityException
@@ -21,5 +22,10 @@ class DropletLimitExceededException extends UnprocessableEntityException
             UnprocessableRequestExceptionInterface::CODE_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED,
             UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED,
         );
+    }
+
+    public function getProvider(): MachineProvider
+    {
+        return MachineProvider::DIGITALOCEAN;
     }
 }
