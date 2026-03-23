@@ -30,7 +30,7 @@ class MachineRetrievalTest extends AbstractIntegrationMachineTestCase
                 ActionFailureType::VENDOR_AUTHENTICATION_FAILURE,
                 MachineAction::FIND,
                 [
-                    'provider' => null,
+                    'provider' => 'digitalocean',
                 ]
             ),
             $actionFailure
