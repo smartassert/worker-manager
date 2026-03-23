@@ -16,7 +16,7 @@ use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlException;
 use App\Exception\MachineProvider\CurlExceptionInterface;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\HttpClientExceptionInterface;
@@ -173,7 +173,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
             ],
             UnprocessableRequestExceptionInterface::class => [
                 'machine' => $digitalOceanMachine,
-                'throwable' => new DropletLimitExceededException(
+                'throwable' => new DropletLimitReachedException(
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new ErrorException(

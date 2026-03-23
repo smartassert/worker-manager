@@ -20,8 +20,8 @@ parameters:
       path: tests/Unit/Exception/MachineProvider/DigitalOcean/ApiLimitExceededExceptionTest.php
 
     -
-      message: '#Call to static method .*::assertInstanceOf.* with .*DropletLimitExceededException#'
-      path: tests/Unit/Exception/MachineProvider/DigitalOcean/DropletLimitExceededExceptionTest.php
+      message: '#Call to static method .*::assertInstanceOf.* with .*DropletLimitReachedException#'
+      path: tests/Unit/Exception/MachineProvider/DigitalOcean/DropletLimitReachedExceptionTest.php
 
     -
       message: '#Call to static method .*::assertInstanceOf.* with .*UnsupportedProviderException#'

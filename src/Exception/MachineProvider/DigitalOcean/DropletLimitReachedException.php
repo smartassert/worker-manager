@@ -6,7 +6,7 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 
-class DropletLimitExceededException extends UnprocessableEntityException
+class DropletLimitReachedException extends UnprocessableEntityException
 {
     public const string MESSAGE_IDENTIFIER = 'exceed your droplet limit';
 
