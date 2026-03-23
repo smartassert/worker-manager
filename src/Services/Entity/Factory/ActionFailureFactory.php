@@ -13,6 +13,7 @@ use App\Exception\MachineProvider\HasMachineProviderInterface;
 use App\Exception\MachineProvider\HttpClientExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
+use App\Exception\MachineProvider\InvalidProviderImageExceptionInterface;
 use App\Exception\MachineProvider\UnknownExceptionInterface;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnsupportedProviderException;
@@ -71,6 +72,10 @@ readonly class ActionFailureFactory
             return ActionFailureType::HTTP_ERROR;
         }
 
+        if ($throwable instanceof InvalidProviderImageExceptionInterface) {
+            return ActionFailureType::INVALID_WORKER_IMAGE;
+        }
+
         if ($throwable instanceof UnprocessableRequestExceptionInterface) {
             return ActionFailureType::UNPROCESSABLE_REQUEST;
         }
@@ -110,6 +115,12 @@ readonly class ActionFailureFactory
         if ($throwable instanceof HttpExceptionInterface) {
             return [
                 'status-code' => $throwable->getStatusCode(),
+            ];
+        }
+
+        if ($throwable instanceof InvalidProviderImageExceptionInterface) {
+            return [
+                'image' => $throwable->getImage(),
             ];
         }
 
