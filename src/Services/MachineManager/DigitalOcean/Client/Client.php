@@ -11,7 +11,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
-use App\Services\MachineManager\DigitalOcean\Exception\UnprocessableRequestException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
@@ -52,7 +51,6 @@ readonly class Client
      * @throws EmptyDropletCollectionException
      * @throws ErrorException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function getDroplet(string $name): Droplet
     {
@@ -67,7 +65,6 @@ readonly class Client
      * @throws AuthenticationException
      * @throws MissingDropletException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function deleteDroplet(string $name): void
     {
@@ -91,7 +88,6 @@ readonly class Client
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function createDroplet(Configuration $configuration): Droplet
     {
@@ -109,7 +105,6 @@ readonly class Client
      * @throws AuthenticationException
      * @throws ErrorException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     private function getResponseData(RequestInterface $request): array
     {
@@ -131,7 +126,7 @@ readonly class Client
      * @throws ClientExceptionInterface
      * @throws AuthenticationException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
+     * @throws ErrorException
      */
     private function getResponse(RequestInterface $request): ResponseInterface
     {
@@ -146,7 +141,7 @@ readonly class Client
             }
 
             if (422 === $statusCode) {
-                throw $this->createUnprocessableEntityException($response);
+                throw $this->createErrorException(422, $this->getRawResponseData($response));
             }
 
             if (401 !== $statusCode) {
@@ -192,14 +187,6 @@ readonly class Client
         $message = is_string($message) ? $message : '';
 
         return new Error($code, $id, $message);
-    }
-
-    private function createUnprocessableEntityException(ResponseInterface $response): UnprocessableRequestException
-    {
-        $responseData = $this->getRawResponseData($response);
-        $error = $this->createErrorEntity($response->getStatusCode(), $responseData);
-
-        return new UnprocessableRequestException($error);
     }
 
     private function createRequest(string $token, RequestInterface $request): HttpRequestInterface

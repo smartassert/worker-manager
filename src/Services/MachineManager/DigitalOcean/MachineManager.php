@@ -12,7 +12,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionExc
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
-use App\Services\MachineManager\DigitalOcean\Exception\UnprocessableRequestException;
 use App\Services\MachineManager\ProviderMachineManagerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Factory;
@@ -33,7 +32,6 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function create(string $machineId, string $name): RemoteMachineInterface
     {
@@ -53,7 +51,6 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws MissingDropletException
      * @throws AuthenticationException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function remove(string $machineId, string $name): void
     {
@@ -69,7 +66,6 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @throws ClientExceptionInterface
      * @throws ErrorException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function get(string $machineId, string $name): ?RemoteMachineInterface
     {
