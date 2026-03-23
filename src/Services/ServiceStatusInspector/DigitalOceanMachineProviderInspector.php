@@ -8,7 +8,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
-use App\Services\MachineManager\DigitalOcean\Exception\UnprocessableRequestException;
 use Psr\Http\Client\ClientExceptionInterface;
 use SmartAssert\ServiceStatusInspector\ComponentStatusInspectorInterface;
 
@@ -28,7 +27,6 @@ class DigitalOceanMachineProviderInspector implements ComponentStatusInspectorIn
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws ApiLimitExceededException
-     * @throws UnprocessableRequestException
      */
     public function getStatus(): bool
     {
