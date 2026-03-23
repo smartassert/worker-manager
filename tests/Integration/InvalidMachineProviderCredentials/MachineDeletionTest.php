@@ -52,7 +52,7 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                 ActionFailureType::VENDOR_AUTHENTICATION_FAILURE,
                 MachineAction::DELETE,
                 [
-                    'provider' => null,
+                    'provider' => 'digitalocean',
                 ]
             ),
             $actionFailure
