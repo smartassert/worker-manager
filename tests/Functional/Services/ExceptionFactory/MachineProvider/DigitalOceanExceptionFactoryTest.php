@@ -18,8 +18,11 @@ use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException as DODropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
+use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 
 class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
 {
@@ -52,7 +55,8 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
     public static function createDataProvider(): array
     {
         $errorException400 = new ErrorException(
-            new Error(400, 'bad_request', 'Bad request')
+            new Error(400, 'bad_request', 'Bad request'),
+            new GetDropletRequest('name'),
         );
 
         $dropletLimitExceededError = new Error(
@@ -61,7 +65,12 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             'creating this/these droplet(s) will exceed your droplet limit',
         );
 
-        $dropletLimitValidationFailedException = new DODropletLimitReachedException($dropletLimitExceededError);
+        $dropletLimitValidationFailedException = new DODropletLimitReachedException(
+            $dropletLimitExceededError,
+            new CreateDropletRequest(
+                new Configuration('name', 'size', 'image'),
+            ),
+        );
 
         $vendorApiLimitExceededException = new DOApiLimitExceededException(
             $dropletLimitExceededError,

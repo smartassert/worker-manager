@@ -10,7 +10,9 @@ use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use PHPUnit\Framework\TestCase;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 
 class DropletLimitReachedExceptionTest extends TestCase
 {
@@ -23,6 +25,9 @@ class DropletLimitReachedExceptionTest extends TestCase
                 422,
                 'droplet_limit_exceeded',
                 'creating this/these droplet(s) will exceed your droplet limit',
+            ),
+            new CreateDropletRequest(
+                new Configuration('name', 'size', 'image'),
             ),
         );
 

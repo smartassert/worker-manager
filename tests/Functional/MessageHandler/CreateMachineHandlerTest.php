@@ -24,6 +24,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -36,6 +37,7 @@ use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
@@ -254,6 +256,17 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::CREATE,
                                 new ErrorException(
                                     new Error(500, $internalServerErrorId, $internalServerErrorMessage),
+                                    new CreateDropletRequest(
+                                        new Configuration(
+                                            name: 'test-worker-' . self::MACHINE_ID,
+                                            size: 's-1vcpu-1gb',
+                                            image: 'ubuntu-22-04-x64',
+                                            region: 'lon1',
+                                            tags: [
+                                                'test-worker-' . self::MACHINE_ID,
+                                            ],
+                                        ),
+                                    ),
                                 )
                             ),
                         ])
@@ -283,6 +296,17 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::CREATE,
                                 new ErrorException(
                                     new Error(503, $serviceUnavailableErrorId, $serviceUnavailableErrorMessage),
+                                    new CreateDropletRequest(
+                                        new Configuration(
+                                            name: 'test-worker-' . self::MACHINE_ID,
+                                            size: 's-1vcpu-1gb',
+                                            image: 'ubuntu-22-04-x64',
+                                            region: 'lon1',
+                                            tags: [
+                                                'test-worker-' . self::MACHINE_ID,
+                                            ],
+                                        ),
+                                    ),
                                 )
                             ),
                         ])

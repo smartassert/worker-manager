@@ -22,6 +22,8 @@ use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Entity\Network;
 use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
+use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\MachineManager;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
@@ -387,6 +389,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
                 MachineAction::DELETE,
                 new ErrorException(
                     new Error(503, 'service_unavailable', 'Service unavailable'),
+                    new RemoveDropletRequest('test-worker-' . self::MACHINE_ID),
                 )
             ),
         ]);
@@ -454,6 +457,7 @@ class MachineManagerTest extends AbstractBaseFunctionalTestCase
                 MachineAction::FIND,
                 new ErrorException(
                     new Error(503, 'service_unavailable', 'Service unavailable'),
+                    new GetDropletRequest('test-worker-' . self::MACHINE_ID),
                 )
             ),
         ]);

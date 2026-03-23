@@ -20,6 +20,7 @@ use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -226,6 +227,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::DELETE,
                                 new ErrorException(
                                     new Error(500, $internalServerErrorId, $internalServerErrorMessage),
+                                    new RemoveDropletRequest('test-worker-' . self::MACHINE_ID),
                                 )
                             ),
                         ])
@@ -255,6 +257,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::DELETE,
                                 new ErrorException(
                                     new Error(503, $serviceUnavailableErrorId, $serviceUnavailableErrorMessage),
+                                    new RemoveDropletRequest('test-worker-' . self::MACHINE_ID),
                                 )
                             ),
                         ])

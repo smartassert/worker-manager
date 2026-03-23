@@ -22,6 +22,7 @@ use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
@@ -387,6 +388,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::FIND,
                                 new ErrorException(
                                     new Error(500, $internalServerErrorId, $internalServerErrorMessage),
+                                    new GetDropletRequest('test-worker-' . self::MACHINE_ID),
                                 )
                             ),
                         ])
@@ -416,7 +418,8 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                 MachineAction::FIND,
                                 new ErrorException(
                                     new Error(503, $serviceUnavailableErrorId, $serviceUnavailableErrorMessage),
-                                )
+                                    new GetDropletRequest('test-worker-' . self::MACHINE_ID),
+                                ),
                             ),
                         ])
                     )
