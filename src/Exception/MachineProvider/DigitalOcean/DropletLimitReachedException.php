@@ -8,8 +8,6 @@ use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 
 class DropletLimitReachedException extends UnprocessableEntityException
 {
-    public const string MESSAGE_IDENTIFIER = 'exceed your droplet limit';
-
     public function __construct(
         string $machineId,
         MachineAction $action,

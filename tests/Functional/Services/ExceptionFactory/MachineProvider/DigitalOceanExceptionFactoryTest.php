@@ -16,6 +16,7 @@ use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException as DODropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -60,7 +61,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             'creating this/these droplet(s) will exceed your droplet limit',
         );
 
-        $dropletLimitValidationFailedException = new ErrorException($dropletLimitExceededError);
+        $dropletLimitValidationFailedException = new DODropletLimitReachedException($dropletLimitExceededError);
 
         $vendorApiLimitExceededException = new DOApiLimitExceededException(
             $dropletLimitExceededError,
@@ -89,7 +90,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
                     new Stack([$digitalOceanAuthenticationException])
                 ),
             ],
-            ErrorException::class . ' droplet limit will be exceeded' => [
+            DropletLimitReachedException::class => [
                 'exception' => $dropletLimitValidationFailedException,
                 'expectedException' => new DropletLimitReachedException(
                     self::ID,

@@ -7,6 +7,7 @@ use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\EntityFactory\DropletFactory;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
@@ -157,9 +158,13 @@ readonly class Client
      */
     private function createErrorException(int $statusCode, array $responseData): ErrorException
     {
-        return new ErrorException(
-            $this->createErrorEntity($statusCode, $responseData)
-        );
+        $error = $this->createErrorEntity($statusCode, $responseData);
+
+        if (str_contains($error->message, DropletLimitReachedException::MESSAGE_IDENTIFIER)) {
+            return new DropletLimitReachedException($error);
+        }
+
+        return new ErrorException($error);
     }
 
     private function createApiLimitExceededException(ResponseInterface $response): ApiLimitExceededException

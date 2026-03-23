@@ -17,6 +17,7 @@ use App\Exception\MachineProvider\UnknownRemoteMachineException;
 use App\Exception\Stack;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
+use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException as DODropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
@@ -39,11 +40,11 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
             return new ApiLimitExceededException($exception->rateLimitReset, $resourceId, $action, $exception);
         }
 
-        if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
-            if (str_contains($exception->error->message, DropletLimitReachedException::MESSAGE_IDENTIFIER)) {
-                return new DropletLimitReachedException($resourceId, $action, $exception);
-            }
+        if ($exception instanceof DODropletLimitReachedException) {
+            return new DropletLimitReachedException($resourceId, $action, $exception);
+        }
 
+        if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
             return new UnprocessableEntityException(
                 $resourceId,
                 $action,
