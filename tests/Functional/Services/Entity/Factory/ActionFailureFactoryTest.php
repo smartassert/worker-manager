@@ -33,6 +33,7 @@ use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
+use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Tests\Functional\AbstractEntityTestCase;
 use App\Tests\Services\EntityRemover;
 use GuzzleHttp\Exception\TransferException;
@@ -158,7 +159,8 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                     self::MACHINE_ID,
                     MachineAction::GET,
                     new ErrorException(
-                        new Error(500, 'internal_server_error', 'Internal server error')
+                        new Error(500, 'internal_server_error', 'Internal server error'),
+                        new GetDropletRequest('name'),
                     )
                 ),
                 'expectedActionFailure' => new ActionFailure(
@@ -181,7 +183,8 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                             422,
                             'droplet_limit_exceeded',
                             'creating this/these droplet(s) will exceed your droplet limit',
-                        )
+                        ),
+                        new GetDropletRequest('name'),
                     )
                 ),
                 'expectedActionFailure' => new ActionFailure(

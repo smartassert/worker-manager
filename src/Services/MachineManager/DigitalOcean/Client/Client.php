@@ -69,7 +69,8 @@ readonly class Client
      */
     public function deleteDroplet(string $name): void
     {
-        $response = $this->getResponse(new RemoveDropletRequest($name));
+        $request = new RemoveDropletRequest($name);
+        $response = $this->getResponse($request);
         $statusCode = $response->getStatusCode();
 
         if (204 === $statusCode) {
@@ -80,7 +81,11 @@ readonly class Client
             throw new MissingDropletException();
         }
 
-        throw $this->createErrorException($statusCode, $this->getRawResponseData($response));
+        throw $this->createErrorException(
+            $statusCode,
+            $this->getRawResponseData($response),
+            $request,
+        );
     }
 
     /**
@@ -120,7 +125,7 @@ readonly class Client
             return $responseData;
         }
 
-        throw $this->createErrorException($statusCode, $responseData);
+        throw $this->createErrorException($statusCode, $responseData, $request);
     }
 
     /**
@@ -142,7 +147,11 @@ readonly class Client
             }
 
             if (422 === $statusCode) {
-                throw $this->createErrorException(422, $this->getRawResponseData($response));
+                throw $this->createErrorException(
+                    422,
+                    $this->getRawResponseData($response),
+                    $request,
+                );
             }
 
             if (401 !== $statusCode) {
@@ -156,15 +165,18 @@ readonly class Client
     /**
      * @param array<mixed> $responseData
      */
-    private function createErrorException(int $statusCode, array $responseData): ErrorException
-    {
+    private function createErrorException(
+        int $statusCode,
+        array $responseData,
+        RequestInterface $request
+    ): ErrorException {
         $error = $this->createErrorEntity($statusCode, $responseData);
 
         if (str_contains($error->message, DropletLimitReachedException::MESSAGE_IDENTIFIER)) {
-            return new DropletLimitReachedException($error);
+            return new DropletLimitReachedException($error, $request);
         }
 
-        return new ErrorException($error);
+        return new ErrorException($error, $request);
     }
 
     private function createApiLimitExceededException(ResponseInterface $response): ApiLimitExceededException
