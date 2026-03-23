@@ -9,10 +9,15 @@ use App\Enum\MachineAction;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\InvalidWorkerImageException;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use App\Services\MachineManager\DigitalOcean\Entity\Error;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Tests\Application\AbstractMachineTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 
 class MachineTest extends AbstractMachineTestCase
 {
@@ -235,7 +240,7 @@ class MachineTest extends AbstractMachineTestCase
                     ],
                 ],
             ],
-            'create/failed, has action failure' => [
+            'create/failed, vendor api limit reached' => [
                 'setup' => function (
                     MachineRepository $machineRepository,
                     ActionFailureFactory $actionFailureFactory,
@@ -266,6 +271,62 @@ class MachineTest extends AbstractMachineTestCase
                         'context' => [
                             'reset-timestamp' => 123,
                             'provider' => 'digitalocean',
+                        ],
+                    ],
+                    'has_failed_state' => true,
+                    'has_active_state' => false,
+                    'has_ending_state' => false,
+                    'has_end_state' => true,
+                    'meta_state' => [
+                        'ended' => true,
+                        'succeeded' => false,
+                    ],
+                ],
+            ],
+            'create/failed, invalid provider image' => [
+                'setup' => function (
+                    MachineRepository $machineRepository,
+                    ActionFailureFactory $actionFailureFactory,
+                ): void {
+                    $machine = new Machine(self::MACHINE_ID);
+                    $machine->setState(MachineState::CREATE_FAILED);
+                    $machineRepository->add($machine);
+
+                    $actionFailureFactory->create(
+                        $machine,
+                        MachineAction::CREATE,
+                        new InvalidWorkerImageException(
+                            self::MACHINE_ID,
+                            MachineAction::GET,
+                            new ErrorException(
+                                new Error(
+                                    422,
+                                    'unprocessable_entity',
+                                    'The image you selected is no longer available.'
+                                ),
+                                new CreateDropletRequest(
+                                    new Configuration(
+                                        name: 'name-foo',
+                                        size: 'size-foo',
+                                        image: 'image-id',
+                                    )
+                                ),
+                            ),
+                            'image-id',
+                        )
+                    );
+                },
+                'expectedResponseData' => [
+                    'id' => self::MACHINE_ID,
+                    'state' => MachineState::CREATE_FAILED->value,
+                    'ip_addresses' => [],
+                    'state_category' => MachineStateCategory::END->value,
+                    'action_failure' => [
+                        'type' => 'invalid_worker_image',
+                        'action' => 'create',
+                        'context' => [
+                            'provider' => 'digitalocean',
+                            'image' => 'image-id',
                         ],
                     ],
                     'has_failed_state' => true,

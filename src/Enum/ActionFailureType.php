@@ -14,4 +14,5 @@ enum ActionFailureType: string
     case UNPROCESSABLE_REQUEST = 'unprocessable_request';
     case UNKNOWN_MACHINE_PROVIDER_ERROR = 'unknown_machine_provider_error';
     case INVALID_ENTITY_RESPONSE = 'invalid_entity_response';
+    case INVALID_WORKER_IMAGE = 'invalid_worker_image';
 }

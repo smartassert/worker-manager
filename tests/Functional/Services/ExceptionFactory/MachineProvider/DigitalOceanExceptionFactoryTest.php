@@ -10,6 +10,7 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\DigitalOcean\InvalidWorkerImageException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\Stack;
 use App\Services\ExceptionFactory\MachineProvider\DigitalOceanExceptionFactory;
@@ -18,6 +19,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DigitalOceanAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException as DODropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\ImageNoLongerAvailableException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -81,6 +83,21 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
 
         $digitalOceanAuthenticationException = new DigitalOceanAuthenticationException();
 
+        $vendorImageNoLongerAvailableException = new ImageNoLongerAvailableException(
+            new Error(
+                422,
+                'unprocessable_entity',
+                'The image you selected is no longer available.'
+            ),
+            new CreateDropletRequest(
+                new Configuration(
+                    name: 'name',
+                    size: 'size',
+                    image: 'image-id',
+                ),
+            ),
+        );
+
         return [
             ErrorException::class . ' 400' => [
                 'exception' => $errorException400,
@@ -114,6 +131,15 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
                     self::ID,
                     self::ACTION,
                     $vendorApiLimitExceededException
+                ),
+            ],
+            InvalidWorkerImageException::class => [
+                'exception' => $vendorImageNoLongerAvailableException,
+                'expectedException' => new InvalidWorkerImageException(
+                    self::ID,
+                    self::ACTION,
+                    $vendorImageNoLongerAvailableException,
+                    'image-id',
                 ),
             ],
         ];

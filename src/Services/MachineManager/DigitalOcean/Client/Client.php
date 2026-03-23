@@ -10,6 +10,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\ImageNoLongerAvailableException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
@@ -174,6 +175,10 @@ readonly class Client
 
         if (str_contains($error->message, DropletLimitReachedException::MESSAGE_IDENTIFIER)) {
             return new DropletLimitReachedException($error, $request);
+        }
+
+        if (str_contains($error->message, ImageNoLongerAvailableException::MESSAGE_IDENTIFIER)) {
+            return new ImageNoLongerAvailableException($error, $request);
         }
 
         return new ErrorException($error, $request);

@@ -8,6 +8,7 @@ use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
+use App\Exception\MachineProvider\DigitalOcean\InvalidWorkerImageException;
 use App\Exception\MachineProvider\DigitalOcean\UnprocessableEntityException;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\ExceptionInterface;
@@ -20,6 +21,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\DropletLimitReachedException as DODropletLimitReachedException;
 use App\Services\MachineManager\DigitalOcean\Exception\EmptyDropletCollectionException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
+use App\Services\MachineManager\DigitalOcean\Exception\ImageNoLongerAvailableException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Exception\MissingDropletException;
 
@@ -42,6 +44,10 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
 
         if ($exception instanceof DODropletLimitReachedException) {
             return new DropletLimitReachedException($resourceId, $action, $exception);
+        }
+
+        if ($exception instanceof ImageNoLongerAvailableException) {
+            return new InvalidWorkerImageException($resourceId, $action, $exception, $exception->getImageId());
         }
 
         if ($exception instanceof ErrorException && 422 === $exception->getCode()) {

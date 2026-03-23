@@ -7,6 +7,7 @@ use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\Exception;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
+use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 
 class UnprocessableEntityException extends Exception implements
     UnprocessableRequestExceptionInterface,
@@ -17,7 +18,7 @@ class UnprocessableEntityException extends Exception implements
     public function __construct(
         string $machineId,
         MachineAction $action,
-        \Throwable $remoteException,
+        ErrorException $remoteException,
         int $code,
         string $reason,
     ) {

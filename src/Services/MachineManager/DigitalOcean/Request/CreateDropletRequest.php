@@ -24,4 +24,9 @@ readonly class CreateDropletRequest implements RequestInterface
     {
         return $this->configuration->jsonSerialize();
     }
+
+    public function getConfiguration(): Configuration
+    {
+        return $this->configuration;
+    }
 }
