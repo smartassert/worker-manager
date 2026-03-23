@@ -265,7 +265,7 @@ class MachineTest extends AbstractMachineTestCase
                         'action' => 'create',
                         'context' => [
                             'reset-timestamp' => 123,
-                            'provider' => null,
+                            'provider' => 'digitalocean',
                         ],
                     ],
                     'has_failed_state' => true,

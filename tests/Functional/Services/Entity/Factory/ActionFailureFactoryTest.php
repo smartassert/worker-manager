@@ -78,6 +78,9 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
     public static function createDataProvider(): array
     {
         $unprocessableReason = UnprocessableRequestExceptionInterface::REASON_REMOTE_PROVIDER_RESOURCE_LIMIT_REACHED;
+
+        $machine = new Machine(self::MACHINE_ID);
+
         $digitalOceanMachine = new Machine(self::MACHINE_ID);
         $digitalOceanMachine->setState(MachineState::CREATE_RECEIVED);
         $digitalOceanMachine->setProvider(MachineProvider::DIGITALOCEAN);
@@ -102,6 +105,24 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
             ],
             ApiLimitExceptionInterface::class => [
                 'machine' => $digitalOceanMachine,
+                'throwable' => new ApiLimitExceededException(
+                    123,
+                    self::MACHINE_ID,
+                    MachineAction::GET,
+                    new \Exception()
+                ),
+                'expectedActionFailure' => new ActionFailure(
+                    self::MACHINE_ID,
+                    ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED,
+                    MachineAction::CREATE,
+                    [
+                        'reset-timestamp' => 123,
+                        'provider' => MachineProvider::DIGITALOCEAN->value,
+                    ]
+                ),
+            ],
+            ApiLimitExceptionInterface::class . ' machine has no provider' => [
+                'machine' => $machine,
                 'throwable' => new ApiLimitExceededException(
                     123,
                     self::MACHINE_ID,
@@ -174,7 +195,7 @@ class ActionFailureFactoryTest extends AbstractEntityTestCase
                 ),
             ],
             UnprocessableRequestExceptionInterface::class => [
-                'machine' => $digitalOceanMachine,
+                'machine' => $machine,
                 'throwable' => new DropletLimitReachedException(
                     self::MACHINE_ID,
                     MachineAction::GET,

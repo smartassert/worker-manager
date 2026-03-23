@@ -34,7 +34,7 @@ readonly class ActionFailureFactory
         $type = $this->findType($throwable);
 
         $provider = $machine->getProvider();
-        if (null !== $provider && $throwable instanceof HasMachineProviderInterface) {
+        if (null === $provider && $throwable instanceof HasMachineProviderInterface) {
             $provider = $throwable->getProvider();
         }
 
