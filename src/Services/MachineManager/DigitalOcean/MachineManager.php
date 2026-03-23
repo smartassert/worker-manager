@@ -27,7 +27,6 @@ readonly class MachineManager implements ProviderMachineManagerInterface
      * @param non-empty-string $machineId
      *
      * @throws ClientExceptionInterface
-     * @throws EmptyDropletCollectionException
      * @throws ErrorException
      * @throws InvalidEntityDataException
      * @throws AuthenticationException
