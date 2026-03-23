@@ -8,7 +8,7 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\ExceptionInterface;
 use App\Exception\Stack;
@@ -91,7 +91,7 @@ class DigitalOceanExceptionFactoryTest extends AbstractBaseFunctionalTestCase
             ],
             ErrorException::class . ' droplet limit will be exceeded' => [
                 'exception' => $dropletLimitValidationFailedException,
-                'expectedException' => new DropletLimitExceededException(
+                'expectedException' => new DropletLimitReachedException(
                     self::ID,
                     self::ACTION,
                     $dropletLimitValidationFailedException

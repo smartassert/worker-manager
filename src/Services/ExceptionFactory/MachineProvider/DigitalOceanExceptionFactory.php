@@ -6,7 +6,7 @@ use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
-use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\DigitalOcean\UnprocessableEntityException;
 use App\Exception\MachineProvider\Exception;
@@ -40,8 +40,8 @@ class DigitalOceanExceptionFactory implements ExceptionFactoryInterface
         }
 
         if ($exception instanceof ErrorException && 422 === $exception->getCode()) {
-            if (str_contains($exception->error->message, DropletLimitExceededException::MESSAGE_IDENTIFIER)) {
-                return new DropletLimitExceededException($resourceId, $action, $exception);
+            if (str_contains($exception->error->message, DropletLimitReachedException::MESSAGE_IDENTIFIER)) {
+                return new DropletLimitReachedException($resourceId, $action, $exception);
             }
 
             return new UnprocessableEntityException(

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Exception\MachineProvider\DigitalOcean;
 
 use App\Enum\MachineAction;
-use App\Exception\MachineProvider\DigitalOcean\DropletLimitExceededException;
+use App\Exception\MachineProvider\DigitalOcean\DropletLimitReachedException;
 use App\Exception\MachineProvider\UnprocessableRequestExceptionInterface;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use PHPUnit\Framework\TestCase;
 
-class DropletLimitExceededExceptionTest extends TestCase
+class DropletLimitReachedExceptionTest extends TestCase
 {
-    private DropletLimitExceededException $exception;
+    private DropletLimitReachedException $exception;
 
     protected function setUp(): void
     {
@@ -26,7 +26,7 @@ class DropletLimitExceededExceptionTest extends TestCase
             ),
         );
 
-        $this->exception = new DropletLimitExceededException(
+        $this->exception = new DropletLimitReachedException(
             'machine id',
             MachineAction::CREATE,
             $providerException
