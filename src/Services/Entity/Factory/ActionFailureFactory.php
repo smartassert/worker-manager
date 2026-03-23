@@ -9,6 +9,7 @@ use App\Enum\MachineAction;
 use App\Exception\MachineProvider\ApiLimitExceptionInterface;
 use App\Exception\MachineProvider\AuthenticationExceptionInterface;
 use App\Exception\MachineProvider\CurlExceptionInterface;
+use App\Exception\MachineProvider\HasMachineProviderInterface;
 use App\Exception\MachineProvider\HttpClientExceptionInterface;
 use App\Exception\MachineProvider\HttpExceptionInterface;
 use App\Exception\MachineProvider\InvalidEntityResponseExceptionInterface;
@@ -32,11 +33,16 @@ readonly class ActionFailureFactory
 
         $type = $this->findType($throwable);
 
+        $provider = $machine->getProvider();
+        if (null !== $provider && $throwable instanceof HasMachineProviderInterface) {
+            $provider = $throwable->getProvider();
+        }
+
         $entity = new ActionFailure(
             $machine->getId(),
             $type,
             $action,
-            array_merge($this->createContext($throwable), ['provider' => $machine->getProvider()?->value])
+            array_merge($this->createContext($throwable), ['provider' => $provider?->value])
         );
         $this->repository->add($entity);
 
