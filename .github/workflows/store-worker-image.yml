@@ -42,8 +42,8 @@ jobs:
 
       - name: Trigger workflow
         if: ${{ steps.commit.outputs.changes_detected == 'true' }}
-#        env:
-#          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
         run: |
           gh workflow run create-release.yml \
           -f commit_hash="${{ steps.commit.outputs.commit_hash }}" \
