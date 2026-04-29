@@ -11,7 +11,7 @@ on:
 
 jobs:
   store-build-config:
-    name: Store build config
+    name: "Store build config - worker image: ${{ matrix.php }}"
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,7 @@ jobs:
           echo -n "$WORKER_IMAGE" > ./worker_image
           echo "worker_image=$WORKER_IMAGE" >> "$GITHUB_ENV"
 
-      - name: Commit
+      - name: "Commit: ${{ env.worker_image }}"
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
