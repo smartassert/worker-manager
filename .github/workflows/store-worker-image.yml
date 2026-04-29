@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.PAT_TOKEN_SELF }}
 
       - name: Set env.worker_image
         env:
