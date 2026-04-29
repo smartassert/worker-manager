@@ -11,7 +11,7 @@ on:
 
 jobs:
   store-build-config:
-    name: "Store build config - worker image: ${{ matrix.php }}"
+    name: Store build config
     runs-on: ubuntu-latest
 
     steps:
