@@ -39,6 +39,7 @@ jobs:
           SECONDARY_DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN_TEST }}
           COMPOSER_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cp tests/build/.env.dist tests/build/.env
           VERSION=$VERSION COMPOSER_AUTH_TOKEN=$COMPOSER_AUTH_TOKEN composer integration-setup
           docker compose -f tests/build/docker-compose.yml exec -T app touch /app/var/log/messenger.prod.log
           sleep 10
