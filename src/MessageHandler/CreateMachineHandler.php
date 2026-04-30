@@ -16,13 +16,13 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 #[AsMessageHandler]
-class CreateMachineHandler
+readonly class CreateMachineHandler
 {
     public function __construct(
         private MachineManager $machineManager,
         private MachineRequestDispatcher $machineRequestDispatcher,
         private MachineUpdater $machineUpdater,
-        private readonly MachineRepository $machineRepository,
+        private MachineRepository $machineRepository,
     ) {}
 
     /**
