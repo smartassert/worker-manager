@@ -50,6 +50,7 @@ services:
         SECONDARY_DIGITALOCEAN_API_TOKEN: ${SECONDARY_DIGITALOCEAN_API_TOKEN}
         VERSION: ${VERSION}
         AUTHENTICATION_BASE_URL: http://users-http
+        WORKER_SSH_KEY_ID: ${WORKER_SSH_KEY_ID}
     container_name: smartassert-worker-manager
     depends_on:
       - postgres
