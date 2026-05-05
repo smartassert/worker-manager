@@ -8,7 +8,7 @@ parameters:
     digitalocean_droplet_region: '%env(DIGITALOCEAN_REGION)%'
     digitalocean_droplet_size: '%env(DIGITALOCEAN_SIZE)%'
     worker_image: '%env(WORKER_IMAGE)%'
-    worker_ssh_key_id: '%env(WORKER_SSH_KEY_ID)%'
+    worker_ssh_key_id: '%env(int:WORKER_SSH_KEY_ID)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
