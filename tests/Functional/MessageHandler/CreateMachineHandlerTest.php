@@ -265,6 +265,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                             tags: [
                                                 'test-worker-' . self::MACHINE_ID,
                                             ],
+                                            sshKeys: [
+                                                123456,
+                                            ],
                                         ),
                                     ),
                                 )
@@ -304,6 +307,9 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                             region: 'lon1',
                                             tags: [
                                                 'test-worker-' . self::MACHINE_ID,
+                                            ],
+                                            sshKeys: [
+                                                123456,
                                             ],
                                         ),
                                     ),
