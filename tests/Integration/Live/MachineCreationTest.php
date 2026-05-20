@@ -29,6 +29,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
                 'has_ending_state' => false,
                 'has_end_state' => false,
                 'meta_state' => [
+                    'pending' => true,
                     'ended' => false,
                     'succeeded' => false,
                 ],
