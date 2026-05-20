@@ -46,6 +46,8 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Message/'
+            - '../src/Model/'
+            - '../src/Response/'
             - '../src/Kernel.php'
             - '../src/Tests/'
 
