@@ -32,6 +32,7 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                 'has_ending_state' => true,
                 'has_end_state' => false,
                 'meta_state' => [
+                    'pending' => false,
                     'ended' => false,
                     'succeeded' => false,
                 ],

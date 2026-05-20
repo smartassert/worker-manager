@@ -76,6 +76,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -100,6 +101,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -124,6 +126,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -149,6 +152,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -213,6 +217,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -235,6 +240,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -278,6 +284,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => false,
                     ],
@@ -334,6 +341,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => false,
                     ],
@@ -356,6 +364,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -378,6 +387,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -400,6 +410,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -422,6 +433,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => false,
                     ],
@@ -444,6 +456,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => false,
                     ],
@@ -466,6 +479,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -488,6 +502,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => true,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -510,6 +525,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => false,
                     ],
@@ -532,6 +548,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -554,6 +571,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -576,6 +594,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => true,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -598,6 +617,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => true,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -620,6 +640,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => true,
                     ],
@@ -642,6 +663,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => false,
                     'has_end_state' => true,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => true,
                         'succeeded' => true,
                     ],
@@ -693,6 +715,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => true,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
@@ -711,6 +734,7 @@ class MachineTest extends AbstractMachineTestCase
                     'has_ending_state' => true,
                     'has_end_state' => false,
                     'meta_state' => [
+                        'pending' => false,
                         'ended' => false,
                         'succeeded' => false,
                     ],
