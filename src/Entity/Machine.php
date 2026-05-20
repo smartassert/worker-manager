@@ -94,7 +94,7 @@ class Machine
 
     public function getStateCategory(): MachineStateCategory
     {
-        if (MachineState::isFindingState($this->state)) {
+        if (MachineState::isFinding($this->state)) {
             return MachineStateCategory::FINDING;
         }
 
@@ -106,11 +106,11 @@ class Machine
             return MachineStateCategory::ACTIVE;
         }
 
-        if (MachineState::isEndingState($this->state)) {
+        if (MachineState::isEnding($this->state)) {
             return MachineStateCategory::ENDING;
         }
 
-        if (MachineState::isEndState($this->state)) {
+        if (MachineState::isEnd($this->state)) {
             return MachineStateCategory::END;
         }
 

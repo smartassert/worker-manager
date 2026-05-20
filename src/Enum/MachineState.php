@@ -19,12 +19,6 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
-    public const FAILED_STATES = [
-        self::CREATE_FAILED,
-        self::FIND_NOT_FINDABLE,
-        self::FIND_NOT_FOUND,
-    ];
-
     public static function isPreActive(MachineState $state): bool
     {
         return in_array(
@@ -37,7 +31,7 @@ enum MachineState: string
         );
     }
 
-    public static function isEndState(MachineState $state): bool
+    public static function isEnd(MachineState $state): bool
     {
         return in_array(
             $state,
@@ -51,7 +45,7 @@ enum MachineState: string
         );
     }
 
-    public static function isResettableState(MachineState $state): bool
+    public static function isResettable(MachineState $state): bool
     {
         return in_array(
             $state,
@@ -62,7 +56,7 @@ enum MachineState: string
         );
     }
 
-    public static function isFindingState(MachineState $state): bool
+    public static function isFinding(MachineState $state): bool
     {
         return in_array(
             $state,
@@ -73,7 +67,7 @@ enum MachineState: string
         );
     }
 
-    public static function isEndingState(MachineState $state): bool
+    public static function isEnding(MachineState $state): bool
     {
         return in_array(
             $state,
@@ -84,7 +78,7 @@ enum MachineState: string
         );
     }
 
-    public static function isFailedState(MachineState $state): bool
+    public static function isFailed(MachineState $state): bool
     {
         return in_array(
             $state,

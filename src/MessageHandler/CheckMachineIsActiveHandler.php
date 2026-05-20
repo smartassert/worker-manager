@@ -32,7 +32,7 @@ class CheckMachineIsActiveHandler
 
         $state = $machine->getState();
 
-        if (MachineState::isEndState($state) || !MachineState::isPreActive($state)) {
+        if (MachineState::isEnd($state) || !MachineState::isPreActive($state)) {
             return;
         }
 
