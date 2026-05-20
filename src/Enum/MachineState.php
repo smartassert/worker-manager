@@ -89,4 +89,18 @@ enum MachineState: string
             ]
         );
     }
+
+    public static function isPending(MachineState $state): bool
+    {
+        return in_array(
+            $state,
+            [
+                self::UNKNOWN,
+                self::FIND_RECEIVED,
+                self::FIND_FINDING,
+                self::CREATE_RECEIVED,
+                self::CREATE_REQUESTED,
+            ]
+        );
+    }
 }
