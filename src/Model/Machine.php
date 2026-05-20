@@ -37,7 +37,7 @@ readonly class Machine implements \JsonSerializable
     {
         $stateCategory = $this->machine->getStateCategory();
 
-        $hasFailedState = $this->machine->hasFailedState();
+        $hasFailedState = MachineState::isFailedState($this->machine->getState());
         $hasEndState = MachineStateCategory::END === $stateCategory;
         $hasSucceeded = $hasEndState && false === $hasFailedState;
 
@@ -47,7 +47,7 @@ readonly class Machine implements \JsonSerializable
             'ip_addresses' => $this->machine->getIpAddresses(),
             'state_category' => $stateCategory,
             'action_failure' => $this->actionFailure,
-            'has_failed_state' => $this->machine->hasFailedState(),
+            'has_failed_state' => $hasFailedState,
             'has_active_state' => MachineStateCategory::ACTIVE === $stateCategory,
             'has_ending_state' => MachineStateCategory::ENDING === $stateCategory,
             'has_end_state' => $hasEndState,
