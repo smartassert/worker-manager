@@ -27,10 +27,8 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                 'state' => MachineState::DELETE_RECEIVED,
                 'state_category' => MachineStateCategory::ENDING,
                 'action_failure' => null,
-                'has_failed_state' => false,
                 'has_active_state' => false,
                 'has_ending_state' => true,
-                'has_end_state' => false,
                 'meta_state' => [
                     'pending' => false,
                     'ended' => false,
