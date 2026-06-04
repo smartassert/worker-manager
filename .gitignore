@@ -32,3 +32,4 @@ composer.lock
 ###< friendsofphp/php-cs-fixer ###
 
 /tests/build/.env
+config/reference.php
