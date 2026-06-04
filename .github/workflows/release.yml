@@ -31,6 +31,7 @@ jobs:
         run: |
           echo WORKER_IMAGE ${{ env.worker_image }}
           echo VERSION ${{ env.service_version }}
+          echo WORKER_SSH_KEY_ID ${{ secrets.WORKER_SSH_KEY_ID }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -50,6 +51,7 @@ jobs:
           build-args: |
             VERSION=${{ env.service_version }}
             WORKER_IMAGE=${{ env.worker_image }}
+            WORKER_SSH_KEY_ID=${{ secrets.WORKER_SSH_KEY_ID }}
 
       - name: Trigger deploy workflow
         if: ${{ github.event_name == 'release' }}
