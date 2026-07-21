@@ -10,16 +10,16 @@ use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 class DeleteMachineHandler
 {
     public function __construct(
         private MachineManager $machineManager,
-        private MachineRequestDispatcher $machineRequestDispatcher,
+        private MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
     ) {}
 
@@ -40,7 +40,10 @@ class DeleteMachineHandler
 
         try {
             $this->machineManager->remove($machineId);
-            $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
+
+            foreach ($message->getOnSuccessCollection() as $onSuccessRequest) {
+                $this->messageBus->dispatch($onSuccessRequest);
+            }
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }

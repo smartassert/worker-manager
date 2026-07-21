@@ -21,6 +21,8 @@ parameters:
     health_check_bundle_enable_status_version_inspector: true
     health_check_bundle_status_version: '%env(VERSION)%'
     health_check_bundle_status_path: '/'
+    message_delays:
+        App\Message\CheckMachineIsActive: '%machine_is_active_dispatch_delay%'
 
 services:
     # default configuration for services in *this* file
@@ -108,11 +110,6 @@ services:
     App\Services\RequestIdFactoryInterface:
         class: App\Services\RequestIdFactory
 
-    App\Services\MachineRequestDispatcher:
-        arguments:
-            $dispatchDelays:
-                'App\Message\CheckMachineIsActive': '%machine_is_active_dispatch_delay%'
-
     App\Services\MachineManager\MachineManager:
         arguments:
             $providerMachineManagers:
@@ -128,3 +125,7 @@ services:
             $tokens:
                 - '%env(string:PRIMARY_DIGITALOCEAN_API_TOKEN)%'
                 - '%env(string:SECONDARY_DIGITALOCEAN_API_TOKEN)%'
+
+    webignition\SymfonyMessengerDelayMiddleware\DelayMiddleware:
+        arguments:
+            $delays: '%message_delays%'

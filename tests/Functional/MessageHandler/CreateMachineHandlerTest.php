@@ -16,6 +16,7 @@ use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Message\CreateMachine;
+use App\Message\MachineRequestInterface;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
@@ -26,7 +27,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
@@ -39,7 +39,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -80,7 +82,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
     {
         $handler = self::getContainer()->get(CreateMachineHandler::class);
         self::assertInstanceOf(CreateMachineHandler::class, $handler);
-        self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
+        self::assertCount(1, new \ReflectionClass($handler::class)->getAttributes(AsMessageHandler::class));
     }
 
     public function testInvokeSuccess(): void
@@ -120,19 +122,29 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $message = $this->machineRequestFactory->createCreate($this->machine->getId());
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
-            ->shouldReceive('dispatchCollection')
-            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
-                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
+        $expectedRequestIndex = 0;
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
+            ->shouldReceive('dispatch')
+            ->withArgs(function (
+                MachineRequestInterface $machineRequest
+            ) use (
+                $expectedMachineRequestCollection,
+                &$expectedRequestIndex
+            ) {
+                $expectedRequest = $expectedMachineRequestCollection[$expectedRequestIndex];
+
+                self::assertEquals($expectedRequest, $machineRequest);
+                ++$expectedRequestIndex;
 
                 return true;
             })
+            ->andReturn(new Envelope(\Mockery::mock(MachineRequestInterface::class)))
         ;
 
         self::assertNull($this->machine->getProvider());
 
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $handler = $this->createHandler($messageBus);
         ($handler)($message);
 
         self::assertSame(MachineState::UP_STARTED, $this->machine->getState());
@@ -392,7 +404,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         ];
     }
 
-    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): CreateMachineHandler
+    private function createHandler(MessageBusInterface $messageBus): CreateMachineHandler
     {
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
@@ -405,7 +417,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         return new CreateMachineHandler(
             $machineManager,
-            $machineRequestDispatcher,
+            $messageBus,
             $machineUpdater,
             $machineRepository,
         );
