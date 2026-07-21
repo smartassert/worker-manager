@@ -89,3 +89,6 @@ services:
             $baseUrl: 'https://api.digitalocean.com/v2'
             $tokens: ['invalid-token-1', 'invalid-token-2']
             $httpClient: '@app.tests.httpclient.mocked.client'
+
+    App\Tests\Services\EventRecorder:
+        public: true

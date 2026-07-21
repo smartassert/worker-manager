@@ -8,6 +8,7 @@ use App\Entity\Machine;
 use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
+use App\Event\MachineCreatedEvent;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\AuthenticationException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
@@ -15,21 +16,23 @@ use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
+use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
-use App\Message\MachineRequestInterface;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
+use App\Services\MachineManager\DigitalOcean\Entity\Droplet;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
+use App\Services\MachineManager\DigitalOcean\Entity\Network;
+use App\Services\MachineManager\DigitalOcean\Entity\NetworkCollection;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
 use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException as DOAuthenticationException;
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
-use App\Services\MachineManager\MachineManager;
-use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
+use App\Tests\Services\EventRecorder;
 use App\Tests\Services\TestMachineRequestFactory;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Handler\MockHandler;
@@ -39,9 +42,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -94,6 +97,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $ipAddresses = ['10.0.0.1', '127.0.0.1'];
 
+        $remoteMachineId = rand();
+        \assert($remoteMachineId > 1 && $remoteMachineId < PHP_INT_MAX);
+
+        $remoteMachineStatus = RemoteMachine::STATE_NEW;
+
         $mockHandler->append(new Response(
             200,
             [
@@ -101,8 +109,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
             ],
             (string) json_encode([
                 'droplet' => [
-                    'id' => rand(),
-                    'status' => RemoteMachine::STATE_NEW,
+                    'id' => $remoteMachineId,
+                    'status' => $remoteMachineStatus,
                     'networks' => [
                         'v4' => [
                             [
@@ -120,36 +128,63 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         ));
 
         $message = $this->machineRequestFactory->createCreate($this->machine->getId());
-        $expectedMachineRequestCollection = $message->getOnSuccessCollection();
-
-        $expectedRequestIndex = 0;
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $messageBus
-            ->shouldReceive('dispatch')
-            ->withArgs(function (
-                MachineRequestInterface $machineRequest
-            ) use (
-                $expectedMachineRequestCollection,
-                &$expectedRequestIndex
-            ) {
-                $expectedRequest = $expectedMachineRequestCollection[$expectedRequestIndex];
-
-                self::assertEquals($expectedRequest, $machineRequest);
-                ++$expectedRequestIndex;
-
-                return true;
-            })
-            ->andReturn(new Envelope(\Mockery::mock(MachineRequestInterface::class)))
-        ;
 
         self::assertNull($this->machine->getProvider());
 
-        $handler = $this->createHandler($messageBus);
+        $handler = self::getContainer()->get(CreateMachineHandler::class);
+        \assert($handler instanceof CreateMachineHandler);
+
         ($handler)($message);
+
+        $eventRecorder = self::getContainer()->get(EventRecorder::class);
+        \assert($eventRecorder instanceof EventRecorder);
+
+        $machineCreatedEvents = $eventRecorder->all(MachineCreatedEvent::class);
+        $machineCreatedEvent = $machineCreatedEvents[0];
+
+        self::assertEquals(
+            new MachineCreatedEvent(
+                $this->machine,
+                new RemoteMachine(
+                    new Droplet(
+                        $remoteMachineId,
+                        $remoteMachineStatus,
+                        new NetworkCollection([
+                            new Network(
+                                $ipAddresses[0],
+                                true,
+                                4,
+                            ),
+                            new Network(
+                                $ipAddresses[1],
+                                true,
+                                4,
+                            ),
+                        ]),
+                    )
+                ),
+            ),
+            $machineCreatedEvent,
+        );
 
         self::assertSame(MachineState::UP_STARTED, $this->machine->getState());
         self::assertSame($ipAddresses, $this->machine->getIpAddresses());
         self::assertSame(MachineProvider::DIGITALOCEAN, $this->machine->getProvider());
+
+        $messageBus = self::getContainer()->get(MessageBusInterface::class);
+        \assert($messageBus instanceof MessageBusInterface);
+
+        $messengerTransport = self::getContainer()->get('messenger.transport.async');
+        \assert($messengerTransport instanceof InMemoryTransport);
+
+        $dispatchedEnvelopes = $messengerTransport->getSent();
+        self::assertCount(1, $dispatchedEnvelopes);
+
+        $dispatchedEnvelope = $dispatchedEnvelopes[0];
+        $dispatchedMessage = $dispatchedEnvelope->getMessage();
+
+        self::assertInstanceOf(CheckMachineIsActive::class, $dispatchedMessage);
+        self::assertSame($this->machine->getId(), $dispatchedMessage->getMachineId());
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
@@ -274,11 +309,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                             size: 's-1vcpu-1gb',
                                             image: 'ubuntu-22-04-x64',
                                             region: 'lon1',
-                                            tags: [
-                                                'test-worker-' . self::MACHINE_ID,
-                                            ],
                                             sshKeys: [
                                                 123456,
+                                            ],
+                                            tags: [
+                                                'test-worker-' . self::MACHINE_ID,
                                             ],
                                         ),
                                     ),
@@ -317,11 +352,11 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                                             size: 's-1vcpu-1gb',
                                             image: 'ubuntu-22-04-x64',
                                             region: 'lon1',
-                                            tags: [
-                                                'test-worker-' . self::MACHINE_ID,
-                                            ],
                                             sshKeys: [
                                                 123456,
+                                            ],
+                                            tags: [
+                                                'test-worker-' . self::MACHINE_ID,
                                             ],
                                         ),
                                     ),
@@ -402,24 +437,5 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 ),
             ],
         ];
-    }
-
-    private function createHandler(MessageBusInterface $messageBus): CreateMachineHandler
-    {
-        $machineManager = self::getContainer()->get(MachineManager::class);
-        \assert($machineManager instanceof MachineManager);
-
-        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
-        \assert($machineUpdater instanceof MachineUpdater);
-
-        $machineRepository = self::getContainer()->get(MachineRepository::class);
-        \assert($machineRepository instanceof MachineRepository);
-
-        return new CreateMachineHandler(
-            $machineManager,
-            $messageBus,
-            $machineUpdater,
-            $machineRepository,
-        );
     }
 }
