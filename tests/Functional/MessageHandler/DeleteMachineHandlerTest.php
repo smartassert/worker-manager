@@ -14,6 +14,7 @@ use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\MachineProvider\DigitalOcean\HttpException;
 use App\Exception\Stack;
 use App\Message\DeleteMachine;
+use App\Message\MachineRequestInterface;
 use App\MessageHandler\DeleteMachineHandler;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
@@ -22,7 +23,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -32,7 +32,9 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -81,17 +83,27 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $message = $this->machineRequestFactory->createDelete(self::MACHINE_ID);
         $expectedMachineRequestCollection = $message->getOnSuccessCollection();
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
-            ->shouldReceive('dispatchCollection')
-            ->withArgs(function (array $machineRequestCollection) use ($expectedMachineRequestCollection) {
-                self::assertEquals($expectedMachineRequestCollection, $machineRequestCollection);
+        $expectedRequestIndex = 0;
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
+            ->shouldReceive('dispatch')
+            ->withArgs(function (
+                MachineRequestInterface $machineRequest
+            ) use (
+                $expectedMachineRequestCollection,
+                &$expectedRequestIndex
+            ) {
+                $expectedRequest = $expectedMachineRequestCollection[$expectedRequestIndex];
+
+                self::assertEquals($expectedRequest, $machineRequest);
+                ++$expectedRequestIndex;
 
                 return true;
             })
+            ->andReturn(new Envelope(\Mockery::mock(MachineRequestInterface::class)))
         ;
 
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $handler = $this->createHandler($messageBus);
         ($handler)($message);
 
         self::assertSame(MachineState::DELETE_REQUESTED, $this->machine->getState());
@@ -99,11 +111,10 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     public function testInvokeMachineEntityMissing(): void
     {
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher->shouldNotReceive('dispatch');
-        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus->shouldNotReceive('dispatch');
 
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $handler = $this->createHandler($messageBus);
         ($handler)(new DeleteMachine('id0', 'invalid machine id'));
     }
 
@@ -116,11 +127,10 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $mockHandler->append($httpResponse);
         $mockHandler->append($httpResponse);
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher->shouldNotReceive('dispatch');
-        $machineRequestDispatcher->shouldNotReceive('dispatchCollection');
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus->shouldNotReceive('dispatch');
 
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $handler = $this->createHandler($messageBus);
 
         $message = new DeleteMachine('id0', self::MACHINE_ID);
 
@@ -267,7 +277,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         ];
     }
 
-    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): DeleteMachineHandler
+    private function createHandler(MessageBusInterface $messageBus): DeleteMachineHandler
     {
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
@@ -275,6 +285,6 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        return new DeleteMachineHandler($machineManager, $machineRequestDispatcher, $machineRepository);
+        return new DeleteMachineHandler($machineManager, $messageBus, $machineRepository);
     }
 }

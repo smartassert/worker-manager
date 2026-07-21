@@ -11,10 +11,10 @@ use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 class FindMachineHandler
@@ -22,7 +22,7 @@ class FindMachineHandler
     public function __construct(
         private MachineManager $machineManager,
         private MachineUpdater $machineUpdater,
-        private MachineRequestDispatcher $machineRequestDispatcher,
+        private MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
     ) {}
 
@@ -53,12 +53,16 @@ class FindMachineHandler
                     $onSuccessCollection[] = $message;
                 }
 
-                $this->machineRequestDispatcher->dispatchCollection($onSuccessCollection);
+                foreach ($onSuccessCollection as $onSuccessRequest) {
+                    $this->messageBus->dispatch($onSuccessRequest);
+                }
             } else {
                 $machine->setState($message->getOnNotFoundState());
                 $this->machineRepository->add($machine);
 
-                $this->machineRequestDispatcher->dispatchCollection($message->getOnFailureCollection());
+                foreach ($message->getOnFailureCollection() as $onFailureRequest) {
+                    $this->messageBus->dispatch($onFailureRequest);
+                }
             }
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);

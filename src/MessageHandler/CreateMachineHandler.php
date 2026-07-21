@@ -10,17 +10,17 @@ use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 readonly class CreateMachineHandler
 {
     public function __construct(
         private MachineManager $machineManager,
-        private MachineRequestDispatcher $machineRequestDispatcher,
+        private MessageBusInterface $messageBus,
         private MachineUpdater $machineUpdater,
         private MachineRepository $machineRepository,
     ) {}
@@ -41,7 +41,10 @@ readonly class CreateMachineHandler
         try {
             $remoteMachine = $this->machineManager->create($machine);
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
-            $this->machineRequestDispatcher->dispatchCollection($message->getOnSuccessCollection());
+
+            foreach ($message->getOnSuccessCollection() as $onSuccessRequest) {
+                $this->messageBus->dispatch($onSuccessRequest);
+            }
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }

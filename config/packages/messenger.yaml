@@ -1,5 +1,9 @@
 framework:
     messenger:
+        buses:
+            messenger.bus.default:
+                middleware:
+                    - webignition\SymfonyMessengerDelayMiddleware\DelayMiddleware
         transports:
             create_machine:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'

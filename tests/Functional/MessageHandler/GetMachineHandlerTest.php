@@ -26,7 +26,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineUpdater;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
@@ -38,6 +37,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -90,15 +90,12 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $message = new GetMachine('id0', $machine->getId());
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher->shouldNotReceive('dispatch');
-        $machineRequestDispatcher
-            ->shouldReceive('dispatchCollection')
-            ->with([])
-            ->andReturn([])
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
+            ->shouldNotReceive('dispatch')
         ;
 
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $handler = $this->createHandler($messageBus);
         ($handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
@@ -233,8 +230,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             $unsupportedProviderException
         );
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $handler = $this->createHandler($messageBus);
 
         try {
             ($handler)($message);
@@ -265,8 +262,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $handler = $this->createHandler($machineRequestDispatcher);
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $handler = $this->createHandler($messageBus);
 
         try {
             ($handler)($message);
@@ -433,7 +430,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         ];
     }
 
-    private function createHandler(MachineRequestDispatcher $machineRequestDispatcher): GetMachineHandler
+    private function createHandler(MessageBusInterface $messageBus): GetMachineHandler
     {
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
@@ -443,7 +440,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         return new GetMachineHandler(
             $machineManager,
-            $machineRequestDispatcher,
+            $messageBus,
             $machineUpdater,
             $this->machineRepository,
         );

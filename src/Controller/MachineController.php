@@ -8,21 +8,21 @@ use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
-class MachineController
+readonly class MachineController
 {
     public const PATH_COMPONENT_ID = '{id}';
     public const PATH_MACHINE = '/machine/' . self::PATH_COMPONENT_ID;
 
     public function __construct(
-        private readonly MachineRequestDispatcher $machineRequestDispatcher,
-        private readonly MachineRequestFactory $machineRequestFactory,
-        private readonly MachineRepository $machineRepository,
+        private MessageBusInterface $messageBus,
+        private MachineRequestFactory $machineRequestFactory,
+        private MachineRepository $machineRepository,
     ) {}
 
     /**
@@ -45,7 +45,7 @@ class MachineController
         $machine->setState(MachineState::CREATE_RECEIVED);
         $this->machineRepository->add($machine);
 
-        $this->machineRequestDispatcher->dispatch(
+        $this->messageBus->dispatch(
             $this->machineRequestFactory->createFindThenCreate($id)
         );
 
@@ -66,7 +66,7 @@ class MachineController
             $machine->setState(MachineState::FIND_RECEIVED);
             $this->machineRepository->add($machine);
 
-            $this->machineRequestDispatcher->dispatch(
+            $this->messageBus->dispatch(
                 $this->machineRequestFactory->createFindThenCheckIsActive($id)
             );
         }
@@ -90,7 +90,7 @@ class MachineController
         $machine->setState(MachineState::DELETE_RECEIVED);
         $this->machineRepository->add($machine);
 
-        $this->machineRequestDispatcher->dispatch(
+        $this->messageBus->dispatch(
             $this->machineRequestFactory->createDelete($id)
         );
 

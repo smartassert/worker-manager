@@ -25,7 +25,8 @@
         "symfony/monolog-bundle": "^4.0",
         "symfony/security-bundle": "8.1.*",
         "symfony/uid": "8.1.*",
-        "symfony/yaml": "8.1.*"
+        "symfony/yaml": "8.1.*",
+        "webignition/symfony-messenger-delay-middleware": "^0.1.0"
     },
     "require-dev": {
         "beste/psr-testlogger": "^1.0",

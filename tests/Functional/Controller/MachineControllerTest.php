@@ -10,7 +10,6 @@ use App\Enum\MachineState;
 use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
-use App\Services\MachineRequestDispatcher;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -18,6 +17,7 @@ use App\Tests\Services\EntityRemover;
 use App\Tests\Services\SequentialRequestIdFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class MachineControllerTest extends AbstractBaseFunctionalTestCase
 {
@@ -41,8 +41,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             return $factory->createFindThenCreate(self::MACHINE_ID);
         });
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
             ->shouldReceive('dispatch')
             ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
                 self::assertEquals($expectedMachineRequest, $machineRequest);
@@ -52,7 +52,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             ->andReturn(new Envelope($expectedMachineRequest))
         ;
 
-        $controller = $this->createController($machineRequestDispatcher);
+        $controller = $this->createController($messageBus);
 
         $controller->create(self::MACHINE_ID);
     }
@@ -63,8 +63,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             return $factory->createFindThenCheckIsActive(self::MACHINE_ID);
         });
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
             ->shouldReceive('dispatch')
             ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
                 self::assertEquals($expectedMachineRequest, $machineRequest);
@@ -74,7 +74,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             ->andReturn(new Envelope($expectedMachineRequest))
         ;
 
-        $controller = $this->createController($machineRequestDispatcher);
+        $controller = $this->createController($messageBus);
 
         $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
         \assert($actionFailureRepository instanceof ActionFailureRepository);
@@ -91,12 +91,12 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         \assert($machineRepository instanceof MachineRepository);
         $machineRepository->add($machine);
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
             ->shouldNotReceive('dispatch')
         ;
 
-        $controller = $this->createController($machineRequestDispatcher);
+        $controller = $this->createController($messageBus);
 
         $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
         \assert($actionFailureRepository instanceof ActionFailureRepository);
@@ -110,8 +110,8 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             return $factory->createDelete(self::MACHINE_ID);
         });
 
-        $machineRequestDispatcher = \Mockery::mock(MachineRequestDispatcher::class);
-        $machineRequestDispatcher
+        $messageBus = \Mockery::mock(MessageBusInterface::class);
+        $messageBus
             ->shouldReceive('dispatch')
             ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
                 self::assertEquals($expectedMachineRequest, $machineRequest);
@@ -121,7 +121,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             ->andReturn(new Envelope($expectedMachineRequest))
         ;
 
-        $controller = $this->createController($machineRequestDispatcher);
+        $controller = $this->createController($messageBus);
         $controller->delete(self::MACHINE_ID);
     }
 
@@ -144,7 +144,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         return $request;
     }
 
-    private function createController(MachineRequestDispatcher $machineRequestDispatcher): MachineController
+    private function createController(MessageBusInterface $messageBus): MachineController
     {
         $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
         \assert($machineRequestFactory instanceof MachineRequestFactory);
@@ -152,6 +152,6 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        return new MachineController($machineRequestDispatcher, $machineRequestFactory, $machineRepository);
+        return new MachineController($messageBus, $machineRequestFactory, $machineRepository);
     }
 }

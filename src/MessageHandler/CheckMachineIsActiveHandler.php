@@ -8,15 +8,15 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Message\CheckMachineIsActive;
 use App\Repository\MachineRepository;
-use App\Services\MachineRequestDispatcher;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 class CheckMachineIsActiveHandler
 {
     public function __construct(
-        private MachineRequestDispatcher $machineRequestDispatcher,
+        private readonly MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
     ) {}
 
@@ -39,6 +39,8 @@ class CheckMachineIsActiveHandler
         $onSuccessRequests = $message->getOnSuccessCollection();
         $onSuccessRequests[] = $message;
 
-        $this->machineRequestDispatcher->dispatchCollection($onSuccessRequests);
+        foreach ($onSuccessRequests as $onSuccessRequest) {
+            $this->messageBus->dispatch($onSuccessRequest);
+        }
     }
 }
