@@ -8,6 +8,7 @@ use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineCreatedEvent;
 use App\Event\MachineRetrievedEvent;
 use App\Event\MessageNotHandleableEvent;
+use App\Event\RemoteMachineEventInterface;
 use App\Message\GetMachine;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Services\MachineRequestFactory;
@@ -44,9 +45,9 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
     /**
      * @throws ExceptionInterface
      */
-    public function dispatch(MachineCreatedEvent|MachineRetrievedEvent $event): void
+    public function dispatch(RemoteMachineEventInterface $event): void
     {
-        $this->doDispatch($event->machine->getId());
+        $this->doDispatch($event->getMachine()->getId());
     }
 
     /**

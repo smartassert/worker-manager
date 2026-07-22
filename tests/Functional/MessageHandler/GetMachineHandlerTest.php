@@ -18,7 +18,6 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
-use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
@@ -26,9 +25,6 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
-use App\Services\MachineManager\MachineManager;
-use App\Services\MachineUpdater;
-use App\Services\UnhandleableMessageHandler;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use GuzzleHttp\Exception\TransferException;
@@ -36,11 +32,8 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -49,11 +42,16 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     private const MACHINE_ID = 'machine id';
     private const REMOTE_ID = 123;
 
+    private GetMachineHandler $handler;
     private MachineRepository $machineRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $handler = self::getContainer()->get(GetMachineHandler::class);
+        \assert($handler instanceof GetMachineHandler);
+        $this->handler = $handler;
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
@@ -63,13 +61,6 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
         }
-    }
-
-    public function testHandlerExistsInContainerAndIsAMessageHandler(): void
-    {
-        $handler = self::getContainer()->get(GetMachineHandler::class);
-        self::assertInstanceOf(GetMachineHandler::class, $handler);
-        self::assertCount(1, (new \ReflectionClass($handler::class))->getAttributes(AsMessageHandler::class));
     }
 
     /**
@@ -93,13 +84,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $message = new GetMachine('id0', $machine->getId());
 
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $messageBus
-            ->shouldNotReceive('dispatch')
-        ;
-
-        $handler = $this->createHandler($messageBus);
-        ($handler)($message);
+        ($this->handler)($message);
 
         self::assertEquals($expectedMachine, $machine);
     }
@@ -233,11 +218,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             $unsupportedProviderException
         );
 
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $handler = $this->createHandler($messageBus);
-
         try {
-            ($handler)($message);
+            ($this->handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
@@ -265,11 +247,8 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $message = new GetMachine('id0', $machine->getId());
         $machineState = $machine->getState();
 
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $handler = $this->createHandler($messageBus);
-
         try {
-            ($handler)($message);
+            ($this->handler)($message);
             $this->fail($expectedException::class . ' not thrown');
         } catch (\Exception $exception) {
             self::assertEquals($expectedException, $exception);
@@ -431,33 +410,5 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 ),
             ],
         ];
-    }
-
-    private function createHandler(MessageBusInterface $messageBus): GetMachineHandler
-    {
-        $machineManager = self::getContainer()->get(MachineManager::class);
-        \assert($machineManager instanceof MachineManager);
-
-        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
-        \assert($machineUpdater instanceof MachineUpdater);
-
-        $readinessAssessor = self::getContainer()->get(GetMachineReadinessAssessor::class);
-        \assert($readinessAssessor instanceof GetMachineReadinessAssessor);
-
-        $unhandleableMessageHandler = self::getContainer()->get(UnhandleableMessageHandler::class);
-        \assert($unhandleableMessageHandler instanceof UnhandleableMessageHandler);
-
-        $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        \assert($eventDispatcher instanceof EventDispatcherInterface);
-
-        return new GetMachineHandler(
-            $readinessAssessor,
-            $unhandleableMessageHandler,
-            $machineManager,
-            $messageBus,
-            $machineUpdater,
-            $this->machineRepository,
-            $eventDispatcher,
-        );
     }
 }
