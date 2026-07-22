@@ -14,9 +14,9 @@ readonly class GetMachineReadinessAssessor implements ReadinessAssessorInterface
         private MachineRepository $machineRepository,
     ) {}
 
-    public function isReady(string $jobId): MessageHandlingReadiness
+    public function isReady(string $machineId): MessageHandlingReadiness
     {
-        $machine = $this->machineRepository->find($jobId);
+        $machine = $this->machineRepository->find($machineId);
         if (null === $machine) {
             return MessageHandlingReadiness::NEVER;
         }

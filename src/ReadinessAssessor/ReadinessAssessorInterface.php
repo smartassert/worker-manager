@@ -8,5 +8,5 @@ use App\Enum\MessageHandlingReadiness;
 
 interface ReadinessAssessorInterface
 {
-    public function isReady(string $jobId): MessageHandlingReadiness;
+    public function isReady(string $machineId): MessageHandlingReadiness;
 }
