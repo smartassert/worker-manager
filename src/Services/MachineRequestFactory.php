@@ -57,7 +57,7 @@ readonly class MachineRequestFactory
         return $this->createFind(
             $machineId,
             [
-                $this->createGet($machineId),
+                $this->createGetMachine($machineId),
             ]
         );
     }
@@ -65,7 +65,7 @@ readonly class MachineRequestFactory
     /**
      * @param non-empty-string $machineId
      */
-    private function createGet(string $machineId): GetMachine
+    public function createGetMachine(string $machineId): GetMachine
     {
         return new GetMachine($this->requestIdFactory->create(), $machineId);
     }
@@ -97,7 +97,7 @@ readonly class MachineRequestFactory
             $this->requestIdFactory->create(),
             $machineId,
             [
-                $this->createGet($machineId),
+                $this->createGetMachine($machineId),
             ]
         );
     }
