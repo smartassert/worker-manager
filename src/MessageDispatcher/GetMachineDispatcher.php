@@ -6,6 +6,7 @@ namespace App\MessageDispatcher;
 
 use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineCreatedEvent;
+use App\Event\MachineRetrievedEvent;
 use App\Event\MessageNotHandleableEvent;
 use App\Message\GetMachine;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
@@ -31,6 +32,9 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
             MachineCreatedEvent::class => [
                 ['dispatch', 100],
             ],
+            MachineRetrievedEvent::class => [
+                ['dispatch', 100],
+            ],
             MessageNotHandleableEvent::class => [
                 ['redispatch', 100],
             ],
@@ -40,7 +44,7 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
     /**
      * @throws ExceptionInterface
      */
-    public function dispatch(MachineCreatedEvent $event): void
+    public function dispatch(MachineCreatedEvent|MachineRetrievedEvent $event): void
     {
         $this->doDispatch($event->machine->getId());
     }

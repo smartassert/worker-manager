@@ -17,7 +17,6 @@ use App\Exception\MachineProvider\HttpClientException;
 use App\Exception\MachineProvider\InvalidEntityResponseException;
 use App\Exception\Stack;
 use App\Message\CreateMachine;
-use App\Message\GetMachine;
 use App\MessageHandler\CreateMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\Repository\MachineRepository;
@@ -43,7 +42,6 @@ use Psr\Http\Message\ResponseInterface;
 use SmartAssert\DigitalOceanDropletConfiguration\Configuration;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 
 class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 {
@@ -169,21 +167,6 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         self::assertSame(MachineState::UP_STARTED, $this->machine->getState());
         self::assertSame($ipAddresses, $this->machine->getIpAddresses());
         self::assertSame(MachineProvider::DIGITALOCEAN, $this->machine->getProvider());
-
-        $messengerTransport = self::getContainer()->get('messenger.transport.async');
-        \assert($messengerTransport instanceof InMemoryTransport);
-
-//        $dispatchedEnvelopes = $messengerTransport->getSent();
-
-//        var_dump($dispatchedEnvelopes);
-
-//        self::assertCount(1, $dispatchedEnvelopes);
-//
-//        $dispatchedEnvelope = $dispatchedEnvelopes[0];
-//        $dispatchedMessage = $dispatchedEnvelope->getMessage();
-//
-//        self::assertInstanceOf(GetMachine::class, $dispatchedMessage);
-//        self::assertSame($this->machine->getId(), $dispatchedMessage->getMachineId());
     }
 
     #[DataProvider('invokeThrowsExceptionDataProvider')]
