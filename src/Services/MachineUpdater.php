@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Event\MachineCreatedEvent;
+use App\Event\MachineRetrievedEvent;
+use App\Event\RemoteMachineEventInterface;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -22,7 +24,10 @@ readonly class MachineUpdater implements EventSubscriberInterface
     {
         return [
             MachineCreatedEvent::class => [
-                ['updateFromMachineCreatedEvent', 1000],
+                ['updateFromRemoteMachineEvent', 1000],
+            ],
+            MachineRetrievedEvent::class => [
+                ['updateFromRemoteMachineEvent', 1000],
             ],
         ];
     }
@@ -37,8 +42,8 @@ readonly class MachineUpdater implements EventSubscriberInterface
         return $machine;
     }
 
-    public function updateFromMachineCreatedEvent(MachineCreatedEvent $event): void
+    public function updateFromRemoteMachineEvent(RemoteMachineEventInterface $event): void
     {
-        $this->updateFromRemoteMachine($event->machine, $event->remoteMachine);
+        $this->updateFromRemoteMachine($event->getMachine(), $event->getRemoteMachine());
     }
 }

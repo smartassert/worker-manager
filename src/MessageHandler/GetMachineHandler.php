@@ -12,24 +12,20 @@ use App\Message\GetMachine;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineUpdater;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
-class GetMachineHandler
+final readonly class GetMachineHandler
 {
     public function __construct(
-        private readonly GetMachineReadinessAssessor $readinessAssessor,
-        private readonly UnhandleableMessageHandler $unhandleableMessageHandler,
+        private GetMachineReadinessAssessor $readinessAssessor,
+        private UnhandleableMessageHandler $unhandleableMessageHandler,
         private MachineManager $machineManager,
-        private MessageBusInterface $messageBus,
-        private MachineUpdater $machineUpdater,
-        private readonly MachineRepository $machineRepository,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private MachineRepository $machineRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {}
 
     /**
@@ -51,12 +47,6 @@ class GetMachineHandler
             $remoteMachine = $this->machineManager->get($machine);
 
             $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
-
-            $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
-
-            foreach ($message->getOnSuccessCollection() as $onSuccessRequest) {
-                $this->messageBus->dispatch($onSuccessRequest);
-            }
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
