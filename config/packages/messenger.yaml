@@ -33,7 +33,6 @@ framework:
             'App\Message\GetMachine': get_machine
             'App\Message\FindMachine': find_machine
             'App\Message\DeleteMachine': delete_machine
-            'App\Message\CheckMachineIsActive': async
 
 when@test:
     framework:

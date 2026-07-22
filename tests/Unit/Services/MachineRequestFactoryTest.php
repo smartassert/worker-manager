@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Services;
 
 use App\Enum\MachineState;
-use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\FindMachine;
 use App\Message\GetMachine;
@@ -35,21 +34,13 @@ class MachineRequestFactoryTest extends TestCase
         self::assertSame([], $request->getOnSuccessCollection());
         self::assertSame(MachineState::CREATE_RECEIVED, $request->getOnNotFoundState());
 
-        $expectedGetMachineRequest = new GetMachine('id2', self::MACHINE_ID);
-
-        $expectedCheckMachineIsActiveRequest = new CheckMachineIsActive(
-            'id1',
-            self::MACHINE_ID,
-            [
-                $expectedGetMachineRequest,
-            ]
-        );
+        $expectedGetMachineRequest = new GetMachine('id1', self::MACHINE_ID);
 
         $expectedCreateMachineRequest = new CreateMachine(
             'id0',
             self::MACHINE_ID,
             [
-                $expectedCheckMachineIsActiveRequest,
+                $expectedGetMachineRequest,
             ]
         );
 
@@ -68,20 +59,13 @@ class MachineRequestFactoryTest extends TestCase
         self::assertSame([], $request->getOnFailureCollection());
     }
 
-    public function testCreateFindThenCheckIsActive(): void
+    public function testCreateFindThenGet(): void
     {
-        $request = $this->factory->createFindThenCheckIsActive(self::MACHINE_ID);
+        $request = $this->factory->createFindThenGet(self::MACHINE_ID);
 
-        $expectedGetMachineRequest = new GetMachine('id1', self::MACHINE_ID);
-        $expectedCheckMachineIsActiveRequest = new CheckMachineIsActive(
-            'id0',
-            self::MACHINE_ID,
-            [
-                $expectedGetMachineRequest,
-            ]
-        );
+        $expectedGetMachineRequest = new GetMachine('id0', self::MACHINE_ID);
 
-        self::assertEquals([$expectedCheckMachineIsActiveRequest], $request->getOnSuccessCollection());
+        self::assertEquals([$expectedGetMachineRequest], $request->getOnSuccessCollection());
         self::assertSame([], $request->getOnFailureCollection());
     }
 }

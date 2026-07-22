@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enum\MachineState;
-use App\Message\CheckMachineIsActive;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
@@ -53,23 +52,9 @@ readonly class MachineRequestFactory
     /**
      * @param non-empty-string $machineId
      */
-    public function createFindThenCheckIsActive(string $machineId): FindMachine
+    public function createFindThenGet(string $machineId): FindMachine
     {
         return $this->createFind(
-            $machineId,
-            [
-                $this->createCheckIsActive($machineId),
-            ]
-        );
-    }
-
-    /**
-     * @param non-empty-string $machineId
-     */
-    private function createCheckIsActive(string $machineId): CheckMachineIsActive
-    {
-        return new CheckMachineIsActive(
-            $this->requestIdFactory->create(),
             $machineId,
             [
                 $this->createGet($machineId),
@@ -112,7 +97,7 @@ readonly class MachineRequestFactory
             $this->requestIdFactory->create(),
             $machineId,
             [
-                $this->createCheckIsActive($machineId),
+                $this->createGet($machineId),
             ]
         );
     }

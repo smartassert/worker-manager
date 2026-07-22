@@ -23,7 +23,6 @@ parameters:
     health_check_bundle_status_version: '%env(VERSION)%'
     health_check_bundle_status_path: '/'
     message_delays:
-        App\Message\CheckMachineIsActive: '%machine_is_active_dispatch_delay%'
         App\Message\GetMachine: '%get_machine_dispatch_delay%'
 
 services:
