@@ -36,6 +36,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -446,6 +447,9 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $unhandleableMessageHandler = self::getContainer()->get(UnhandleableMessageHandler::class);
         \assert($unhandleableMessageHandler instanceof UnhandleableMessageHandler);
 
+        $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        \assert($eventDispatcher instanceof EventDispatcherInterface);
+
         return new GetMachineHandler(
             $readinessAssessor,
             $unhandleableMessageHandler,
@@ -453,6 +457,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
             $messageBus,
             $machineUpdater,
             $this->machineRepository,
+            $eventDispatcher,
         );
     }
 }

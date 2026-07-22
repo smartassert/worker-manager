@@ -6,6 +6,7 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MessageHandlingReadiness;
+use App\Event\MachineRetrievedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
@@ -13,6 +14,7 @@ use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineUpdater;
 use App\Services\UnhandleableMessageHandler;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -27,6 +29,7 @@ class GetMachineHandler
         private MessageBusInterface $messageBus,
         private MachineUpdater $machineUpdater,
         private readonly MachineRepository $machineRepository,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
     /**
@@ -46,6 +49,9 @@ class GetMachineHandler
 
         try {
             $remoteMachine = $this->machineManager->get($machine);
+
+            $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
+
             $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
 
             foreach ($message->getOnSuccessCollection() as $onSuccessRequest) {
