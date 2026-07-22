@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use App\Model\RemoteMachineInterface;
 
-interface RemoteMachineEventInterface
+interface RemoteMachineEventInterface extends MachineEventInterface
 {
-    public function getMachine(): Machine;
-
     public function getRemoteMachine(): RemoteMachineInterface;
 }

@@ -30,6 +30,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Envelope;
@@ -285,6 +286,9 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        return new DeleteMachineHandler($machineManager, $messageBus, $machineRepository);
+        $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        \assert($eventDispatcher instanceof EventDispatcherInterface);
+
+        return new DeleteMachineHandler($machineManager, $messageBus, $machineRepository, $eventDispatcher);
     }
 }

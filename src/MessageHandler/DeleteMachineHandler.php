@@ -6,10 +6,12 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
+use App\Event\MachineDeletedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -21,6 +23,7 @@ class DeleteMachineHandler
         private MachineManager $machineManager,
         private MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {}
 
     /**
@@ -40,6 +43,7 @@ class DeleteMachineHandler
 
         try {
             $this->machineManager->remove($machineId);
+            $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
 
             foreach ($message->getOnSuccessCollection() as $onSuccessRequest) {
                 $this->messageBus->dispatch($onSuccessRequest);
