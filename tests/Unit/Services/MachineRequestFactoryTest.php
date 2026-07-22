@@ -36,13 +36,7 @@ class MachineRequestFactoryTest extends TestCase
 
         $expectedGetMachineRequest = new GetMachine('id1', self::MACHINE_ID);
 
-        $expectedCreateMachineRequest = new CreateMachine(
-            'id0',
-            self::MACHINE_ID,
-            [
-                $expectedGetMachineRequest,
-            ]
-        );
+        $expectedCreateMachineRequest = new CreateMachine('id0', self::MACHINE_ID);
 
         self::assertEquals([$expectedCreateMachineRequest], $request->getOnFailureCollection());
     }

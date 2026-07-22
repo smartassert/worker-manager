@@ -84,7 +84,7 @@ readonly class TestMachineRequestFactory
     public function createGet(string $machineId): GetMachine
     {
         $reflector = new \ReflectionObject($this->factory);
-        $method = $reflector->getMethod('createGet');
+        $method = $reflector->getMethod('createGetMachine');
         $method->setAccessible(true);
 
         $request = $method->invoke($this->factory, $machineId);

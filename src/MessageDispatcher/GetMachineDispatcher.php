@@ -42,11 +42,7 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
      */
     public function dispatch(MachineCreatedEvent $event): void
     {
-        $message = $this->machineRequestFactory->createGetMachine(
-            $event->machine->getId(),
-        );
-
-        $this->messageBus->dispatch($message);
+        $this->doDispatch($event->machine->getId());
     }
 
     /**
@@ -63,10 +59,22 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
             return;
         }
 
-        $readiness = $this->readinessAssessor->isReady($message->getMachineId());
+        $this->doDispatch($message->getMachineId());
+    }
+
+    /**
+     * @param non-empty-string $machineId
+     *
+     * @throws ExceptionInterface
+     */
+    private function doDispatch(string $machineId): void
+    {
+        $readiness = $this->readinessAssessor->isReady($machineId);
         if (MessageHandlingReadiness::NEVER === $readiness) {
             return;
         }
+
+        $message = $this->machineRequestFactory->createGetMachine($machineId);
 
         $this->messageBus->dispatch($message);
     }

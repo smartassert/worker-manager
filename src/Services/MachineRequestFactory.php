@@ -93,12 +93,6 @@ readonly class MachineRequestFactory
      */
     private function createCreate(string $machineId): CreateMachine
     {
-        return new CreateMachine(
-            $this->requestIdFactory->create(),
-            $machineId,
-            [
-                $this->createGetMachine($machineId),
-            ]
-        );
+        return new CreateMachine($this->requestIdFactory->create(), $machineId);
     }
 }
