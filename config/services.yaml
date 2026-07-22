@@ -11,6 +11,7 @@ parameters:
     worker_ssh_key_id: '%env(int:WORKER_SSH_KEY_ID)%'
     digitalocean_droplet_tag: '%env(DIGITALOCEAN_TAG)%'
     machine_is_active_dispatch_delay: '%env(int:MACHINE_IS_ACTIVE_DISPATCH_DELAY)%'
+    get_machine_dispatch_delay: '%env(int:GET_MACHINE_DISPATCH_DELAY)%'
     version: '%env(VERSION)%'
     users_security_bundle_base_url: '%env(AUTHENTICATION_BASE_URL)%'
     users_security_bundle_public_pattern: '(^/$)|(^/health-check$)'
@@ -23,6 +24,7 @@ parameters:
     health_check_bundle_status_path: '/'
     message_delays:
         App\Message\CheckMachineIsActive: '%machine_is_active_dispatch_delay%'
+        App\Message\GetMachine: '%get_machine_dispatch_delay%'
 
 services:
     # default configuration for services in *this* file
