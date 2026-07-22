@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceStatusInspector;
 
-use App\Message\CheckMachineIsActive;
+use App\Message\CreateMachine;
 use App\Message\UniqueId;
 use SmartAssert\ServiceStatusInspector\ComponentStatusInspectorInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -21,7 +21,7 @@ class MessageQueueInspector implements ComponentStatusInspectorInterface
 
     public function getStatus(): bool
     {
-        $this->messageBus->dispatch(new CheckMachineIsActive(UniqueId::create(), self::INVALID_MACHINE_ID));
+        $this->messageBus->dispatch(new CreateMachine(UniqueId::create(), self::INVALID_MACHINE_ID));
 
         return true;
     }

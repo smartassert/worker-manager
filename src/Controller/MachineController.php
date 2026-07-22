@@ -67,7 +67,7 @@ readonly class MachineController
             $this->machineRepository->add($machine);
 
             $this->messageBus->dispatch(
-                $this->machineRequestFactory->createFindThenCheckIsActive($id)
+                $this->machineRequestFactory->createFindThenGet($id)
             );
         }
 

@@ -18,6 +18,7 @@ use App\Exception\UnsupportedProviderException;
 use App\Message\GetMachine;
 use App\MessageHandler\GetMachineHandler;
 use App\Model\DigitalOcean\RemoteMachine;
+use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
@@ -27,6 +28,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataExceptio
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineUpdater;
+use App\Services\UnhandleableMessageHandler;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use GuzzleHttp\Exception\TransferException;
@@ -438,7 +440,15 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineUpdater = self::getContainer()->get(MachineUpdater::class);
         \assert($machineUpdater instanceof MachineUpdater);
 
+        $readinessAssessor = self::getContainer()->get(GetMachineReadinessAssessor::class);
+        \assert($readinessAssessor instanceof GetMachineReadinessAssessor);
+
+        $unhandleableMessageHandler = self::getContainer()->get(UnhandleableMessageHandler::class);
+        \assert($unhandleableMessageHandler instanceof UnhandleableMessageHandler);
+
         return new GetMachineHandler(
+            $readinessAssessor,
+            $unhandleableMessageHandler,
             $machineManager,
             $messageBus,
             $machineUpdater,

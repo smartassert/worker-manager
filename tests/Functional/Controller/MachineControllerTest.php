@@ -60,7 +60,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
     public function testStatusMachineNotFoundCallsMachineRequestDispatcher(): void
     {
         $expectedMachineRequest = $this->callMachineRequestFactory(function (MachineRequestFactory $factory) {
-            return $factory->createFindThenCheckIsActive(self::MACHINE_ID);
+            return $factory->createFindThenGet(self::MACHINE_ID);
         });
 
         $messageBus = \Mockery::mock(MessageBusInterface::class);

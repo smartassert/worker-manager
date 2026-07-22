@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Machine;
+use App\Enum\MessageHandlingReadiness;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
+use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineUpdater;
+use App\Services\UnhandleableMessageHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -18,6 +21,8 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class GetMachineHandler
 {
     public function __construct(
+        private readonly GetMachineReadinessAssessor $readinessAssessor,
+        private readonly UnhandleableMessageHandler $unhandleableMessageHandler,
         private MachineManager $machineManager,
         private MessageBusInterface $messageBus,
         private MachineUpdater $machineUpdater,
@@ -29,6 +34,11 @@ class GetMachineHandler
      */
     public function __invoke(GetMachine $message): void
     {
+        $readiness = $this->readinessAssessor->isReady($message->getMachineId());
+        if (MessageHandlingReadiness::NOW !== $readiness) {
+            $this->unhandleableMessageHandler->handle($message, $readiness);
+        }
+
         $machine = $this->machineRepository->find($message->getMachineId());
         if (!$machine instanceof Machine) {
             return;

@@ -169,7 +169,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
-                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        [$factory->createGet(self::MACHINE_ID)],
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
@@ -196,7 +196,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
-                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        [$factory->createGet(self::MACHINE_ID)],
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
@@ -224,7 +224,7 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
                 'messageCreator' => function (TestMachineRequestFactory $factory) {
                     return $factory->createFind(
                         self::MACHINE_ID,
-                        [$factory->createCheckIsActive(self::MACHINE_ID)],
+                        [$factory->createGet(self::MACHINE_ID)],
                     );
                 },
                 'expectedMachineRequestCollectionCreator' => function (FindMachine $message): array {
