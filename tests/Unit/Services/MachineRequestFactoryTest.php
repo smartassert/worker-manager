@@ -6,7 +6,6 @@ namespace App\Tests\Unit\Services;
 
 use App\Enum\MachineState;
 use App\Message\CreateMachine;
-use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Services\MachineRequestFactory;
 use App\Tests\Services\SequentialRequestIdFactory;
@@ -34,8 +33,6 @@ class MachineRequestFactoryTest extends TestCase
         self::assertSame([], $request->getOnSuccessCollection());
         self::assertSame(MachineState::CREATE_RECEIVED, $request->getOnNotFoundState());
 
-        $expectedGetMachineRequest = new GetMachine('id1', self::MACHINE_ID);
-
         $expectedCreateMachineRequest = new CreateMachine('id0', self::MACHINE_ID);
 
         self::assertEquals([$expectedCreateMachineRequest], $request->getOnFailureCollection());
@@ -45,11 +42,7 @@ class MachineRequestFactoryTest extends TestCase
     {
         $request = $this->factory->createDelete(self::MACHINE_ID);
 
-        $expectedFindMachineRequest = new FindMachine('id0', self::MACHINE_ID);
-        $expectedFindMachineRequest = $expectedFindMachineRequest->withOnNotFoundState(MachineState::DELETE_DELETED);
-        $expectedFindMachineRequest = $expectedFindMachineRequest->withReDispatchOnSuccess(true);
-
-        self::assertEquals([$expectedFindMachineRequest], $request->getOnSuccessCollection());
+        self::assertEquals([], $request->getOnSuccessCollection());
         self::assertSame([], $request->getOnFailureCollection());
     }
 

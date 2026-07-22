@@ -34,19 +34,7 @@ readonly class MachineRequestFactory
      */
     public function createDelete(string $machineId): DeleteMachine
     {
-        $findRequest = $this
-            ->createFind($machineId)
-            ->withOnNotFoundState(MachineState::DELETE_DELETED)
-            ->withReDispatchOnSuccess(true)
-        ;
-
-        return new DeleteMachine(
-            $this->requestIdFactory->create(),
-            $machineId,
-            [
-                $findRequest,
-            ]
-        );
+        return new DeleteMachine($this->requestIdFactory->create(), $machineId);
     }
 
     /**
@@ -75,7 +63,7 @@ readonly class MachineRequestFactory
      * @param MachineRequestInterface[] $onSuccessCollection
      * @param MachineRequestInterface[] $onFailureCollection
      */
-    private function createFind(
+    public function createFind(
         string $machineId,
         array $onSuccessCollection = [],
         array $onFailureCollection = []
