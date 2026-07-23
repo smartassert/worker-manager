@@ -34,10 +34,8 @@ readonly class Machine implements \JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        $stateCategory = $this->machine->getStateCategory();
-
         $state = $this->machine->getState();
-
+        $stateCategory = MachineStateCategory::fromState($state);
         $hasEndState = MachineStateCategory::END === $stateCategory;
 
         return [
