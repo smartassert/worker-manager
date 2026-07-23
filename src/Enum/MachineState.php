@@ -19,18 +19,6 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
-    public function isPreActive(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::CREATE_RECEIVED,
-                self::CREATE_REQUESTED,
-                self::UP_STARTED,
-            ]
-        );
-    }
-
     public function isEnd(): bool
     {
         return in_array(
