@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
-use App\Enum\MachineStateCategory;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -90,30 +89,5 @@ class Machine
     public function getProvider(): ?MachineProvider
     {
         return $this->provider;
-    }
-
-    public function getStateCategory(): MachineStateCategory
-    {
-        if ($this->state->isFinding()) {
-            return MachineStateCategory::FINDING;
-        }
-
-        if ($this->state->isPreActive()) {
-            return MachineStateCategory::PRE_ACTIVE;
-        }
-
-        if (MachineState::UP_ACTIVE === $this->state) {
-            return MachineStateCategory::ACTIVE;
-        }
-
-        if ($this->state->isEnding()) {
-            return MachineStateCategory::ENDING;
-        }
-
-        if ($this->state->isEnd()) {
-            return MachineStateCategory::END;
-        }
-
-        return MachineStateCategory::UNKNOWN;
     }
 }
