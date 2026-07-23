@@ -19,32 +19,6 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
-    public function isPreActive(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::CREATE_RECEIVED,
-                self::CREATE_REQUESTED,
-                self::UP_STARTED,
-            ]
-        );
-    }
-
-    public function isEnd(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::CREATE_FAILED,
-                self::DELETE_FAILED,
-                self::DELETE_DELETED,
-                self::FIND_NOT_FINDABLE,
-                self::FIND_NOT_FOUND,
-            ],
-        );
-    }
-
     public function isResettable(): bool
     {
         return in_array(
@@ -52,28 +26,6 @@ enum MachineState: string
             [
                 self::FIND_NOT_FOUND,
                 self::CREATE_FAILED,
-            ]
-        );
-    }
-
-    public function isFinding(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::FIND_RECEIVED,
-                self::FIND_FINDING,
-            ]
-        );
-    }
-
-    public function isEnding(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::DELETE_RECEIVED,
-                self::DELETE_REQUESTED,
             ]
         );
     }
