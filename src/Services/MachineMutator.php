@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
+use App\Event\CreateMachineEvent;
 use App\Event\MachineCreatedEvent;
 use App\Event\MachineRetrievedEvent;
 use App\Event\RemoteMachineEventInterface;
@@ -30,6 +31,9 @@ readonly class MachineMutator implements EventSubscriberInterface
             MachineRetrievedEvent::class => [
                 ['updateFromRemoteMachineEvent', 1000],
             ],
+            CreateMachineEvent::class => [
+                ['setStateForCreateMachineEvent', 1000],
+            ],
         ];
     }
 
@@ -47,6 +51,11 @@ readonly class MachineMutator implements EventSubscriberInterface
     public function updateFromRemoteMachineEvent(RemoteMachineEventInterface $event): void
     {
         $this->updateFromRemoteMachine($event->getMachine(), $event->getRemoteMachine());
+    }
+
+    public function setStateForCreateMachineEvent(CreateMachineEvent $event): void
+    {
+        $this->setState($event->getMachine(), MachineState::CREATE_RECEIVED);
     }
 
     public function setState(Machine $machine, MachineState $newState): void
