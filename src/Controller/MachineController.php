@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
+use App\MessageDispatcher\FindMachineForCreationDispatcher;
 use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
@@ -33,8 +34,10 @@ readonly class MachineController
      * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
-    public function create(string $id): JsonResponse
-    {
+    public function create(
+        string $id,
+        FindMachineForCreationDispatcher $messageDispatcher,
+    ): JsonResponse {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
             if (!$machine->getState()->isResettable()) {
@@ -45,10 +48,7 @@ readonly class MachineController
         }
 
         $this->machineMutator->setState($machine, MachineState::CREATE_RECEIVED);
-
-        $this->messageBus->dispatch(
-            $this->machineRequestFactory->createFindThenCreate($id)
-        );
+        $messageDispatcher->dispatchForMachine($machine);
 
         return new JsonResponse(new MachineModel($machine), 202);
     }
