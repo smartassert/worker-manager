@@ -35,7 +35,7 @@ readonly class MachineController
     {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
-            if (!MachineState::isResettable($machine->getState())) {
+            if (!$machine->getState()->isResettable()) {
                 return BadMachineCreateRequestResponse::createIdTakenResponse();
             }
         } else {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\ReadinessAssessor;
 
-use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
 use App\Repository\MachineRepository;
 
@@ -22,11 +21,11 @@ readonly class GetMachineReadinessAssessor implements ReadinessAssessorInterface
         }
 
         $state = $machine->getState();
-        if (MachineState::isEnd($state)) {
+        if ($state->isEnd()) {
             return MessageHandlingReadiness::NEVER;
         }
 
-        if (!MachineState::isPreActive($state)) {
+        if (!$state->isPreActive()) {
             return MessageHandlingReadiness::EVENTUALLY;
         }
 

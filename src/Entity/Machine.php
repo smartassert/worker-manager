@@ -94,11 +94,11 @@ class Machine
 
     public function getStateCategory(): MachineStateCategory
     {
-        if (MachineState::isFinding($this->state)) {
+        if ($this->state->isFinding()) {
             return MachineStateCategory::FINDING;
         }
 
-        if (MachineState::isPreActive($this->state)) {
+        if ($this->state->isPreActive()) {
             return MachineStateCategory::PRE_ACTIVE;
         }
 
@@ -106,11 +106,11 @@ class Machine
             return MachineStateCategory::ACTIVE;
         }
 
-        if (MachineState::isEnding($this->state)) {
+        if ($this->state->isEnding()) {
             return MachineStateCategory::ENDING;
         }
 
-        if (MachineState::isEnd($this->state)) {
+        if ($this->state->isEnd()) {
             return MachineStateCategory::END;
         }
 
