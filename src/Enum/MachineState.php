@@ -30,28 +30,6 @@ enum MachineState: string
         );
     }
 
-    public function isFinding(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::FIND_RECEIVED,
-                self::FIND_FINDING,
-            ]
-        );
-    }
-
-    public function isEnding(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::DELETE_RECEIVED,
-                self::DELETE_REQUESTED,
-            ]
-        );
-    }
-
     public function isFailed(): bool
     {
         return in_array(
