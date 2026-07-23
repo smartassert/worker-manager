@@ -6,6 +6,7 @@ use App\Enum\MachineState;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
+use App\Message\FindMachineForCreation;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 
@@ -82,5 +83,13 @@ readonly class MachineRequestFactory
     public function createCreate(string $machineId): CreateMachine
     {
         return new CreateMachine($this->requestIdFactory->create(), $machineId);
+    }
+
+    /**
+     * @param non-empty-string $machineId
+     */
+    public function createFindMachineForCreation(string $machineId): FindMachineForCreation
+    {
+        return new FindMachineForCreation($this->requestIdFactory->create(), $machineId);
     }
 }
