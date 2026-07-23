@@ -23,6 +23,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Request\RemoveDropletRequest;
 use App\Services\MachineManager\MachineManager;
+use App\Services\MachineMutator;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -289,6 +290,15 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
         \assert($eventDispatcher instanceof EventDispatcherInterface);
 
-        return new DeleteMachineHandler($machineManager, $messageBus, $machineRepository, $eventDispatcher);
+        $machineMutator = self::getContainer()->get(MachineMutator::class);
+        \assert($machineMutator instanceof MachineMutator);
+
+        return new DeleteMachineHandler(
+            $machineManager,
+            $messageBus,
+            $machineRepository,
+            $eventDispatcher,
+            $machineMutator,
+        );
     }
 }

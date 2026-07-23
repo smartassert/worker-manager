@@ -11,6 +11,7 @@ use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
+use App\Services\MachineMutator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -24,6 +25,7 @@ class DeleteMachineHandler
         private MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -38,8 +40,7 @@ class DeleteMachineHandler
             return;
         }
 
-        $machine->setState(MachineState::DELETE_REQUESTED);
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, MachineState::DELETE_REQUESTED);
 
         try {
             $this->machineManager->remove($machineId);

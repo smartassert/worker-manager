@@ -11,6 +11,7 @@ use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
+use App\Services\MachineMutator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -22,6 +23,7 @@ readonly class CreateMachineHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -34,8 +36,7 @@ readonly class CreateMachineHandler
             return;
         }
 
-        $machine->setState(MachineState::CREATE_REQUESTED);
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, MachineState::CREATE_REQUESTED);
 
         try {
             $remoteMachine = $this->machineManager->create($machine);

@@ -63,4 +63,29 @@ enum MachineStateCategory: string
 
         return self::UNKNOWN;
     }
+
+    public function hasNext(MachineStateCategory $stateCategory): bool
+    {
+        if (self::UNKNOWN === $this) {
+            return true;
+        }
+
+        $transitionOrder = [
+            self::UNKNOWN,
+            self::FINDING,
+            self::PRE_ACTIVE,
+            self::ACTIVE,
+            self::ENDING,
+            self::END,
+        ];
+
+        $currentPosition = array_search($this, $transitionOrder, true);
+        $nextPosition = array_search($stateCategory, $transitionOrder, true);
+
+        if (false === $currentPosition || false === $nextPosition) {
+            return false;
+        }
+
+        return $nextPosition >= $currentPosition;
+    }
 }
