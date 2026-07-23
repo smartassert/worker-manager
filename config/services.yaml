@@ -130,3 +130,11 @@ services:
     webignition\SymfonyMessengerDelayMiddleware\DelayMiddleware:
         arguments:
             $delays: '%message_delays%'
+
+    App\MessageDispatcher\GetMachineDispatcher:
+        arguments:
+            $readinessAssessor: '@App\ReadinessAssessor\GetMachineReadinessAssessor'
+
+    App\MessageHandler\GetMachineHandler:
+        arguments:
+            $readinessAssessor: '@App\ReadinessAssessor\GetMachineReadinessAssessor'
