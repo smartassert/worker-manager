@@ -22,7 +22,9 @@ readonly class GetMachineReadinessAssessor implements ReadinessAssessorInterface
         }
 
         $state = $machine->getState();
-        if ($state->isEnd()) {
+        $stateCategory = MachineStateCategory::fromState($state);
+
+        if (MachineStateCategory::END === $stateCategory) {
             return MessageHandlingReadiness::NEVER;
         }
 

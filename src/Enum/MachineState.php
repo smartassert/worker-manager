@@ -19,20 +19,6 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
-    public function isEnd(): bool
-    {
-        return in_array(
-            $this,
-            [
-                self::CREATE_FAILED,
-                self::DELETE_FAILED,
-                self::DELETE_DELETED,
-                self::FIND_NOT_FINDABLE,
-                self::FIND_NOT_FOUND,
-            ],
-        );
-    }
-
     public function isResettable(): bool
     {
         return in_array(
