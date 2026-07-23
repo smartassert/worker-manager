@@ -19,10 +19,10 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
-    public static function isPreActive(MachineState $state): bool
+    public function isPreActive(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::CREATE_RECEIVED,
                 self::CREATE_REQUESTED,
@@ -31,10 +31,10 @@ enum MachineState: string
         );
     }
 
-    public static function isEnd(MachineState $state): bool
+    public function isEnd(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::CREATE_FAILED,
                 self::DELETE_FAILED,
@@ -45,10 +45,10 @@ enum MachineState: string
         );
     }
 
-    public static function isResettable(MachineState $state): bool
+    public function isResettable(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::FIND_NOT_FOUND,
                 self::CREATE_FAILED,
@@ -56,10 +56,10 @@ enum MachineState: string
         );
     }
 
-    public static function isFinding(MachineState $state): bool
+    public function isFinding(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::FIND_RECEIVED,
                 self::FIND_FINDING,
@@ -67,10 +67,10 @@ enum MachineState: string
         );
     }
 
-    public static function isEnding(MachineState $state): bool
+    public function isEnding(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::DELETE_RECEIVED,
                 self::DELETE_REQUESTED,
@@ -78,10 +78,10 @@ enum MachineState: string
         );
     }
 
-    public static function isFailed(MachineState $state): bool
+    public function isFailed(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::CREATE_FAILED,
                 self::FIND_NOT_FINDABLE,
@@ -90,10 +90,10 @@ enum MachineState: string
         );
     }
 
-    public static function isPending(MachineState $state): bool
+    public function isPending(): bool
     {
         return in_array(
-            $state,
+            $this,
             [
                 self::UNKNOWN,
                 self::FIND_RECEIVED,
