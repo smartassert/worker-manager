@@ -10,6 +10,7 @@ use App\Enum\MachineState;
 use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
+use App\Services\MachineMutator;
 use App\Services\MachineRequestFactory;
 use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -152,6 +153,9 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
 
-        return new MachineController($messageBus, $machineRequestFactory, $machineRepository);
+        $machineMutator = self::getContainer()->get(MachineMutator::class);
+        \assert($machineMutator instanceof MachineMutator);
+
+        return new MachineController($messageBus, $machineRequestFactory, $machineRepository, $machineMutator);
     }
 }

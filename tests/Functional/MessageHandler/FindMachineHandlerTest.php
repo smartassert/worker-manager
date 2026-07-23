@@ -24,7 +24,7 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Request\GetDropletRequest;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineUpdater;
+use App\Services\MachineMutator;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\TestMachineRequestFactory;
@@ -442,8 +442,8 @@ class FindMachineHandlerTest extends AbstractBaseFunctionalTestCase
         $machineManager = self::getContainer()->get(MachineManager::class);
         \assert($machineManager instanceof MachineManager);
 
-        $machineUpdater = self::getContainer()->get(MachineUpdater::class);
-        \assert($machineUpdater instanceof MachineUpdater);
+        $machineUpdater = self::getContainer()->get(MachineMutator::class);
+        \assert($machineUpdater instanceof MachineMutator);
 
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);

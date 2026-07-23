@@ -11,7 +11,7 @@ use App\Message\FindMachine;
 use App\Model\RemoteMachineInterface;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineUpdater;
+use App\Services\MachineMutator;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -21,7 +21,7 @@ class FindMachineHandler
 {
     public function __construct(
         private MachineManager $machineManager,
-        private MachineUpdater $machineUpdater,
+        private MachineMutator $machineMutator,
         private MessageBusInterface $messageBus,
         private readonly MachineRepository $machineRepository,
     ) {}
@@ -38,14 +38,13 @@ class FindMachineHandler
             return;
         }
 
-        $machine->setState(MachineState::FIND_FINDING);
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, MachineState::FIND_FINDING);
 
         try {
             $remoteMachine = $this->machineManager->find($machineId);
 
             if ($remoteMachine instanceof RemoteMachineInterface) {
-                $this->machineUpdater->updateFromRemoteMachine($machine, $remoteMachine);
+                $this->machineMutator->updateFromRemoteMachine($machine, $remoteMachine);
 
                 $onSuccessCollection = $message->getOnSuccessCollection();
 
@@ -57,8 +56,7 @@ class FindMachineHandler
                     $this->messageBus->dispatch($onSuccessRequest);
                 }
             } else {
-                $machine->setState($message->getOnNotFoundState());
-                $this->machineRepository->add($machine);
+                $this->machineMutator->setState($machine, $message->getOnNotFoundState());
 
                 foreach ($message->getOnFailureCollection() as $onFailureRequest) {
                     $this->messageBus->dispatch($onFailureRequest);

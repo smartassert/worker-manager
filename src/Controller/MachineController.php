@@ -8,6 +8,7 @@ use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
+use App\Services\MachineMutator;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -23,6 +24,7 @@ readonly class MachineController
         private MessageBusInterface $messageBus,
         private MachineRequestFactory $machineRequestFactory,
         private MachineRepository $machineRepository,
+        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -42,8 +44,7 @@ readonly class MachineController
             $machine = new Machine($id);
         }
 
-        $machine->setState(MachineState::CREATE_RECEIVED);
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, MachineState::CREATE_RECEIVED);
 
         $this->messageBus->dispatch(
             $this->machineRequestFactory->createFindThenCreate($id)
@@ -63,8 +64,7 @@ readonly class MachineController
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
             $machine = new Machine($id);
-            $machine->setState(MachineState::FIND_RECEIVED);
-            $this->machineRepository->add($machine);
+            $this->machineMutator->setState($machine, MachineState::FIND_RECEIVED);
 
             $this->messageBus->dispatch(
                 $this->machineRequestFactory->createFindThenGet($id)
@@ -87,8 +87,7 @@ readonly class MachineController
             $machine = new Machine($id);
         }
 
-        $machine->setState(MachineState::DELETE_RECEIVED);
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, MachineState::DELETE_RECEIVED);
 
         $this->messageBus->dispatch(
             $this->machineRequestFactory->createDelete($id)

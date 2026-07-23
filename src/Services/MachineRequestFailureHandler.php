@@ -20,6 +20,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
+        private MachineMutator $machineMutator,
     ) {}
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
@@ -54,8 +55,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             );
         }
 
-        $machine->setState($message->getFailureState());
-        $this->machineRepository->add($machine);
+        $this->machineMutator->setState($machine, $message->getFailureState());
 
         if ($throwable instanceof MachineActionFailedException) {
             $throwable = $throwable->getExceptionStack()->first();
