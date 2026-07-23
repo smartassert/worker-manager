@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Services;
 
 use App\Event\MachineCreatedEvent;
+use App\Event\MachineDeletedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
@@ -22,6 +23,9 @@ class EventRecorder implements EventSubscriberInterface, \Countable
     {
         return [
             MachineCreatedEvent::class => [
+                ['addEvent', 1000],
+            ],
+            MachineDeletedEvent::class => [
                 ['addEvent', 1000],
             ],
         ];
