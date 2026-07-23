@@ -9,7 +9,7 @@ use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineRetrievedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
-use App\ReadinessAssessor\GetMachineReadinessAssessor;
+use App\ReadinessAssessor\ReadinessAssessorInterface;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
 use App\Services\UnhandleableMessageHandler;
@@ -21,7 +21,7 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 final readonly class GetMachineHandler
 {
     public function __construct(
-        private GetMachineReadinessAssessor $readinessAssessor,
+        private ReadinessAssessorInterface $readinessAssessor,
         private UnhandleableMessageHandler $unhandleableMessageHandler,
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,

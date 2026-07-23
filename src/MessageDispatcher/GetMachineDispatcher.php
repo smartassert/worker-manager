@@ -10,7 +10,7 @@ use App\Event\MachineRetrievedEvent;
 use App\Event\MessageNotHandleableEvent;
 use App\Event\RemoteMachineEventInterface;
 use App\Message\GetMachine;
-use App\ReadinessAssessor\GetMachineReadinessAssessor;
+use App\ReadinessAssessor\ReadinessAssessorInterface;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -19,7 +19,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 readonly class GetMachineDispatcher implements EventSubscriberInterface
 {
     public function __construct(
-        private GetMachineReadinessAssessor $readinessAssessor,
+        private ReadinessAssessorInterface $readinessAssessor,
         private MachineRequestFactory $machineRequestFactory,
         private MessageBusInterface $messageBus,
     ) {}
