@@ -79,7 +79,7 @@ readonly class MachineRequestFactory
     /**
      * @param non-empty-string $machineId
      */
-    private function createCreate(string $machineId): CreateMachine
+    public function createCreate(string $machineId): CreateMachine
     {
         return new CreateMachine($this->requestIdFactory->create(), $machineId);
     }
