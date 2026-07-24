@@ -28,8 +28,10 @@ readonly class GetMachineReadinessAssessor implements ReadinessAssessorInterface
             return MessageHandlingReadiness::NEVER;
         }
 
-        $stateCategory = MachineStateCategory::fromState($state);
-        if (MachineStateCategory::PRE_ACTIVE !== $stateCategory) {
+        if (
+            MachineStateCategory::UNKNOWN === $stateCategory
+            || MachineStateCategory::FINDING === $stateCategory
+        ) {
             return MessageHandlingReadiness::EVENTUALLY;
         }
 
