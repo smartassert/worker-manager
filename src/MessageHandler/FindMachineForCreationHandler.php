@@ -7,9 +7,10 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\Event\MachineCreatedEvent;
+use App\Event\CreateMachineEvent;
 use App\Exception\UnrecoverableExceptionInterface;
-use App\Message\CreateMachine;
+use App\Message\FindMachineForCreation;
+use App\Model\DigitalOcean\RemoteMachine;
 use App\ReadinessAssessor\CreateMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
@@ -20,7 +21,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 #[AsMessageHandler]
-readonly class CreateMachineHandler
+final readonly class FindMachineForCreationHandler
 {
     public function __construct(
         private CreateMachineReadinessAssessor $readinessAssessor,
@@ -34,7 +35,7 @@ readonly class CreateMachineHandler
     /**
      * @throws \Throwable
      */
-    public function __invoke(CreateMachine $message): void
+    public function __invoke(FindMachineForCreation $message): void
     {
         $readiness = $this->readinessAssessor->isReady($message->getMachineId());
         if (MessageHandlingReadiness::NOW !== $readiness) {
@@ -46,14 +47,18 @@ readonly class CreateMachineHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::CREATE_REQUESTED);
+        $this->machineMutator->setState($machine, MachineState::FIND_FINDING);
 
         try {
-            $remoteMachine = $this->machineManager->create($machine);
-
-            $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
+            $remoteMachine = $this->machineManager->find($message->getMachineId());
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
+
+        if ($remoteMachine instanceof RemoteMachine) {
+            return;
+        }
+
+        $this->eventDispatcher->dispatch(new CreateMachineEvent($machine));
     }
 }

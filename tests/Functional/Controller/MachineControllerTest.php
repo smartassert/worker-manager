@@ -8,6 +8,7 @@ use App\Controller\MachineController;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Message\MachineRequestInterface;
+use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Services\MachineMutator;
@@ -38,24 +39,28 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
 
     public function testCreateCallsMachineRequestDispatcher(): void
     {
-        $expectedMachineRequest = $this->callMachineRequestFactory(function (MachineRequestFactory $factory) {
-            return $factory->createFindThenCreate(self::MACHINE_ID);
-        });
+        $controller = self::getContainer()->get(MachineController::class);
+        \assert($controller instanceof MachineController);
 
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $messageBus
-            ->shouldReceive('dispatch')
-            ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
-                self::assertEquals($expectedMachineRequest, $machineRequest);
+        $dispatcher = \Mockery::mock(FindMachineForCreationDispatcherInterface::class);
+        $dispatcher
+            ->shouldReceive('dispatchForMachine')
+            ->withArgs(function (Machine $passedMachine) {
+                self::assertEquals(
+                    (function () {
+                        $machine = new Machine(self::MACHINE_ID);
+                        $machine->setState(MachineState::CREATE_RECEIVED);
+
+                        return $machine;
+                    })(),
+                    $passedMachine,
+                );
 
                 return true;
             })
-            ->andReturn(new Envelope($expectedMachineRequest))
         ;
 
-        $controller = $this->createController($messageBus);
-
-        $controller->create(self::MACHINE_ID);
+        $controller->create(self::MACHINE_ID, $dispatcher);
     }
 
     public function testStatusMachineNotFoundCallsMachineRequestDispatcher(): void

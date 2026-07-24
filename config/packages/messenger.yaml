@@ -32,6 +32,7 @@ framework:
             'App\Message\CreateMachine': create_machine
             'App\Message\GetMachine': get_machine
             'App\Message\FindMachine': find_machine
+            'App\Message\FindMachineForCreation': find_machine
             'App\Message\DeleteMachine': delete_machine
 
 when@test:
