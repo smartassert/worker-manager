@@ -11,7 +11,7 @@ use App\Services\MachineRequestFactory;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-readonly class FindMachineForCreationDispatcher
+readonly class FindMachineForCreationDispatcher implements FindMachineForCreationDispatcherInterface
 {
     public function __construct(
         private CreateMachineReadinessAssessor $readinessAssessor,
