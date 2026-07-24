@@ -55,7 +55,7 @@ final readonly class FindMachineForRetrievalHandler
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
 
-        if ($remoteMachine instanceof RemoteMachine) {
+        if (!$remoteMachine instanceof RemoteMachine) {
             return;
         }
 
