@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
+use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
@@ -59,16 +60,17 @@ readonly class MachineController
      * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
-    public function status(string $id, ActionFailureRepository $actionFailureRepository): JsonResponse
-    {
+    public function status(
+        string $id,
+        FindMachineForRetrievalDispatcherInterface $messageDispatcher,
+        ActionFailureRepository $actionFailureRepository,
+    ): JsonResponse {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
             $machine = new Machine($id);
-            $this->machineMutator->setState($machine, MachineState::FIND_RECEIVED);
 
-            $this->messageBus->dispatch(
-                $this->machineRequestFactory->createFindThenGet($id)
-            );
+            $this->machineMutator->setState($machine, MachineState::FIND_RECEIVED);
+            $messageDispatcher->dispatchForMachine($machine);
         }
 
         return new JsonResponse(new MachineModel($machine, $actionFailureRepository->find($id)));
