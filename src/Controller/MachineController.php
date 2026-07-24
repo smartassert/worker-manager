@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\MessageDispatcher\FindMachineForCreationDispatcher;
+use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
@@ -36,7 +36,7 @@ readonly class MachineController
     #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
     public function create(
         string $id,
-        FindMachineForCreationDispatcher $messageDispatcher,
+        FindMachineForCreationDispatcherInterface $messageDispatcher,
     ): JsonResponse {
         $machine = $this->machineRepository->find($id);
         if ($machine instanceof Machine) {
