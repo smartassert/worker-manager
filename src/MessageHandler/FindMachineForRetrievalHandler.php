@@ -9,7 +9,7 @@ use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
 use App\Event\GetMachineEvent;
 use App\Exception\UnrecoverableExceptionInterface;
-use App\Message\FindMachineForCreation;
+use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
@@ -35,7 +35,7 @@ final readonly class FindMachineForRetrievalHandler
     /**
      * @throws \Throwable
      */
-    public function __invoke(FindMachineForCreation $message): void
+    public function __invoke(FindMachineForRetrieval $message): void
     {
         $readiness = $this->readinessAssessor->isReady($message->getMachineId());
         if (MessageHandlingReadiness::NOW !== $readiness) {
