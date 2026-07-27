@@ -11,6 +11,7 @@ use App\Event\GetMachineEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
+use App\ReadinessAssessor\FindMachineReadinessAssessor;
 use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
@@ -24,7 +25,7 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 final readonly class FindMachineForRetrievalHandler
 {
     public function __construct(
-        private GetMachineReadinessAssessor $readinessAssessor,
+        private FindMachineReadinessAssessor $readinessAssessor,
         private UnhandleableMessageHandler $unhandleableMessageHandler,
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
@@ -38,6 +39,9 @@ final readonly class FindMachineForRetrievalHandler
     public function __invoke(FindMachineForRetrieval $message): void
     {
         $readiness = $this->readinessAssessor->isReady($message->getMachineId());
+
+        var_dump('FindMachineForRetrieval foo 01 readiness: ' . $readiness->value);
+
         if (MessageHandlingReadiness::NOW !== $readiness) {
             $this->unhandleableMessageHandler->handle($message, $readiness);
         }
