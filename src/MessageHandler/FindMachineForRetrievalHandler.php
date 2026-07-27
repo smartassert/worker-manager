@@ -12,7 +12,6 @@ use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\ReadinessAssessor\FindMachineReadinessAssessor;
-use App\ReadinessAssessor\GetMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineMutator;
