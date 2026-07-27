@@ -29,10 +29,10 @@ use App\Services\MachineManager\DigitalOcean\Exception\AuthenticationException a
 use App\Services\MachineManager\DigitalOcean\Exception\ErrorException;
 use App\Services\MachineManager\DigitalOcean\Exception\InvalidEntityDataException;
 use App\Services\MachineManager\DigitalOcean\Request\CreateDropletRequest;
+use App\Services\MachineRequestFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use App\Tests\Services\EventRecorder;
-use App\Tests\Services\TestMachineRequestFactory;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
@@ -51,7 +51,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
     private CreateMachineHandler $handler;
     private Machine $machine;
-    private TestMachineRequestFactory $machineRequestFactory;
+    private MachineRequestFactory $machineRequestFactory;
 
     protected function setUp(): void
     {
@@ -73,8 +73,8 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
         \assert($machineRepository instanceof MachineRepository);
         $machineRepository->add($this->machine);
 
-        $machineRequestFactory = self::getContainer()->get(TestMachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof TestMachineRequestFactory);
+        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
+        \assert($machineRequestFactory instanceof MachineRequestFactory);
         $this->machineRequestFactory = $machineRequestFactory;
     }
 

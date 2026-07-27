@@ -14,9 +14,6 @@ services:
     App\Services\RequestIdFactoryInterface:
         class: App\Tests\Services\SequentialRequestIdFactory
 
-    App\Tests\Services\TestMachineRequestFactory:
-        public: true
-
     GuzzleHttp\Psr7\HttpFactory:
 
     Psr\Http\Message\RequestFactoryInterface:
