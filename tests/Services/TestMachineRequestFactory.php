@@ -18,14 +18,6 @@ readonly class TestMachineRequestFactory
     /**
      * @param non-empty-string $machineId
      */
-    public function createFindThenCreate(string $machineId): FindMachine
-    {
-        return $this->factory->createFindThenCreate($machineId);
-    }
-
-    /**
-     * @param non-empty-string $machineId
-     */
     public function createDelete(string $machineId): DeleteMachine
     {
         return $this->factory->createDelete($machineId);

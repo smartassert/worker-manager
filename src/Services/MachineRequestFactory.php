@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enum\MachineState;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
@@ -17,20 +16,6 @@ readonly class MachineRequestFactory
     public function __construct(
         private RequestIdFactoryInterface $requestIdFactory,
     ) {}
-
-    /**
-     * @param non-empty-string $machineId
-     */
-    public function createFindThenCreate(string $machineId): FindMachine
-    {
-        return $this->createFind(
-            $machineId,
-            [],
-            [
-                $this->createCreate($machineId),
-            ]
-        )->withOnNotFoundState(MachineState::CREATE_RECEIVED);
-    }
 
     /**
      * @param non-empty-string $machineId
