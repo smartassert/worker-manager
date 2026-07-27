@@ -7,6 +7,7 @@ use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
 use App\Message\FindMachine;
 use App\Message\FindMachineForCreation;
+use App\Message\FindMachineForRetrieval;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 
@@ -91,5 +92,13 @@ readonly class MachineRequestFactory
     public function createFindMachineForCreation(string $machineId): FindMachineForCreation
     {
         return new FindMachineForCreation($this->requestIdFactory->create(), $machineId);
+    }
+
+    /**
+     * @param non-empty-string $machineId
+     */
+    public function createFindMachineForRetrieval(string $machineId): FindMachineForRetrieval
+    {
+        return new FindMachineForRetrieval($this->requestIdFactory->create(), $machineId);
     }
 }
