@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\MessageDispatcher;
 
-use App\Enum\MachineState;
 use App\Event\MachineDeletedEvent;
 use App\Services\MachineRequestFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-readonly class FindMachineDispatcher implements EventSubscriberInterface
+readonly class FindMachineAfterDeletionDispatcher implements EventSubscriberInterface
 {
     public function __construct(
         private MachineRequestFactory $machineRequestFactory,
@@ -37,9 +36,7 @@ readonly class FindMachineDispatcher implements EventSubscriberInterface
     {
         $message = $this
             ->machineRequestFactory
-            ->createFind($event->getMachine()->getId())
-            ->withOnNotFoundState(MachineState::DELETE_DELETED)
-            ->withReDispatchOnSuccess(true)
+            ->createFindMachineAfterDeletion($event->getMachine()->getId())
         ;
 
         $this->messageBus->dispatch($message);
