@@ -7,7 +7,7 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\Event\GetMachineEvent;
+use App\Event\MachineRetrievedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -62,6 +62,6 @@ final readonly class FindMachineForRetrievalHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new GetMachineEvent($machine));
+        $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
     }
 }
