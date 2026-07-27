@@ -38,9 +38,6 @@ final readonly class FindMachineForRetrievalHandler
     public function __invoke(FindMachineForRetrieval $message): void
     {
         $readiness = $this->readinessAssessor->isReady($message->getMachineId());
-
-        var_dump('FindMachineForRetrieval foo 01 readiness: ' . $readiness->value);
-
         if (MessageHandlingReadiness::NOW !== $readiness) {
             $this->unhandleableMessageHandler->handle($message, $readiness);
         }
