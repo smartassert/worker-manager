@@ -7,26 +7,22 @@ namespace App\Tests\Functional\Controller;
 use App\Controller\MachineController;
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\Message\MachineRequestInterface;
+use App\MessageDispatcher\DeleteMachineDispatcherInterface;
 use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
-use App\Services\MachineMutator;
-use App\Services\MachineRequestFactory;
-use App\Services\RequestIdFactoryInterface;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
-use App\Tests\Services\SequentialRequestIdFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 class MachineControllerTest extends AbstractBaseFunctionalTestCase
 {
     use MockeryPHPUnitIntegration;
 
     private const MACHINE_ID = 'machine id';
+
+    private MachineController $controller;
 
     protected function setUp(): void
     {
@@ -36,13 +32,14 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         if ($entityRemover instanceof EntityRemover) {
             $entityRemover->removeAllForEntity(Machine::class);
         }
+
+        $controller = self::getContainer()->get(MachineController::class);
+        \assert($controller instanceof MachineController);
+        $this->controller = $controller;
     }
 
     public function testCreateCallsMachineRequestDispatcher(): void
     {
-        $controller = self::getContainer()->get(MachineController::class);
-        \assert($controller instanceof MachineController);
-
         $dispatcher = \Mockery::mock(FindMachineForCreationDispatcherInterface::class);
         $dispatcher
             ->shouldReceive('dispatchForMachine')
@@ -61,14 +58,11 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             })
         ;
 
-        $controller->create(self::MACHINE_ID, $dispatcher);
+        $this->controller->create(self::MACHINE_ID, $dispatcher);
     }
 
     public function testStatusMachineNotFoundCallsMachineRequestDispatcher(): void
     {
-        $controller = self::getContainer()->get(MachineController::class);
-        \assert($controller instanceof MachineController);
-
         $dispatcher = \Mockery::mock(FindMachineForRetrievalDispatcherInterface::class);
         $dispatcher
             ->shouldReceive('dispatchForMachine')
@@ -90,14 +84,11 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
         \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        $controller->status(self::MACHINE_ID, $dispatcher, $actionFailureRepository);
+        $this->controller->status(self::MACHINE_ID, $dispatcher, $actionFailureRepository);
     }
 
     public function testStatusMachineFoundDoesNotCallMachineRequestDispatcher(): void
     {
-        $controller = self::getContainer()->get(MachineController::class);
-        \assert($controller instanceof MachineController);
-
         $machine = new Machine(self::MACHINE_ID);
         $machine->setState(MachineState::CREATE_RECEIVED);
 
@@ -113,60 +104,29 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
         $actionFailureRepository = self::getContainer()->get(ActionFailureRepository::class);
         \assert($actionFailureRepository instanceof ActionFailureRepository);
 
-        $controller->status(self::MACHINE_ID, $dispatcher, $actionFailureRepository);
+        $this->controller->status(self::MACHINE_ID, $dispatcher, $actionFailureRepository);
     }
 
-    public function testDeleteCallsMachineRequestDispatcher(): void
+    public function testDeleteDispatchesMessage(): void
     {
-        $expectedMachineRequest = $this->callMachineRequestFactory(function (MachineRequestFactory $factory) {
-            return $factory->createDelete(self::MACHINE_ID);
-        });
+        $dispatcher = \Mockery::mock(DeleteMachineDispatcherInterface::class);
+        $dispatcher
+            ->shouldReceive('dispatchForMachine')
+            ->withArgs(function (Machine $passedMachine) {
+                self::assertEquals(
+                    (function () {
+                        $machine = new Machine(self::MACHINE_ID);
+                        $machine->setState(MachineState::DELETE_RECEIVED);
 
-        $messageBus = \Mockery::mock(MessageBusInterface::class);
-        $messageBus
-            ->shouldReceive('dispatch')
-            ->withArgs(function ($machineRequest) use ($expectedMachineRequest) {
-                self::assertEquals($expectedMachineRequest, $machineRequest);
+                        return $machine;
+                    })(),
+                    $passedMachine,
+                );
 
                 return true;
             })
-            ->andReturn(new Envelope($expectedMachineRequest))
         ;
 
-        $controller = $this->createController($messageBus);
-        $controller->delete(self::MACHINE_ID);
-    }
-
-    /**
-     * @param callable(MachineRequestFactory $factory): MachineRequestInterface $action
-     *
-     * @throws \Exception
-     */
-    private function callMachineRequestFactory(callable $action): MachineRequestInterface
-    {
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
-
-        $request = $action($machineRequestFactory);
-
-        $requestIdFactory = self::getContainer()->get(RequestIdFactoryInterface::class);
-        \assert($requestIdFactory instanceof SequentialRequestIdFactory);
-        $requestIdFactory->reset();
-
-        return $request;
-    }
-
-    private function createController(MessageBusInterface $messageBus): MachineController
-    {
-        $machineRequestFactory = self::getContainer()->get(MachineRequestFactory::class);
-        \assert($machineRequestFactory instanceof MachineRequestFactory);
-
-        $machineRepository = self::getContainer()->get(MachineRepository::class);
-        \assert($machineRepository instanceof MachineRepository);
-
-        $machineMutator = self::getContainer()->get(MachineMutator::class);
-        \assert($machineMutator instanceof MachineMutator);
-
-        return new MachineController($messageBus, $machineRequestFactory, $machineRepository, $machineMutator);
+        $this->controller->delete(self::MACHINE_ID, $dispatcher);
     }
 }

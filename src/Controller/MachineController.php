@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
+use App\MessageDispatcher\DeleteMachineDispatcherInterface;
 use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Model\Machine as MachineModel;
@@ -11,10 +12,8 @@ use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
 use App\Services\MachineMutator;
-use App\Services\MachineRequestFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 readonly class MachineController
@@ -23,8 +22,6 @@ readonly class MachineController
     public const PATH_MACHINE = '/machine/' . self::PATH_COMPONENT_ID;
 
     public function __construct(
-        private MessageBusInterface $messageBus,
-        private MachineRequestFactory $machineRequestFactory,
         private MachineRepository $machineRepository,
         private MachineMutator $machineMutator,
     ) {}
@@ -82,18 +79,17 @@ readonly class MachineController
      * @throws ExceptionInterface
      */
     #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
-    public function delete(string $id): JsonResponse
-    {
+    public function delete(
+        string $id,
+        DeleteMachineDispatcherInterface $messageDispatcher,
+    ): JsonResponse {
         $machine = $this->machineRepository->find($id);
         if (!$machine instanceof Machine) {
             $machine = new Machine($id);
         }
 
         $this->machineMutator->setState($machine, MachineState::DELETE_RECEIVED);
-
-        $this->messageBus->dispatch(
-            $this->machineRequestFactory->createDelete($id)
-        );
+        $messageDispatcher->dispatchForMachine($machine);
 
         return new JsonResponse(new MachineModel($machine), 202);
     }

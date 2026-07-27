@@ -6,12 +6,15 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
+use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineDeletedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
+use App\ReadinessAssessor\DeleteMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
 use App\Services\MachineMutator;
+use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -20,6 +23,8 @@ use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 class DeleteMachineHandler
 {
     public function __construct(
+        private DeleteMachineReadinessAssessor $readinessAssessor,
+        private UnhandleableMessageHandler $unhandleableMessageHandler,
         private MachineManager $machineManager,
         private readonly MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
@@ -32,6 +37,11 @@ class DeleteMachineHandler
     public function __invoke(DeleteMachine $message): void
     {
         $machineId = $message->getMachineId();
+
+        $readiness = $this->readinessAssessor->isReady($machineId);
+        if (MessageHandlingReadiness::NOW !== $readiness) {
+            $this->unhandleableMessageHandler->handle($message, $readiness);
+        }
 
         $machine = $this->machineRepository->find($machineId);
         if (!$machine instanceof Machine) {
