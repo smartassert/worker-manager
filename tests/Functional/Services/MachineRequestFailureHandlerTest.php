@@ -16,7 +16,6 @@ use App\Exception\Stack;
 use App\Exception\UnsupportedProviderException;
 use App\Message\CreateMachine;
 use App\Message\DeleteMachine;
-use App\Message\FindMachine;
 use App\Message\GetMachine;
 use App\Message\MachineRequestInterface;
 use App\Repository\ActionFailureRepository;
@@ -152,51 +151,6 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
                     self::MACHINE_ID,
                     ActionFailureType::UNKNOWN,
                     MachineAction::CREATE,
-                    [
-                        'provider' => MachineProvider::DIGITALOCEAN->value,
-                    ]
-                ),
-            ],
-            'find, api limit exceeded' => [
-                'message' => new FindMachine('unique id', self::MACHINE_ID),
-                'throwable' => new ApiLimitExceededException(
-                    123,
-                    self::MACHINE_ID,
-                    MachineAction::GET,
-                    new \Exception()
-                ),
-                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
-                'expectedActionFailure' => new ActionFailure(
-                    self::MACHINE_ID,
-                    ActionFailureType::VENDOR_REQUEST_LIMIT_EXCEEDED,
-                    MachineAction::FIND,
-                    [
-                        'reset-timestamp' => 123,
-                        'provider' => MachineProvider::DIGITALOCEAN->value,
-                    ]
-                ),
-            ],
-            'find, unsupported provider' => [
-                'message' => new FindMachine('unique id', self::MACHINE_ID),
-                'throwable' => new UnsupportedProviderException(null),
-                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
-                'expectedActionFailure' => new ActionFailure(
-                    self::MACHINE_ID,
-                    ActionFailureType::UNSUPPORTED_PROVIDER,
-                    MachineAction::FIND,
-                    [
-                        'provider' => MachineProvider::DIGITALOCEAN->value,
-                    ]
-                ),
-            ],
-            'find, unknown exception' => [
-                'message' => new FindMachine('unique id', self::MACHINE_ID),
-                'throwable' => new \Exception('Unknown exception'),
-                'expectedMachineState' => MachineState::FIND_NOT_FINDABLE,
-                'expectedActionFailure' => new ActionFailure(
-                    self::MACHINE_ID,
-                    ActionFailureType::UNKNOWN,
-                    MachineAction::FIND,
                     [
                         'provider' => MachineProvider::DIGITALOCEAN->value,
                     ]
