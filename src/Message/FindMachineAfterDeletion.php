@@ -7,7 +7,7 @@ namespace App\Message;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 
-class FindMachineAfterDeletion extends AbstractRemoteMachineRequest implements MachineActionInterface
+class FindMachineAfterDeletion extends AbstractMachineRequest implements MachineActionInterface
 {
     public function getAction(): MachineAction
     {
