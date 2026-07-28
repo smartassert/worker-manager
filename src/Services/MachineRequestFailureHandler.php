@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Entity\Machine;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\MachineActionFailedException;
 use App\Message\MachineActionInterface;
 use App\Repository\MachineRepository;
@@ -20,7 +21,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
-        private MachineMutator $machineMutator,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
@@ -55,7 +56,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             );
         }
 
-        $this->machineMutator->setState($machine, $message->getFailureState());
+        $this->machineStateChangedEventDispatcher->dispatch($machine, $message->getFailureState());
 
         if ($throwable instanceof MachineActionFailedException) {
             $throwable = $throwable->getExceptionStack()->first();

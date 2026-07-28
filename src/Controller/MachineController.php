@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\MessageDispatcher\DeleteMachineDispatcherInterface;
 use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
@@ -11,7 +12,6 @@ use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
 use App\Response\BadMachineCreateRequestResponse;
-use App\Services\MachineMutator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,7 +23,7 @@ readonly class MachineController
 
     public function __construct(
         private MachineRepository $machineRepository,
-        private MachineMutator $machineMutator,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -45,7 +45,7 @@ readonly class MachineController
             $machine = new Machine($id);
         }
 
-        $this->machineMutator->setState($machine, MachineState::CREATE_RECEIVED);
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::CREATE_RECEIVED);
         $messageDispatcher->dispatchForMachine($machine);
 
         return new JsonResponse(new MachineModel($machine), 202);
@@ -66,7 +66,7 @@ readonly class MachineController
         if (!$machine instanceof Machine) {
             $machine = new Machine($id);
 
-            $this->machineMutator->setState($machine, MachineState::FIND_RECEIVED);
+            $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_RECEIVED);
             $messageDispatcher->dispatchForMachine($machine);
         }
 
@@ -88,7 +88,7 @@ readonly class MachineController
             $machine = new Machine($id);
         }
 
-        $this->machineMutator->setState($machine, MachineState::DELETE_RECEIVED);
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::DELETE_RECEIVED);
         $messageDispatcher->dispatchForMachine($machine);
 
         return new JsonResponse(new MachineModel($machine), 202);

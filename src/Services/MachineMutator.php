@@ -9,6 +9,7 @@ use App\Event\CreateMachineEvent;
 use App\Event\MachineCreatedEvent;
 use App\Event\MachineDeletedEvent;
 use App\Event\MachineRetrievedEvent;
+use App\Event\MachineStateChangedEvent;
 use App\Event\MachineTerminatedEvent;
 use App\Event\RemoteMachineEventInterface;
 use App\Model\RemoteMachineInterface;
@@ -42,13 +43,14 @@ readonly class MachineMutator implements EventSubscriberInterface
             MachineTerminatedEvent::class => [
                 ['setStateForMachineTerminatedEvent', 1000],
             ],
+            MachineStateChangedEvent::class => [
+                ['setStateForMachineStateChangedEvent', 2000],
+            ],
         ];
     }
 
     public function updateFromRemoteMachine(Machine $machine, RemoteMachineInterface $remoteMachine): Machine
     {
-        $this->setState($machine, $remoteMachine->getState() ?? MachineState::CREATE_REQUESTED);
-
         $machine->setIpAddresses($remoteMachine->getIpAddresses());
         $machine->setProvider($remoteMachine->getProvider());
         $this->machineRepository->add($machine);
@@ -76,7 +78,12 @@ readonly class MachineMutator implements EventSubscriberInterface
         $this->setState($event->getMachine(), MachineState::DELETE_DELETED);
     }
 
-    public function setState(Machine $machine, MachineState $newState): void
+    public function setStateForMachineStateChangedEvent(MachineStateChangedEvent $event): void
+    {
+        $this->setState($event->getMachine(), $event->getNewState());
+    }
+
+    private function setState(Machine $machine, MachineState $newState): void
     {
         $currentStateCategory = MachineStateCategory::fromState($machine->getState());
         $nextStateCategory = MachineStateCategory::fromState($newState);

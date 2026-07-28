@@ -7,13 +7,13 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineCreatedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
 use App\ReadinessAssessor\CreateMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineMutator;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -28,7 +28,7 @@ readonly class CreateMachineHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MachineMutator $machineMutator,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -48,14 +48,15 @@ readonly class CreateMachineHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::CREATE_REQUESTED);
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::CREATE_REQUESTED);
 
         try {
             $remoteMachine = $this->machineManager->create($machine);
-
-            $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
+
+        $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
+        $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
     }
 }

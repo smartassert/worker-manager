@@ -7,6 +7,7 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineDeletedEvent;
 use App\Event\MachineTerminatedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
@@ -15,7 +16,6 @@ use App\Model\DigitalOcean\RemoteMachine;
 use App\ReadinessAssessor\FindMachineAfterDeletionReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineMutator;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -30,7 +30,7 @@ final readonly class FindMachineAfterDeletionHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MachineMutator $machineMutator,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -50,7 +50,7 @@ final readonly class FindMachineAfterDeletionHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::FIND_FINDING);
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_FINDING);
 
         try {
             $remoteMachine = $this->machineManager->find($message->getMachineId());
