@@ -60,6 +60,12 @@ final readonly class FindMachineForRetrievalHandler
             return;
         }
 
+        $remoteMachineState = $remoteMachine->getState();
+
+        if (null !== $remoteMachineState && $machine->getState() !== $remoteMachineState) {
+            $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $remoteMachineState));
+        }
+
         $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
     }
 }
