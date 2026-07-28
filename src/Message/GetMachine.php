@@ -7,13 +7,8 @@ namespace App\Message;
 use App\Enum\MachineAction;
 use App\Enum\MachineState;
 
-class GetMachine extends AbstractRemoteMachineRequest implements MachineActionInterface
+class GetMachine extends AbstractMachineRequest implements MachineActionInterface
 {
-    public function __construct(string $uniqueId, string $machineId)
-    {
-        parent::__construct($uniqueId, $machineId);
-    }
-
     public function getAction(): MachineAction
     {
         return MachineAction::GET;
