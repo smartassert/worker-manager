@@ -24,7 +24,7 @@ readonly class FindMachineAfterDeletionReadinessAssessor implements ReadinessAss
         $state = $machine->getState();
         $stateCategory = MachineStateCategory::fromState($state);
 
-        if (MachineStateCategory::END !== $stateCategory) {
+        if (MachineStateCategory::END !== $stateCategory && MachineStateCategory::ENDING !== $stateCategory) {
             return MessageHandlingReadiness::NEVER;
         }
 
