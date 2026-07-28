@@ -39,6 +39,8 @@ readonly class CreateMachineHandler
         $readiness = $this->readinessAssessor->isReady($message->getMachineId());
         if (MessageHandlingReadiness::NOW !== $readiness) {
             $this->unhandleableMessageHandler->handle($message, $readiness);
+
+            return;
         }
 
         $machine = $this->machineRepository->find($message->getMachineId());

@@ -41,6 +41,8 @@ class DeleteMachineHandler
         $readiness = $this->readinessAssessor->isReady($machineId);
         if (MessageHandlingReadiness::NOW !== $readiness) {
             $this->unhandleableMessageHandler->handle($message, $readiness);
+
+            return;
         }
 
         $machine = $this->machineRepository->find($machineId);

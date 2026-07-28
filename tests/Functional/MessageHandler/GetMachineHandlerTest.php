@@ -205,7 +205,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
     public function testInvokeUnsupportedProvider(): void
     {
         $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::FIND_RECEIVED);
+        $machine->setState(MachineState::UP_STARTED);
         $this->machineRepository->add($machine);
 
         $message = new GetMachine('id0', $machine->getId());
@@ -234,7 +234,7 @@ class GetMachineHandlerTest extends AbstractBaseFunctionalTestCase
         \Exception $expectedException
     ): void {
         $machine = new Machine(self::MACHINE_ID);
-        $machine->setState(MachineState::FIND_RECEIVED);
+        $machine->setState(MachineState::UP_STARTED);
         $machine->setProvider(MachineProvider::DIGITALOCEAN);
         $this->machineRepository->add($machine);
 
