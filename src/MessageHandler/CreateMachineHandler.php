@@ -51,6 +51,11 @@ readonly class CreateMachineHandler
 
         try {
             $remoteMachine = $this->machineManager->create($machine);
+            $remoteMachineState = $remoteMachine->getState();
+
+            if (null !== $remoteMachineState && $machine->getState() !== $remoteMachineState) {
+                $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $remoteMachineState));
+            }
 
             $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
         } catch (UnrecoverableExceptionInterface $e) {

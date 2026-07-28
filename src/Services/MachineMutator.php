@@ -44,15 +44,13 @@ readonly class MachineMutator implements EventSubscriberInterface
                 ['setStateForMachineTerminatedEvent', 1000],
             ],
             MachineStateChangedEvent::class => [
-                ['setStateForMachineStateChangedEvent', 1000],
+                ['setStateForMachineStateChangedEvent', 2000],
             ],
         ];
     }
 
     public function updateFromRemoteMachine(Machine $machine, RemoteMachineInterface $remoteMachine): Machine
     {
-        $this->setState($machine, $remoteMachine->getState() ?? MachineState::CREATE_REQUESTED);
-
         $machine->setIpAddresses($remoteMachine->getIpAddresses());
         $machine->setProvider($remoteMachine->getProvider());
         $this->machineRepository->add($machine);
