@@ -85,7 +85,7 @@ readonly class MachineMutator implements EventSubscriberInterface
         $this->setState($event->getMachine(), $event->getNewState());
     }
 
-    public function setState(Machine $machine, MachineState $newState): void
+    private function setState(Machine $machine, MachineState $newState): void
     {
         $currentStateCategory = MachineStateCategory::fromState($machine->getState());
         $nextStateCategory = MachineStateCategory::fromState($newState);

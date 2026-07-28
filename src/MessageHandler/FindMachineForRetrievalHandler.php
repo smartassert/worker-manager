@@ -8,13 +8,13 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineRetrievedEvent;
+use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
 use App\ReadinessAssessor\FindMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineMutator;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -29,7 +29,6 @@ final readonly class FindMachineForRetrievalHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -49,7 +48,7 @@ final readonly class FindMachineForRetrievalHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::FIND_FINDING);
+        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::FIND_FINDING));
 
         try {
             $remoteMachine = $this->machineManager->find($message->getMachineId());

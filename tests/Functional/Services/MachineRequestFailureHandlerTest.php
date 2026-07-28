@@ -23,7 +23,6 @@ use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
 use App\Services\MachineManager\DigitalOcean\Entity\Error;
 use App\Services\MachineManager\DigitalOcean\Exception\ApiLimitExceededException as DOApiLimitExceededException;
-use App\Services\MachineMutator;
 use App\Services\MachineRequestFailureHandler;
 use App\Services\MessageHandlerExceptionStackFactory;
 use App\Tests\AbstractBaseFunctionalTestCase;
@@ -213,15 +212,15 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
 
         $message = new GetMachine($messageId, $machineId);
 
-        $machineMutator = self::getContainer()->get(MachineMutator::class);
-        \assert($machineMutator instanceof MachineMutator);
+        $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        \assert($eventDispatcher instanceof EventDispatcherInterface);
 
         $handler = new MachineRequestFailureHandler(
             $actionFailureFactory,
             $exceptionStackFactory,
             $messengerAuditLogger,
             $machineRepository,
-            $machineMutator,
+            $eventDispatcher,
         );
 
         $envelope = new Envelope($message);

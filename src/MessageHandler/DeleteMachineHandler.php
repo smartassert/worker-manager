@@ -8,12 +8,12 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineDeletedEvent;
+use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\ReadinessAssessor\DeleteMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineMutator;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -28,7 +28,6 @@ class DeleteMachineHandler
         private MachineManager $machineManager,
         private readonly MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -50,7 +49,7 @@ class DeleteMachineHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::DELETE_REQUESTED);
+        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::DELETE_REQUESTED));
 
         try {
             $this->machineManager->remove($machineId);

@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Entity\Machine;
+use App\Event\MachineStateChangedEvent;
 use App\Exception\MachineActionFailedException;
 use App\Message\MachineActionInterface;
 use App\Repository\MachineRepository;
 use App\Services\Entity\Factory\ActionFailureFactory;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use SmartAssert\WorkerMessageFailedEventBundle\ExceptionHandlerInterface;
 use Symfony\Component\Messenger\Envelope;
@@ -20,7 +22,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
         private MessageHandlerExceptionStackFactory $exceptionStackFactory,
         private LoggerInterface $messengerAuditLogger,
         private MachineRepository $machineRepository,
-        private MachineMutator $machineMutator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {}
 
     public function handle(Envelope $envelope, \Throwable $throwable): void
@@ -55,7 +57,7 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             );
         }
 
-        $this->machineMutator->setState($machine, $message->getFailureState());
+        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $message->getFailureState()));
 
         if ($throwable instanceof MachineActionFailedException) {
             $throwable = $throwable->getExceptionStack()->first();

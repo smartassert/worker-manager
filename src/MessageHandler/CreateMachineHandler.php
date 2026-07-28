@@ -8,12 +8,12 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
 use App\Event\MachineCreatedEvent;
+use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
 use App\ReadinessAssessor\CreateMachineReadinessAssessor;
 use App\Repository\MachineRepository;
 use App\Services\MachineManager\MachineManager;
-use App\Services\MachineMutator;
 use App\Services\UnhandleableMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -28,7 +28,6 @@ readonly class CreateMachineHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MachineMutator $machineMutator,
     ) {}
 
     /**
@@ -48,7 +47,7 @@ readonly class CreateMachineHandler
             return;
         }
 
-        $this->machineMutator->setState($machine, MachineState::CREATE_REQUESTED);
+        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::CREATE_REQUESTED));
 
         try {
             $remoteMachine = $this->machineManager->create($machine);
