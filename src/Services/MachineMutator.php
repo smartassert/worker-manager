@@ -9,6 +9,7 @@ use App\Event\CreateMachineEvent;
 use App\Event\MachineCreatedEvent;
 use App\Event\MachineDeletedEvent;
 use App\Event\MachineRetrievedEvent;
+use App\Event\MachineStateChangedEvent;
 use App\Event\MachineTerminatedEvent;
 use App\Event\RemoteMachineEventInterface;
 use App\Model\RemoteMachineInterface;
@@ -42,6 +43,9 @@ readonly class MachineMutator implements EventSubscriberInterface
             MachineTerminatedEvent::class => [
                 ['setStateForMachineTerminatedEvent', 1000],
             ],
+            MachineStateChangedEvent::class => [
+                ['setStateForMachineStateChangedEvent', 1000],
+            ],
         ];
     }
 
@@ -74,6 +78,11 @@ readonly class MachineMutator implements EventSubscriberInterface
     public function setStateForMachineTerminatedEvent(MachineTerminatedEvent $event): void
     {
         $this->setState($event->getMachine(), MachineState::DELETE_DELETED);
+    }
+
+    public function setStateForMachineStateChangedEvent(MachineStateChangedEvent $event): void
+    {
+        $this->setState($event->getMachine(), $event->getNewState());
     }
 
     public function setState(Machine $machine, MachineState $newState): void
