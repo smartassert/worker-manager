@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineDeletedEvent;
-use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\ReadinessAssessor\DeleteMachineReadinessAssessor;
@@ -28,6 +28,7 @@ class DeleteMachineHandler
         private MachineManager $machineManager,
         private readonly MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -49,13 +50,14 @@ class DeleteMachineHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::DELETE_REQUESTED));
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::DELETE_REQUESTED);
 
         try {
             $this->machineManager->remove($machineId);
-            $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
+
+        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
     }
 }

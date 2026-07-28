@@ -6,8 +6,8 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineRetrievedEvent;
-use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
 use App\ReadinessAssessor\ReadinessAssessorInterface;
@@ -27,6 +27,7 @@ final readonly class GetMachineHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -48,15 +49,11 @@ final readonly class GetMachineHandler
 
         try {
             $remoteMachine = $this->machineManager->get($machine);
-            $remoteMachineState = $remoteMachine->getState();
-
-            if (null !== $remoteMachineState && $machine->getState() !== $remoteMachineState) {
-                $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $remoteMachineState));
-            }
-
-            $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
         } catch (UnrecoverableExceptionInterface $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
+
+        $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
+        $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
     }
 }

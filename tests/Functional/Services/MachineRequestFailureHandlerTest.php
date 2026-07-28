@@ -10,6 +10,7 @@ use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\Stack;
@@ -212,8 +213,8 @@ class MachineRequestFailureHandlerTest extends AbstractBaseFunctionalTestCase
 
         $message = new GetMachine($messageId, $machineId);
 
-        $eventDispatcher = self::getContainer()->get(EventDispatcherInterface::class);
-        \assert($eventDispatcher instanceof EventDispatcherInterface);
+        $eventDispatcher = self::getContainer()->get(MachineStateChangedEventDispatcher::class);
+        \assert($eventDispatcher instanceof MachineStateChangedEventDispatcher);
 
         $handler = new MachineRequestFailureHandler(
             $actionFailureFactory,

@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineDeletedEvent;
-use App\Event\MachineStateChangedEvent;
 use App\Event\MachineTerminatedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineAfterDeletion;
@@ -30,6 +30,7 @@ final readonly class FindMachineAfterDeletionHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -49,7 +50,7 @@ final readonly class FindMachineAfterDeletionHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::FIND_FINDING));
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_FINDING);
 
         try {
             $remoteMachine = $this->machineManager->find($message->getMachineId());

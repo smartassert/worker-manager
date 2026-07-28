@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
+use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineRetrievedEvent;
-use App\Event\MachineStateChangedEvent;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForRetrieval;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -29,6 +29,7 @@ final readonly class FindMachineForRetrievalHandler
         private MachineManager $machineManager,
         private MachineRepository $machineRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
     ) {}
 
     /**
@@ -48,7 +49,7 @@ final readonly class FindMachineForRetrievalHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, MachineState::FIND_FINDING));
+        $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_FINDING);
 
         try {
             $remoteMachine = $this->machineManager->find($message->getMachineId());
@@ -60,12 +61,7 @@ final readonly class FindMachineForRetrievalHandler
             return;
         }
 
-        $remoteMachineState = $remoteMachine->getState();
-
-        if (null !== $remoteMachineState && $machine->getState() !== $remoteMachineState) {
-            $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $remoteMachineState));
-        }
-
+        $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
         $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
     }
 }
