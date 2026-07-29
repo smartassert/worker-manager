@@ -31,6 +31,7 @@ class MachineCreationTest extends AbstractIntegrationMachineTestCase
                     'ended' => false,
                     'succeeded' => false,
                 ],
+                'previous_states' => [],
             ]),
             $response->getBody()->getContents()
         );
