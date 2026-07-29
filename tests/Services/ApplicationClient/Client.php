@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Services\ApplicationClient;
 
-use App\Controller\MachineController;
 use Psr\Http\Message\ResponseInterface;
 use SmartAssert\SymfonyTestClient\ClientInterface;
 
@@ -64,7 +63,7 @@ class Client
 
     private function createMachineRequestUrl(string $machineId): string
     {
-        return str_replace(MachineController::PATH_COMPONENT_ID, $machineId, MachineController::PATH_MACHINE);
+        return str_replace('{id}', $machineId, '/machine/{id}');
     }
 
     /**

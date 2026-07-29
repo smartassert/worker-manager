@@ -16,11 +16,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route(path: '/machine/{id}')]
 readonly class MachineController
 {
-    public const PATH_COMPONENT_ID = '{id}';
-    public const PATH_MACHINE = '/machine/' . self::PATH_COMPONENT_ID;
-
     public function __construct(
         private MachineRepository $machineRepository,
         private MachineStateChangedEventDispatcher $machineStateChangedEventDispatcher,
@@ -31,7 +29,7 @@ readonly class MachineController
      *
      * @throws ExceptionInterface
      */
-    #[Route(self::PATH_MACHINE, name: 'machine-create', methods: ['POST'])]
+    #[Route(methods: ['POST'])]
     public function create(
         string $id,
         FindMachineForCreationDispatcherInterface $messageDispatcher,
@@ -56,7 +54,7 @@ readonly class MachineController
      *
      * @throws ExceptionInterface
      */
-    #[Route(self::PATH_MACHINE, name: 'machine-status', methods: ['GET', 'HEAD'])]
+    #[Route(methods: ['GET', 'HEAD'])]
     public function status(
         string $id,
         FindMachineForRetrievalDispatcherInterface $messageDispatcher,
@@ -78,7 +76,7 @@ readonly class MachineController
      *
      * @throws ExceptionInterface
      */
-    #[Route(self::PATH_MACHINE, name: 'machine-delete', methods: ['DELETE'])]
+    #[Route(methods: ['DELETE'])]
     public function delete(
         string $id,
         DeleteMachineDispatcherInterface $messageDispatcher,
