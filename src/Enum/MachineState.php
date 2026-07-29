@@ -19,6 +19,26 @@ enum MachineState: string
     case DELETE_FAILED = 'delete/failed';
     case DELETE_DELETED = 'delete/deleted';
 
+    private const array END_STATES = [
+        self::CREATE_FAILED,
+        self::DELETE_FAILED,
+        self::DELETE_DELETED,
+        self::FIND_NOT_FINDABLE,
+        self::FIND_NOT_FOUND,
+    ];
+
+    private const array NON_END_STATES = [
+        self::UNKNOWN,
+        self::FIND_RECEIVED,
+        self::FIND_FINDING,
+        self::CREATE_RECEIVED,
+        self::CREATE_REQUESTED,
+        self::UP_STARTED,
+        self::UP_ACTIVE,
+        self::DELETE_RECEIVED,
+        self::DELETE_REQUESTED,
+    ];
+
     public function isResettable(): bool
     {
         return in_array(
@@ -54,5 +74,80 @@ enum MachineState: string
                 self::CREATE_REQUESTED,
             ]
         );
+    }
+
+    public function isEnd(): bool
+    {
+        return in_array($this, self::END_STATES);
+    }
+
+    /**
+     * @return self[]
+     */
+    public function getPreviousStates(): array
+    {
+        if (MachineState::FIND_RECEIVED === $this) {
+            return self::NON_END_STATES;
+        }
+
+        if (MachineState::FIND_FINDING === $this) {
+            return [
+                self::FIND_RECEIVED,
+            ];
+        }
+
+        if (MachineState::CREATE_REQUESTED === $this) {
+            return [
+                self::CREATE_RECEIVED,
+            ];
+        }
+
+        if (MachineState::UP_STARTED === $this) {
+            return [
+                self::FIND_RECEIVED,
+                self::FIND_FINDING,
+                self::CREATE_RECEIVED,
+                self::CREATE_REQUESTED,
+            ];
+        }
+
+        if (MachineState::UP_ACTIVE === $this) {
+            return [
+                self::FIND_RECEIVED,
+                self::FIND_FINDING,
+                self::CREATE_RECEIVED,
+                self::CREATE_REQUESTED,
+                self::UP_STARTED,
+            ];
+        }
+
+        if (MachineState::DELETE_RECEIVED === $this) {
+            return [
+                self::FIND_RECEIVED,
+                self::FIND_FINDING,
+                self::CREATE_RECEIVED,
+                self::CREATE_REQUESTED,
+                self::UP_STARTED,
+                self::UP_ACTIVE,
+            ];
+        }
+
+        if (MachineState::DELETE_REQUESTED === $this) {
+            return [
+                self::FIND_RECEIVED,
+                self::FIND_FINDING,
+                self::CREATE_RECEIVED,
+                self::CREATE_REQUESTED,
+                self::UP_STARTED,
+                self::UP_ACTIVE,
+                self::DELETE_RECEIVED,
+            ];
+        }
+
+        if ($this->isEnd()) {
+            return self::NON_END_STATES;
+        }
+
+        return [];
     }
 }

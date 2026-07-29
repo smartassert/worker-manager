@@ -34,6 +34,14 @@ class MachineDeletionTest extends AbstractIntegrationMachineTestCase
                     'ended' => false,
                     'succeeded' => false,
                 ],
+                'previous_states' => [
+                    MachineState::FIND_RECEIVED->value,
+                    MachineState::FIND_FINDING->value,
+                    MachineState::CREATE_RECEIVED->value,
+                    MachineState::CREATE_REQUESTED->value,
+                    MachineState::UP_STARTED->value,
+                    MachineState::UP_ACTIVE->value,
+                ],
             ]),
             $response->getBody()->getContents()
         );

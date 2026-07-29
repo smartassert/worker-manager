@@ -48,16 +48,7 @@ enum MachineStateCategory: string
             return self::ENDING;
         }
 
-        if (in_array(
-            $state,
-            [
-                MachineState::CREATE_FAILED,
-                MachineState::DELETE_FAILED,
-                MachineState::DELETE_DELETED,
-                MachineState::FIND_NOT_FINDABLE,
-                MachineState::FIND_NOT_FOUND,
-            ],
-        )) {
+        if ($state->isEnd()) {
             return self::END;
         }
 
