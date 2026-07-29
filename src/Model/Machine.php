@@ -29,7 +29,8 @@ readonly class Machine implements \JsonSerializable
      *       pending: bool,
      *       ended: bool,
      *       succeeded: bool
-     *     }
+     *     },
+     *     previous_states: value-of<MachineState>[]
      * }
      */
     public function jsonSerialize(): array
@@ -37,6 +38,11 @@ readonly class Machine implements \JsonSerializable
         $state = $this->machine->getState();
         $stateCategory = MachineStateCategory::fromState($state);
         $hasEndState = MachineStateCategory::END === $stateCategory;
+
+        $previousStates = [];
+        foreach ($state->getPreviousStates() as $previousState) {
+            $previousStates[] = $previousState->value;
+        }
 
         return [
             'id' => $this->machine->getId(),
@@ -51,6 +57,7 @@ readonly class Machine implements \JsonSerializable
                 'ended' => $hasEndState,
                 'succeeded' => $hasEndState && false === $state->isFailed(),
             ],
+            'previous_states' => $previousStates,
         ];
     }
 }
