@@ -507,6 +507,18 @@
     "symfony/var-exporter": {
         "version": "v5.2.3"
     },
+    "symfony/webhook": {
+        "version": "8.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.3",
+            "ref": "b70844963dc84e9a99b94ae552efe691d74b087f"
+        },
+        "files": [
+            "config/routes/webhook.yaml"
+        ]
+    },
     "symfony/yaml": {
         "version": "v5.2.3"
     },
