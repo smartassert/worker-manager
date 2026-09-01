@@ -28,6 +28,10 @@ final readonly class MachineRequestResolver implements ValueResolverInterface
             return [];
         }
 
-        return [new MachineRequest($id)];
+        $notifyUrl = $request->request->get(MachineRequest::KEY_NOTIFY_URL);
+        $notifyUrl = is_string($notifyUrl) ? trim($notifyUrl) : null;
+        $notifyUrl = '' === $notifyUrl ? null : $notifyUrl;
+
+        return [new MachineRequest($id, $notifyUrl)];
     }
 }
