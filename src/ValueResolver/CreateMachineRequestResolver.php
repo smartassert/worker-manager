@@ -28,6 +28,10 @@ final readonly class CreateMachineRequestResolver implements ValueResolverInterf
             return [];
         }
 
-        return [new CreateMachineRequest($id)];
+        $notifyUrl = $request->request->get(CreateMachineRequest::KEY_NOTIFY_URL);
+        $notifyUrl = is_string($notifyUrl) ? trim($notifyUrl) : null;
+        $notifyUrl = '' === $notifyUrl ? null : $notifyUrl;
+
+        return [new CreateMachineRequest($id, $notifyUrl)];
     }
 }
