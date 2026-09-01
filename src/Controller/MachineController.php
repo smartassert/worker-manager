@@ -11,6 +11,7 @@ use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
+use App\Request\CreateMachineRequest;
 use App\Response\BadMachineCreateRequestResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -25,22 +26,20 @@ readonly class MachineController
     ) {}
 
     /**
-     * @param non-empty-string $id
-     *
      * @throws ExceptionInterface
      */
     #[Route(methods: ['POST'])]
     public function create(
-        string $id,
+        CreateMachineRequest $request,
         FindMachineForCreationDispatcherInterface $messageDispatcher,
     ): JsonResponse {
-        $machine = $this->machineRepository->find($id);
+        $machine = $this->machineRepository->find($request->id);
         if ($machine instanceof Machine) {
             if (!$machine->getState()->isResettable()) {
                 return BadMachineCreateRequestResponse::createIdTakenResponse();
             }
         } else {
-            $machine = new Machine($id);
+            $machine = new Machine($request->id);
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::CREATE_RECEIVED);

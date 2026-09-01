@@ -12,6 +12,7 @@ use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
+use App\Request\CreateMachineRequest;
 use App\Tests\AbstractBaseFunctionalTestCase;
 use App\Tests\Services\EntityRemover;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -58,7 +59,9 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             })
         ;
 
-        $this->controller->create(self::MACHINE_ID, $dispatcher);
+        $request = new CreateMachineRequest(self::MACHINE_ID);
+
+        $this->controller->create($request, $dispatcher);
     }
 
     public function testStatusMachineNotFoundCallsMachineRequestDispatcher(): void
