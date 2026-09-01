@@ -31,15 +31,19 @@ class Machine
     #[ORM\Column(type: 'string', length: 255, enumType: MachineProvider::class, nullable: true)]
     private ?MachineProvider $provider;
 
+    #[ORM\Column(nullable: true)]
+    private ?string $notifyUrl;
+
     /**
      * @param non-empty-string $id
      */
-    public function __construct(string $id)
+    public function __construct(string $id, ?string $notifyUrl = null)
     {
         $this->id = $id;
         $this->state = MachineState::UNKNOWN;
         $this->ip_addresses = [];
         $this->provider = null;
+        $this->notifyUrl = $notifyUrl;
     }
 
     /**
@@ -89,5 +93,10 @@ class Machine
     public function getProvider(): ?MachineProvider
     {
         return $this->provider;
+    }
+
+    public function getNotifyUrl(): ?string
+    {
+        return $this->notifyUrl;
     }
 }
