@@ -21,10 +21,13 @@
         "symfony/dotenv": "8.1.*",
         "symfony/flex": "^2.1",
         "symfony/framework-bundle": "8.1.*",
+        "symfony/http-client": "8.1.*",
         "symfony/messenger": "8.1.*",
         "symfony/monolog-bundle": "^4.0",
         "symfony/security-bundle": "8.1.*",
+        "symfony/serializer": "8.1.*",
         "symfony/uid": "8.1.*",
+        "symfony/webhook": "8.1.*",
         "symfony/yaml": "8.1.*",
         "webignition/symfony-messenger-delay-middleware": "^0.1.0"
     },
