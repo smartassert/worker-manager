@@ -20,11 +20,14 @@ abstract class AbstractMachineTestCase extends AbstractApplicationTestCase
         $this->apiTokenProvider = $apiTokenProvider;
     }
 
-    protected function makeValidCreateRequest(string $machineId): ResponseInterface
-    {
+    protected function makeValidCreateRequest(
+        string $machineId,
+        ?string $notifyUrl = null
+    ): ResponseInterface {
         return $this->getApplicationClient()->makeMachineCreateRequest(
             $this->apiTokenProvider->get('user@example.com'),
-            $machineId
+            $machineId,
+            $notifyUrl,
         );
     }
 

@@ -59,7 +59,7 @@ class MachineControllerTest extends AbstractBaseFunctionalTestCase
             })
         ;
 
-        $request = new CreateMachineRequest(self::MACHINE_ID);
+        $request = new CreateMachineRequest(self::MACHINE_ID, null);
 
         $this->controller->create($request, $dispatcher);
     }
