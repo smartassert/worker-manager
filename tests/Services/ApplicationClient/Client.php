@@ -18,12 +18,22 @@ class Client
     public function makeMachineCreateRequest(
         ?string $authenticationToken,
         string $machineId,
+        ?string $notifyUrl = null,
         string $method = 'POST'
     ): ResponseInterface {
+        $header = $this->createAuthorizationHeader($authenticationToken);
+        $requestBody = null;
+
+        if (is_string($notifyUrl)) {
+            $header['content-type'] = 'application/x-www-form-urlencoded';
+            $requestBody = http_build_query(['notify_url' => $notifyUrl]);
+        }
+
         return $this->client->makeRequest(
             $method,
             $this->createMachineRequestUrl($machineId),
-            $this->createAuthorizationHeader($authenticationToken)
+            $header,
+            $requestBody,
         );
     }
 

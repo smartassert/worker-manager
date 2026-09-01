@@ -852,4 +852,30 @@ class MachineTest extends AbstractMachineTestCase
             ],
         ];
     }
+
+    #[DataProvider('createStoresNotifyUrlDataProvider')]
+    public function testCreateStoresNotifyUrl(?string $notifyUrl): void
+    {
+        $this->makeValidCreateRequest(self::MACHINE_ID, $notifyUrl);
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        \assert($machine instanceof Machine);
+
+        self::assertSame($notifyUrl, $machine->getNotifyUrl());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function createStoresNotifyUrlDataProvider(): array
+    {
+        return [
+            'notify url is null' => [
+                'notifyUrl' => null,
+            ],
+            'notify url is not null' => [
+                'notifyUrl' => 'https://example.com/notify',
+            ],
+        ];
+    }
 }
