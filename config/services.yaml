@@ -23,6 +23,7 @@ parameters:
     health_check_bundle_status_path: '/'
     message_delays:
         App\Message\GetMachine: '%get_machine_dispatch_delay%'
+    notify_secret: '%env(NOTIFY_SECRET)%'
 
 services:
     # default configuration for services in *this* file
