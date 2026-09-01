@@ -24,6 +24,10 @@ final readonly class CreateMachineRequestResolver implements ValueResolverInterf
         $id = is_string($id) ? trim($id) : null;
         $id = '' === $id ? null : $id;
 
+        if (null === $id) {
+            return [];
+        }
+
         return [new CreateMachineRequest($id)];
     }
 }
