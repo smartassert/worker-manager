@@ -853,28 +853,58 @@ class MachineTest extends AbstractMachineTestCase
         ];
     }
 
-    #[DataProvider('createStoresNotifyUrlDataProvider')]
-    public function testCreateStoresNotifyUrl(?string $notifyUrl): void
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testCreatePersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
     {
-        $this->makeValidCreateRequest(self::MACHINE_ID, $notifyUrl);
+        $response = $this->makeValidCreateRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(202, $response->getStatusCode());
 
         $machine = $this->machineRepository->find(self::MACHINE_ID);
-        \assert($machine instanceof Machine);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
 
-        self::assertSame($notifyUrl, $machine->getNotifyUrl());
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testStatusPersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(200, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
+
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testDeletePersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidDeleteRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(202, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
     }
 
     /**
      * @return array<mixed>
      */
-    public static function createStoresNotifyUrlDataProvider(): array
+    public static function notifyUrlIsPersistedDataProvider(): array
     {
+        $nonEmptyNotifyUrl = 'https://example.com/notify/' . md5((string) rand());
+
         return [
-            'notify url is null' => [
+            'no notify url' => [
                 'notifyUrl' => null,
+                'expected' => null,
             ],
-            'notify url is not null' => [
-                'notifyUrl' => 'https://example.com/notify',
+            'empty string' => [
+                'notifyUrl' => '',
+                'expected' => null,
+            ],
+            'non-empty string' => [
+                'notifyUrl' => $nonEmptyNotifyUrl,
+                'expected' => $nonEmptyNotifyUrl,
             ],
         ];
     }

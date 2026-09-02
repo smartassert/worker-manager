@@ -22,7 +22,7 @@ abstract class AbstractMachineTestCase extends AbstractApplicationTestCase
 
     protected function makeValidCreateRequest(
         string $machineId,
-        ?string $notifyUrl = null
+        ?string $notifyUrl = null,
     ): ResponseInterface {
         return $this->getApplicationClient()->makeMachineCreateRequest(
             $this->apiTokenProvider->get('user@example.com'),
@@ -31,19 +31,25 @@ abstract class AbstractMachineTestCase extends AbstractApplicationTestCase
         );
     }
 
-    protected function makeValidStatusRequest(string $machineId): ResponseInterface
-    {
+    protected function makeValidStatusRequest(
+        string $machineId,
+        ?string $notifyUrl = null,
+    ): ResponseInterface {
         return $this->getApplicationClient()->makeMachineStatusRequest(
             $this->apiTokenProvider->get('user@example.com'),
-            $machineId
+            $machineId,
+            $notifyUrl,
         );
     }
 
-    protected function makeValidDeleteRequest(string $machineId): ResponseInterface
-    {
+    protected function makeValidDeleteRequest(
+        string $machineId,
+        ?string $notifyUrl = null,
+    ): ResponseInterface {
         return $this->getApplicationClient()->makeMachineDeleteRequest(
             $this->apiTokenProvider->get('user@example.com'),
-            $machineId
+            $machineId,
+            $notifyUrl,
         );
     }
 }
