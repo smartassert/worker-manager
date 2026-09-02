@@ -2,7 +2,7 @@
 
 namespace App\Request;
 
-class CreateMachineRequest
+class MachineRequest
 {
     public const string KEY_ID = 'id';
 
