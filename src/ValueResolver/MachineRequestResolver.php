@@ -28,10 +28,23 @@ final readonly class MachineRequestResolver implements ValueResolverInterface
             return [];
         }
 
-        $notifyUrl = $request->request->get(MachineRequest::KEY_NOTIFY_URL);
-        $notifyUrl = is_string($notifyUrl) ? trim($notifyUrl) : null;
-        $notifyUrl = '' === $notifyUrl ? null : $notifyUrl;
+        return [new MachineRequest($id, $this->getNotifyUrlFromRequest($request))];
+    }
 
-        return [new MachineRequest($id, $notifyUrl)];
+    /**
+     * @return ?non-empty-string
+     */
+    private function getNotifyUrlFromRequest(Request $request): ?string
+    {
+        $method = $request->getMethod();
+
+        $parameterBag = Request::METHOD_POST === $method || Request::METHOD_DELETE === $method
+            ? $request->request
+            : $request->query;
+
+        $notifyUrl = $parameterBag->get(MachineRequest::KEY_NOTIFY_URL);
+        $notifyUrl = is_string($notifyUrl) ? trim($notifyUrl) : null;
+
+        return '' === $notifyUrl ? null : $notifyUrl;
     }
 }
