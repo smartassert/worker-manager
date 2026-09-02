@@ -171,6 +171,40 @@ class MachineTest extends AbstractMachineTestCase
         ];
     }
 
+    #[DataProvider('createPersistsNotifyUrlDataProvider')]
+    public function testCreatePersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidCreateRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(202, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function createPersistsNotifyUrlDataProvider(): array
+    {
+        $nonEmptyNotifyUrl = 'https://example.com/notify/' . md5((string) rand());
+
+        return [
+            'no notify url' => [
+                'notifyUrl' => null,
+                'expected' => null,
+            ],
+            'empty string' => [
+                'notifyUrl' => '',
+                'expected' => null,
+            ],
+            'non-empty string' => [
+                'notifyUrl' => $nonEmptyNotifyUrl,
+                'expected' => $nonEmptyNotifyUrl,
+            ],
+        ];
+    }
+
     /**
      * @param callable(MachineRepository, ActionFailureFactory): void $setup
      * @param array<mixed>                                            $expectedResponseData
