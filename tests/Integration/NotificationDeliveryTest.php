@@ -8,6 +8,7 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Repository\MachineRepository;
 use App\Tests\Application\AbstractMachineTestCase;
+use App\Tests\Services\ApplicationClient\Client;
 use PHPUnit\Framework\Attributes\DataProvider;
 use SmartAssert\CallbackReceiverLogReader\Parser;
 use Symfony\Component\Process\Process;
@@ -20,11 +21,13 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
 
     /**
      * @param callable(string, string, MachineRepository): void $machineSetup
-     * @param callable(Machine): array<array<mixed>> $expectedRequestBodiesCreator
+     * @param callable(Client, string, string, string): void    $action
+     * @param callable(Machine): array<array<mixed>>            $expectedRequestBodiesCreator
      */
-    #[DataProvider('machineStateChangeNotificationsForMachineStatusDataProvider')]
-    public function testMachineStateChangeNotificationsForMachineStatus(
+    #[DataProvider('deliveredNotificationsDataProvider')]
+    public function testDeliveredNotifications(
         callable $machineSetup,
+        callable $action,
         string $stopState,
         int $expectedDispatchedNotificationsCount,
         callable $expectedRequestBodiesCreator,
@@ -37,7 +40,12 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
 
         $machineSetup($machineId, $notifyUrl, $machineRepository);
 
-        $this->makeValidStatusRequest($machineId, $notifyUrl);
+        $action(
+            $this->getApplicationClient(),
+            $this->apiTokenProvider->get('user@example.com'),
+            $machineId,
+            $notifyUrl,
+        );
 
         $machine = $machineRepository->find($machineId);
         self::assertInstanceOf(Machine::class, $machine);
@@ -79,11 +87,23 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
     /**
      * @return array<mixed>
      */
-    public static function machineStateChangeNotificationsForMachineStatusDataProvider(): array
+    public static function deliveredNotificationsDataProvider(): array
     {
         return [
             'status, no pre-existing machine' => [
                 'machineSetup' => function () {},
+                'action' => function (
+                    Client $applicationClient,
+                    string $authenticationToken,
+                    string $machineId,
+                    string $notifyUrl,
+                ) {
+                    $applicationClient->makeMachineStatusRequest(
+                        $authenticationToken,
+                        $machineId,
+                        $notifyUrl,
+                    );
+                },
                 'stopState' => 'find/not-findable',
                 'expectedDispatchedNotificationsCount' => 2,
                 'expectedRequestBodiesCreator' => function (Machine $machine) {
@@ -132,75 +152,20 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                     ];
                 },
             ],
-        ];
-    }
-
-    /**
-     * @param callable(string, string, MachineRepository): void $machineSetup
-     * @param callable(Machine): array<array<mixed>>            $expectedRequestBodiesCreator
-     */
-    #[DataProvider('machineStateChangeNotificationsForMachineDeletionDataProvider')]
-    public function testMachineStateChangeNotificationsForMachineDeletion(
-        callable $machineSetup,
-        string $stopState,
-        int $expectedDispatchedNotificationsCount,
-        callable $expectedRequestBodiesCreator,
-    ): void {
-        $machineRepository = self::getContainer()->get(MachineRepository::class);
-        \assert($machineRepository instanceof MachineRepository);
-
-        $machineId = (string) new Ulid();
-        $notifyUrl = 'http://callback-receiver:8080';
-
-        $machineSetup($machineId, $notifyUrl, $machineRepository);
-
-        $this->makeValidDeleteRequest($machineId, $notifyUrl);
-
-        $machine = $machineRepository->find($machineId);
-        self::assertInstanceOf(Machine::class, $machine);
-
-        new WaitFor()->waitFor(
-            30,
-            function () use ($machineId, $stopState) {
-                $jobState = $this->getMachineState($machineId);
-
-                return $stopState === $jobState;
-            },
-            $machineId . '" to be in "' . $stopState . '"',
-        );
-
-        $process = Process::fromShellCommandline('docker logs callback-receiver');
-        $process->run();
-
-        $output = $process->getOutput();
-        $parser = new Parser();
-
-        $requests = $parser->parse($output, $expectedDispatchedNotificationsCount);
-        self::assertCount($expectedDispatchedNotificationsCount, $requests);
-
-        $expectedRequestBodies = $expectedRequestBodiesCreator($machine);
-
-        foreach ($expectedRequestBodies as $requestIndex => $expectedRequestBody) {
-            $request = $requests[$requestIndex];
-
-            self::assertSame('POST', $request->getMethod());
-            self::assertSame('application/json', $request->getHeaderLine('Content-Type'));
-            self::assertEquals('/worker-manager.machine.state_changed', (string) $request->getUri());
-
-            $requestData = json_decode($request->getBody()->getContents(), true);
-            self::assertIsArray($requestData);
-            self::assertEquals($expectedRequestBody, $requestData);
-        }
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public static function machineStateChangeNotificationsForMachineDeletionDataProvider(): array
-    {
-        return [
-            'no pre-existing machine' => [
+            'delete, no pre-existing machine' => [
                 'machineSetup' => function () {},
+                'action' => function (
+                    Client $applicationClient,
+                    string $authenticationToken,
+                    string $machineId,
+                    string $notifyUrl,
+                ) {
+                    $applicationClient->makeMachineDeleteRequest(
+                        $authenticationToken,
+                        $machineId,
+                        $notifyUrl,
+                    );
+                },
                 'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
                 'expectedRequestBodiesCreator' => function (Machine $machine) {
@@ -278,12 +243,24 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                     ];
                 },
             ],
-            'has pre-existing machine' => [
+            'delete, has pre-existing machine' => [
                 'machineSetup' => function (string $machineId, string $notifyUrl, MachineRepository $machineRepository) {
                     $machine = new Machine($machineId, $notifyUrl);
                     $machine->setState(MachineState::UP_ACTIVE);
 
                     $machineRepository->add($machine);
+                },
+                'action' => function (
+                    Client $applicationClient,
+                    string $authenticationToken,
+                    string $machineId,
+                    string $notifyUrl,
+                ) {
+                    $applicationClient->makeMachineDeleteRequest(
+                        $authenticationToken,
+                        $machineId,
+                        $notifyUrl,
+                    );
                 },
                 'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
