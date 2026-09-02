@@ -4,11 +4,12 @@ namespace App\Entity;
 
 use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
+use App\Model\SerializableActionFailureInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-class ActionFailure implements \JsonSerializable
+class ActionFailure implements SerializableActionFailureInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: MachineIdInterface::LENGTH)]
@@ -46,13 +47,6 @@ class ActionFailure implements \JsonSerializable
         return $this->id;
     }
 
-    /**
-     * @return array{
-     *   action: value-of<MachineAction>,
-     *   type: value-of<ActionFailureType>,
-     *   context: array<string, null|int|string>
-     * }
-     */
     public function jsonSerialize(): array
     {
         return [
@@ -60,5 +54,10 @@ class ActionFailure implements \JsonSerializable
             'type' => $this->actionFailureType->value,
             'context' => $this->context,
         ];
+    }
+
+    public function toArray(): array
+    {
+        return $this->jsonSerialize();
     }
 }
