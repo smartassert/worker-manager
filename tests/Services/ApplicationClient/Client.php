@@ -40,24 +40,36 @@ class Client
     public function makeMachineStatusRequest(
         ?string $authenticationToken,
         string $machineId,
+        ?string $notifyUrl = null,
         string $method = 'GET'
     ): ResponseInterface {
+        $url = $this->createMachineRequestUrl($machineId);
+        if (is_string($notifyUrl)) {
+            $url .= '?' . http_build_query(['notify_url' => $notifyUrl]);
+        }
+
         return $this->client->makeRequest(
             $method,
-            $this->createMachineRequestUrl($machineId),
-            $this->createAuthorizationHeader($authenticationToken)
+            $url,
+            $this->createAuthorizationHeader($authenticationToken),
         );
     }
 
     public function makeMachineDeleteRequest(
         ?string $authenticationToken,
         string $machineId,
-        string $method = 'DELETE'
+        ?string $notifyUrl = null,
+        string $method = 'DELETE',
     ): ResponseInterface {
+        $url = $this->createMachineRequestUrl($machineId);
+        if (is_string($notifyUrl)) {
+            $url .= '?' . http_build_query(['notify_url' => $notifyUrl]);
+        }
+
         return $this->client->makeRequest(
             $method,
-            $this->createMachineRequestUrl($machineId),
-            $this->createAuthorizationHeader($authenticationToken)
+            $url,
+            $this->createAuthorizationHeader($authenticationToken),
         );
     }
 

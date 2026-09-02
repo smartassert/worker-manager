@@ -36,9 +36,7 @@ final readonly class MachineRequestResolver implements ValueResolverInterface
      */
     private function getNotifyUrlFromRequest(Request $request): ?string
     {
-        $method = $request->getMethod();
-
-        $parameterBag = Request::METHOD_POST === $method || Request::METHOD_DELETE === $method
+        $parameterBag = Request::METHOD_POST === $request->getMethod()
             ? $request->request
             : $request->query;
 
