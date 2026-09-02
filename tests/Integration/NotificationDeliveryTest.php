@@ -19,21 +19,25 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
     use GetApplicationClientTrait;
 
     /**
+     * @param callable(string, string, MachineRepository): void $machineSetup
      * @param callable(Machine): array<array<mixed>> $expectedRequestBodiesCreator
      */
     #[DataProvider('machineStateChangeNotificationsForMachineStatusDataProvider')]
     public function testMachineStateChangeNotificationsForMachineStatus(
+        callable $machineSetup,
+        string $stopState,
         int $expectedDispatchedNotificationsCount,
         callable $expectedRequestBodiesCreator,
     ): void {
-        $machineId = (string) new Ulid();
-        $notifyUrl = 'http://callback-receiver:8080';
-        $stopState = 'find/not-findable';
-
-        $this->makeValidStatusRequest($machineId, $notifyUrl);
-
         $machineRepository = self::getContainer()->get(MachineRepository::class);
         \assert($machineRepository instanceof MachineRepository);
+
+        $machineId = (string) new Ulid();
+        $notifyUrl = 'http://callback-receiver:8080';
+
+        $machineSetup($machineId, $notifyUrl, $machineRepository);
+
+        $this->makeValidStatusRequest($machineId, $notifyUrl);
 
         $machine = $machineRepository->find($machineId);
         self::assertInstanceOf(Machine::class, $machine);
@@ -78,7 +82,9 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
     public static function machineStateChangeNotificationsForMachineStatusDataProvider(): array
     {
         return [
-            'no pre-existing machine' => [
+            'status, no pre-existing machine' => [
+                'machineSetup' => function () {},
+                'stopState' => 'find/not-findable',
                 'expectedDispatchedNotificationsCount' => 2,
                 'expectedRequestBodiesCreator' => function (Machine $machine) {
                     return [
@@ -136,6 +142,7 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
     #[DataProvider('machineStateChangeNotificationsForMachineDeletionDataProvider')]
     public function testMachineStateChangeNotificationsForMachineDeletion(
         callable $machineSetup,
+        string $stopState,
         int $expectedDispatchedNotificationsCount,
         callable $expectedRequestBodiesCreator,
     ): void {
@@ -144,7 +151,6 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
 
         $machineId = (string) new Ulid();
         $notifyUrl = 'http://callback-receiver:8080';
-        $stopState = 'delete/failed';
 
         $machineSetup($machineId, $notifyUrl, $machineRepository);
 
@@ -195,6 +201,7 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
         return [
             'no pre-existing machine' => [
                 'machineSetup' => function () {},
+                'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
                 'expectedRequestBodiesCreator' => function (Machine $machine) {
                     return [
@@ -278,6 +285,7 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
 
                     $machineRepository->add($machine);
                 },
+                'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
                 'expectedRequestBodiesCreator' => function (Machine $machine) {
                     return [
