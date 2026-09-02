@@ -11,7 +11,7 @@ use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;
 use App\Model\Machine as MachineModel;
 use App\Repository\ActionFailureRepository;
 use App\Repository\MachineRepository;
-use App\Request\CreateMachineRequest;
+use App\Request\MachineRequest;
 use App\Response\BadMachineCreateRequestResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -30,7 +30,7 @@ readonly class MachineController
      */
     #[Route(methods: ['POST'])]
     public function create(
-        CreateMachineRequest $request,
+        MachineRequest $request,
         FindMachineForCreationDispatcherInterface $messageDispatcher,
     ): JsonResponse {
         $machine = $this->machineRepository->find($request->id);
@@ -49,40 +49,36 @@ readonly class MachineController
     }
 
     /**
-     * @param non-empty-string $id
-     *
      * @throws ExceptionInterface
      */
     #[Route(methods: ['GET', 'HEAD'])]
     public function status(
-        string $id,
+        MachineRequest $request,
         FindMachineForRetrievalDispatcherInterface $messageDispatcher,
         ActionFailureRepository $actionFailureRepository,
     ): JsonResponse {
-        $machine = $this->machineRepository->find($id);
+        $machine = $this->machineRepository->find($request->id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($id);
+            $machine = new Machine($request->id);
 
             $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_RECEIVED);
             $messageDispatcher->dispatchForMachine($machine);
         }
 
-        return new JsonResponse(new MachineModel($machine, $actionFailureRepository->find($id)));
+        return new JsonResponse(new MachineModel($machine, $actionFailureRepository->find($request->id)));
     }
 
     /**
-     * @param non-empty-string $id
-     *
      * @throws ExceptionInterface
      */
     #[Route(methods: ['DELETE'])]
     public function delete(
-        string $id,
+        MachineRequest $request,
         DeleteMachineDispatcherInterface $messageDispatcher,
     ): JsonResponse {
-        $machine = $this->machineRepository->find($id);
+        $machine = $this->machineRepository->find($request->id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($id);
+            $machine = new Machine($request->id);
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::DELETE_RECEIVED);
