@@ -30,6 +30,10 @@ services:
       - ./http-config/caddy/index.php:/app/public/index.php
       - ./http-config/caddy/Caddyfile:/etc/caddy/Caddyfile
 
+  callback-receiver:
+    image: mendhak/http-https-echo:19
+    container_name: callback-receiver
+
   nginx:
     build:
       context: ./nginx

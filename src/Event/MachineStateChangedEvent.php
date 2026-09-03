@@ -34,7 +34,12 @@ class MachineStateChangedEvent extends Event implements MachineEventInterface, N
 
     public function getNotifyUrl(): ?string
     {
-        return $this->machine->getNotifyUrl();
+        $baseUrl = $this->machine->getNotifyUrl();
+        if (null === $baseUrl) {
+            return null;
+        }
+
+        return rtrim($baseUrl, '/') . '/' . $this->getRemoteEventName();
     }
 
     public function getRemoteEventName(): string
