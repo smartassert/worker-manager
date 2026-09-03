@@ -18,7 +18,6 @@ final readonly class MachineStateChangedEventDispatcher
     public function dispatch(Machine $machine, ?MachineState $newState): void
     {
         if (null !== $newState && $machine->getState() !== $newState) {
-            var_dump('foo dispatching MachineStateChangedEvent');
             $this->eventDispatcher->dispatch(new MachineStateChangedEvent($machine, $newState));
         }
     }
