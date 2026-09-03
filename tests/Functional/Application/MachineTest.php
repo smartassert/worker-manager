@@ -852,4 +852,60 @@ class MachineTest extends AbstractMachineTestCase
             ],
         ];
     }
+
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testCreatePersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidCreateRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(202, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
+
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testStatusPersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidStatusRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(200, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
+
+    #[DataProvider('notifyUrlIsPersistedDataProvider')]
+    public function testDeletePersistsNotifyUrl(?string $notifyUrl, ?string $expected): void
+    {
+        $response = $this->makeValidDeleteRequest(self::MACHINE_ID, $notifyUrl);
+        self::assertSame(202, $response->getStatusCode());
+
+        $machine = $this->machineRepository->find(self::MACHINE_ID);
+        self::assertNotNull($machine);
+        self::assertSame($expected, $machine->getNotifyUrl());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public static function notifyUrlIsPersistedDataProvider(): array
+    {
+        $nonEmptyNotifyUrl = 'https://example.com/notify/' . md5((string) rand());
+
+        return [
+            'no notify url' => [
+                'notifyUrl' => null,
+                'expected' => null,
+            ],
+            'empty string' => [
+                'notifyUrl' => '',
+                'expected' => null,
+            ],
+            'non-empty string' => [
+                'notifyUrl' => $nonEmptyNotifyUrl,
+                'expected' => $nonEmptyNotifyUrl,
+            ],
+        ];
+    }
 }

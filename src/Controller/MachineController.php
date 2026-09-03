@@ -39,7 +39,7 @@ readonly class MachineController
                 return BadMachineCreateRequestResponse::createIdTakenResponse();
             }
         } else {
-            $machine = new Machine($request->id);
+            $machine = new Machine($request->id, $request->notifyUrl);
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::CREATE_RECEIVED);
@@ -59,7 +59,7 @@ readonly class MachineController
     ): JsonResponse {
         $machine = $this->machineRepository->find($request->id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($request->id);
+            $machine = new Machine($request->id, $request->notifyUrl);
 
             $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::FIND_RECEIVED);
             $messageDispatcher->dispatchForMachine($machine);
@@ -78,7 +78,7 @@ readonly class MachineController
     ): JsonResponse {
         $machine = $this->machineRepository->find($request->id);
         if (!$machine instanceof Machine) {
-            $machine = new Machine($request->id);
+            $machine = new Machine($request->id, $request->notifyUrl);
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, MachineState::DELETE_RECEIVED);

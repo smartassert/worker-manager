@@ -35,6 +35,7 @@ framework:
             'App\Message\FindMachineForRetrieval': find_machine
             'App\Message\FindMachineAfterDeletion': find_machine
             'App\Message\DeleteMachine': delete_machine
+            'Symfony\Component\Webhook\Messenger\SendWebhookMessage': async
 
 when@test:
     framework:

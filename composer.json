@@ -21,10 +21,13 @@
         "symfony/dotenv": "8.1.*",
         "symfony/flex": "^2.1",
         "symfony/framework-bundle": "8.1.*",
+        "symfony/http-client": "8.1.*",
         "symfony/messenger": "8.1.*",
         "symfony/monolog-bundle": "^4.0",
         "symfony/security-bundle": "8.1.*",
+        "symfony/serializer": "8.1.*",
         "symfony/uid": "8.1.*",
+        "symfony/webhook": "8.1.*",
         "symfony/yaml": "8.1.*",
         "webignition/symfony-messenger-delay-middleware": "^0.1.0"
     },
@@ -39,13 +42,16 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^13",
+        "smartassert/callback-receiver-log-reader": "^0.1.0",
         "smartassert/symfony-test-client": "^3.1",
         "smartassert/test-authenticaton-provider-bundle": "^6.0",
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/browser-kit": "8.1.*",
         "symfony/maker-bundle": "^1.29",
         "symfony/phpunit-bridge": "^8.0",
-        "webignition/object-reflector": "^1.0"
+        "symfony/process": "8.1.*",
+        "webignition/object-reflector": "^1.0",
+        "webignition/wait-for": "^0.1.0"
     },
     "config": {
         "optimize-autoloader": true,
