@@ -92,17 +92,8 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
         return [
             'status, no pre-existing machine' => [
                 'machineSetup' => function () {},
-                'action' => function (
-                    Client $applicationClient,
-                    string $authenticationToken,
-                    string $machineId,
-                    string $notifyUrl,
-                ) {
-                    $applicationClient->makeMachineStatusRequest(
-                        $authenticationToken,
-                        $machineId,
-                        $notifyUrl,
-                    );
+                'action' => function (Client $client, string $token, string $machineId, string $notifyUrl) {
+                    $client->makeMachineStatusRequest($token, $machineId, $notifyUrl);
                 },
                 'stopState' => 'find/not-findable',
                 'expectedDispatchedNotificationsCount' => 2,
@@ -154,17 +145,8 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
             ],
             'delete, no pre-existing machine' => [
                 'machineSetup' => function () {},
-                'action' => function (
-                    Client $applicationClient,
-                    string $authenticationToken,
-                    string $machineId,
-                    string $notifyUrl,
-                ) {
-                    $applicationClient->makeMachineDeleteRequest(
-                        $authenticationToken,
-                        $machineId,
-                        $notifyUrl,
-                    );
+                'action' => function (Client $client, string $token, string $machineId, string $notifyUrl) {
+                    $client->makeMachineDeleteRequest($token, $machineId, $notifyUrl);
                 },
                 'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
@@ -244,23 +226,15 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                 },
             ],
             'delete, has pre-existing machine' => [
-                'machineSetup' => function (string $machineId, string $notifyUrl, MachineRepository $machineRepository) {
+                'machineSetup' => function (string $machineId, string $notifyUrl, MachineRepository $repository) {
+                    \assert('' !== $machineId);
                     $machine = new Machine($machineId, $notifyUrl);
                     $machine->setState(MachineState::UP_ACTIVE);
 
-                    $machineRepository->add($machine);
+                    $repository->add($machine);
                 },
-                'action' => function (
-                    Client $applicationClient,
-                    string $authenticationToken,
-                    string $machineId,
-                    string $notifyUrl,
-                ) {
-                    $applicationClient->makeMachineDeleteRequest(
-                        $authenticationToken,
-                        $machineId,
-                        $notifyUrl,
-                    );
+                'action' => function (Client $client, string $token, string $machineId, string $notifyUrl) {
+                    $client->makeMachineDeleteRequest($token, $machineId, $notifyUrl);
                 },
                 'stopState' => 'delete/failed',
                 'expectedDispatchedNotificationsCount' => 3,
