@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use App\Event\MachineEventInterface as MachineEvent;
 use App\Event\NotifiableEventInterface as NotifiableEvent;
 use App\Model\Machine as MachineModel;
@@ -17,12 +16,15 @@ class MachineStateNotificationEvent extends AbstractMachineEvent implements Mach
 {
     public const string REMOTE_EVENT_NAME = 'worker-manager.machine.state_changed';
 
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
-        Machine $machine,
+        string $machineId,
         private readonly MachineModel $machineModel,
         private readonly string $notifyUrl,
     ) {
-        parent::__construct($machine);
+        parent::__construct($machineId);
     }
 
     public function getNotifyUrl(): string

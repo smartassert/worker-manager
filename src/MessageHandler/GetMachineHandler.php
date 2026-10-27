@@ -54,6 +54,6 @@ final readonly class GetMachineHandler
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
-        $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine, $remoteMachine));
+        $this->eventDispatcher->dispatch(new MachineRetrievedEvent($machine->getId(), $remoteMachine));
     }
 }

@@ -59,11 +59,11 @@ final readonly class FindMachineAfterDeletionHandler
         }
 
         if (!$remoteMachine instanceof RemoteMachine) {
-            $this->eventDispatcher->dispatch(new MachineTerminatedEvent($machine));
+            $this->eventDispatcher->dispatch(new MachineTerminatedEvent($machine->getId()));
 
             return;
         }
 
-        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
+        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine->getId()));
     }
 }

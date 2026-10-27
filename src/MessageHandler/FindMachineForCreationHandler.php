@@ -61,6 +61,6 @@ final readonly class FindMachineForCreationHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new CreateMachineEvent($machine));
+        $this->eventDispatcher->dispatch(new CreateMachineEvent($machine->getId()));
     }
 }

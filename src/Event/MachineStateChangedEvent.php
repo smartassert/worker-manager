@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use App\Enum\MachineState;
 
 class MachineStateChangedEvent extends AbstractMachineEvent implements MachineEventInterface
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
-        Machine $machine,
+        string $machineId,
         private readonly MachineState $newState,
     ) {
-        parent::__construct($machine);
+        parent::__construct($machineId);
     }
 
     public function getNewState(): MachineState

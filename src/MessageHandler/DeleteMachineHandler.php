@@ -58,6 +58,6 @@ class DeleteMachineHandler
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
 
-        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
+        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine->getId()));
     }
 }

@@ -141,7 +141,7 @@ class CreateMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         self::assertEquals(
             new MachineCreatedEvent(
-                $this->machine,
+                $this->machine->getId(),
                 new RemoteMachine(
                     new Droplet(
                         $remoteMachineId,

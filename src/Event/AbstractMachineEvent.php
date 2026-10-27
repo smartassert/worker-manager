@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractMachineEvent extends Event implements MachineEventInterface
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
-        private readonly Machine $machine,
+        private readonly string $machineId,
     ) {}
-
-    public function getMachine(): Machine
-    {
-        return $this->machine;
-    }
 
     public function getMachineId(): string
     {
-        return $this->machine->getId();
+        return $this->machineId;
     }
 }

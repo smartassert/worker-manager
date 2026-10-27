@@ -49,11 +49,7 @@ final readonly class MachineStateNotificationEventDispatcher implements EventSub
             $this->actionFailureRepository->find($event->getMachineId())
         );
 
-        $notificationEvent = new MachineStateNotificationEvent(
-            $event->getMachine(),
-            $machineModel,
-            $notifyUrl,
-        );
+        $notificationEvent = new MachineStateNotificationEvent($machine->getId(), $machineModel, $notifyUrl);
 
         $this->eventDispatcher->dispatch($notificationEvent);
     }

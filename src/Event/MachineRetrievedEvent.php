@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use App\Model\RemoteMachineInterface;
 
 class MachineRetrievedEvent extends AbstractMachineEvent implements RemoteMachineEventInterface
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
-        Machine $machine,
+        string $machineId,
         private readonly RemoteMachineInterface $remoteMachine,
     ) {
-        parent::__construct($machine);
+        parent::__construct($machineId);
     }
 
     public function getRemoteMachine(): RemoteMachineInterface

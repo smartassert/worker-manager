@@ -57,6 +57,6 @@ readonly class CreateMachineHandler
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
-        $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
+        $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine->getId(), $remoteMachine));
     }
 }
