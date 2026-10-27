@@ -8,6 +8,7 @@ use App\Enum\MachineStateCategory;
 use App\Event\CreateMachineEvent;
 use App\Event\MachineCreatedEvent;
 use App\Event\MachineDeletedEvent;
+use App\Event\MachineEventInterface;
 use App\Event\MachineRetrievedEvent;
 use App\Event\MachineStateChangedEvent;
 use App\Event\MachineTerminatedEvent;
@@ -65,26 +66,31 @@ readonly class MachineMutator implements EventSubscriberInterface
 
     public function setStateForCreateMachineEvent(CreateMachineEvent $event): void
     {
-        $this->setState($event->getMachine(), MachineState::CREATE_RECEIVED);
+        $this->setState($event, MachineState::CREATE_RECEIVED);
     }
 
     public function setStateForMachineDeletedEvent(MachineDeletedEvent $event): void
     {
-        $this->setState($event->getMachine(), MachineState::DELETE_REQUESTED);
+        $this->setState($event, MachineState::DELETE_REQUESTED);
     }
 
     public function setStateForMachineTerminatedEvent(MachineTerminatedEvent $event): void
     {
-        $this->setState($event->getMachine(), MachineState::DELETE_DELETED);
+        $this->setState($event, MachineState::DELETE_DELETED);
     }
 
     public function setStateForMachineStateChangedEvent(MachineStateChangedEvent $event): void
     {
-        $this->setState($event->getMachine(), $event->getNewState());
+        $this->setState($event, $event->getNewState());
     }
 
-    private function setState(Machine $machine, MachineState $newState): void
+    private function setState(MachineEventInterface $event, MachineState $newState): void
     {
+        $machine = $this->machineRepository->find($event->getMachineId());
+        if (null === $machine) {
+            return;
+        }
+
         $currentStateCategory = MachineStateCategory::fromState($machine->getState());
         $nextStateCategory = MachineStateCategory::fromState($newState);
 
