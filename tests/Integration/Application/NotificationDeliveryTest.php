@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration;
+namespace App\Tests\Integration\Application;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Repository\MachineRepository;
 use App\Tests\Application\AbstractMachineTestCase;
+use App\Tests\Integration\GetApplicationClientTrait;
 use App\Tests\Services\ApplicationClient\Client;
 use PHPUnit\Framework\Attributes\DataProvider;
 use SmartAssert\CallbackReceiverLogReader\Parser;
