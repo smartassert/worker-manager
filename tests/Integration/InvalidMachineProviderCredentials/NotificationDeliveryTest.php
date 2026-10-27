@@ -116,12 +116,19 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                             'previous_states' => [
                                 'find/received',
                             ],
-                        ], [
+                        ],
+                        [
                             'id' => $machine->getId(),
                             'state' => 'find/not-findable',
                             'ip_addresses' => [],
                             'state_category' => 'end',
-                            'action_failure' => null,
+                            'action_failure' => [
+                                'action' => 'find',
+                                'type' => 'vendor_authentication_failure',
+                                'context' => [
+                                    'provider' => 'digitalocean',
+                                ],
+                            ],
                             'has_active_state' => false,
                             'has_ending_state' => false,
                             'meta_state' => [
@@ -203,7 +210,13 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                             'state' => 'delete/failed',
                             'ip_addresses' => [],
                             'state_category' => 'end',
-                            'action_failure' => null,
+                            'action_failure' => [
+                                'action' => 'delete',
+                                'type' => 'vendor_authentication_failure',
+                                'context' => [
+                                    'provider' => 'digitalocean',
+                                ],
+                            ],
                             'has_active_state' => false,
                             'has_ending_state' => false,
                             'meta_state' => [
@@ -291,7 +304,13 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
                             'state' => 'delete/failed',
                             'ip_addresses' => [],
                             'state_category' => 'end',
-                            'action_failure' => null,
+                            'action_failure' => [
+                                'action' => 'delete',
+                                'type' => 'vendor_authentication_failure',
+                                'context' => [
+                                    'provider' => 'digitalocean',
+                                ],
+                            ],
                             'has_active_state' => false,
                             'has_ending_state' => false,
                             'meta_state' => [
