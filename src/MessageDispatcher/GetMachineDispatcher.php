@@ -51,7 +51,7 @@ readonly class GetMachineDispatcher implements EventSubscriberInterface
      */
     public function dispatch(MachineEventInterface $event): void
     {
-        $this->doDispatch($event->getMachine()->getId());
+        $this->doDispatch($event->getMachineId());
     }
 
     /**
