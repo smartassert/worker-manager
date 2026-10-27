@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Entity\Machine;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\MachineActionFailedException;
 use App\Message\MachineActionInterface;
 use App\Repository\MachineRepository;

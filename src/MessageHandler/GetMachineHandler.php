@@ -6,8 +6,8 @@ namespace App\MessageHandler;
 
 use App\Entity\Machine;
 use App\Enum\MessageHandlingReadiness;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineRetrievedEvent;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\GetMachine;
 use App\ReadinessAssessor\ReadinessAssessorInterface;

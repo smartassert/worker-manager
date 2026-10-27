@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\MessageDispatcher\DeleteMachineDispatcherInterface;
 use App\MessageDispatcher\FindMachineForCreationDispatcherInterface;
 use App\MessageDispatcher\FindMachineForRetrievalDispatcherInterface;

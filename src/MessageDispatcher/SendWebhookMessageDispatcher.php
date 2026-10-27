@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\MessageDispatcher;
 
-use App\Event\MachineStateChangedEvent;
+use App\Event\MachineStateNotificationEvent;
 use App\Event\NotifiableEventInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface as MessengerExceptionInterface;
@@ -27,7 +27,7 @@ readonly class SendWebhookMessageDispatcher implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            MachineStateChangedEvent::class => [
+            MachineStateNotificationEvent::class => [
                 ['dispatch', 0],
             ],
         ];
