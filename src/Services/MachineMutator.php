@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MachineStateCategory;
 use App\Event\CreateMachineEvent;
@@ -50,18 +49,21 @@ readonly class MachineMutator implements EventSubscriberInterface
         ];
     }
 
-    public function updateFromRemoteMachine(Machine $machine, RemoteMachineInterface $remoteMachine): Machine
+    public function updateFromRemoteMachine(string $machineId, RemoteMachineInterface $remoteMachine): void
     {
+        $machine = $this->machineRepository->find($machineId);
+        if (null === $machine) {
+            return;
+        }
+
         $machine->setIpAddresses($remoteMachine->getIpAddresses());
         $machine->setProvider($remoteMachine->getProvider());
         $this->machineRepository->add($machine);
-
-        return $machine;
     }
 
     public function updateFromRemoteMachineEvent(RemoteMachineEventInterface $event): void
     {
-        $this->updateFromRemoteMachine($event->getMachine(), $event->getRemoteMachine());
+        $this->updateFromRemoteMachine($event->getMachineId(), $event->getRemoteMachine());
     }
 
     public function setStateForCreateMachineEvent(CreateMachineEvent $event): void
