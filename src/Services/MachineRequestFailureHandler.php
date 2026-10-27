@@ -56,12 +56,11 @@ readonly class MachineRequestFailureHandler implements ExceptionHandlerInterface
             );
         }
 
-        $this->machineStateChangedEventDispatcher->dispatch($machine, $message->getFailureState());
-
         if ($throwable instanceof MachineActionFailedException) {
             $throwable = $throwable->getExceptionStack()->first();
         }
 
         $this->actionFailureFactory->create($machine, $message->getAction(), $throwable);
+        $this->machineStateChangedEventDispatcher->dispatch($machine, $message->getFailureState());
     }
 }
