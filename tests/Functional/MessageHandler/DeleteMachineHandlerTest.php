@@ -98,7 +98,7 @@ class DeleteMachineHandlerTest extends AbstractBaseFunctionalTestCase
 
         $machineDeletedEvent = $machineDeletedEvents[0];
 
-        self::assertEquals(new MachineDeletedEvent($this->machine), $machineDeletedEvent);
+        self::assertEquals(new MachineDeletedEvent($this->machine->getId()), $machineDeletedEvent);
     }
 
     public function testInvokeMachineEntityMissing(): void

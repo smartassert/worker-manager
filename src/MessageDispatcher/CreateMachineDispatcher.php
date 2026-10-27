@@ -37,14 +37,14 @@ readonly class CreateMachineDispatcher implements EventSubscriberInterface
      */
     public function dispatchForCreateMachineEvent(CreateMachineEvent $event): void
     {
-        $readiness = $this->readinessAssessor->isReady($event->getMachine()->getId());
+        $readiness = $this->readinessAssessor->isReady($event->getMachineId());
         if (MessageHandlingReadiness::NEVER === $readiness) {
             return;
         }
 
         $message = $this
             ->machineRequestFactory
-            ->createCreate($event->getMachine()->getId())
+            ->createCreate($event->getMachineId())
         ;
 
         $this->messageBus->dispatch($message);

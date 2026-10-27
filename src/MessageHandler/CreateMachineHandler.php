@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineCreatedEvent;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\CreateMachine;
 use App\ReadinessAssessor\CreateMachineReadinessAssessor;
@@ -57,6 +57,6 @@ readonly class CreateMachineHandler
         }
 
         $this->machineStateChangedEventDispatcher->dispatch($machine, $remoteMachine->getState());
-        $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine, $remoteMachine));
+        $this->eventDispatcher->dispatch(new MachineCreatedEvent($machine->getId(), $remoteMachine));
     }
 }

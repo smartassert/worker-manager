@@ -36,7 +36,7 @@ readonly class FindMachineAfterDeletionDispatcher implements EventSubscriberInte
     {
         $message = $this
             ->machineRequestFactory
-            ->createFindMachineAfterDeletion($event->getMachine()->getId())
+            ->createFindMachineAfterDeletion($event->getMachineId())
         ;
 
         $this->messageBus->dispatch($message);

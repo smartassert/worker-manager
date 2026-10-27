@@ -10,7 +10,7 @@ use App\Enum\ActionFailureType;
 use App\Enum\MachineAction;
 use App\Enum\MachineProvider;
 use App\Enum\MachineState;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\MachineActionFailedException;
 use App\Exception\MachineProvider\DigitalOcean\ApiLimitExceededException;
 use App\Exception\Stack;

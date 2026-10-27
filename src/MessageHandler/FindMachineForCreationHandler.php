@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\CreateMachineEvent;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineForCreation;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -61,6 +61,6 @@ final readonly class FindMachineForCreationHandler
             return;
         }
 
-        $this->eventDispatcher->dispatch(new CreateMachineEvent($machine));
+        $this->eventDispatcher->dispatch(new CreateMachineEvent($machine->getId()));
     }
 }

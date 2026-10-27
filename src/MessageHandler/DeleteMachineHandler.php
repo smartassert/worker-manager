@@ -7,8 +7,8 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineDeletedEvent;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\DeleteMachine;
 use App\ReadinessAssessor\DeleteMachineReadinessAssessor;
@@ -58,6 +58,6 @@ class DeleteMachineHandler
             throw new UnrecoverableMessageHandlingException($e->getMessage(), $e->getCode(), $e);
         }
 
-        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
+        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine->getId()));
     }
 }

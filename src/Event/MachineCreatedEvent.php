@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Machine;
 use App\Model\RemoteMachineInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 
-class MachineCreatedEvent extends Event implements RemoteMachineEventInterface
+class MachineCreatedEvent extends AbstractMachineEvent implements RemoteMachineEventInterface
 {
+    /**
+     * @param non-empty-string $machineId
+     */
     public function __construct(
-        private readonly Machine $machine,
+        string $machineId,
         private readonly RemoteMachineInterface $remoteMachine,
-    ) {}
-
-    public function getMachine(): Machine
-    {
-        return $this->machine;
+    ) {
+        parent::__construct($machineId);
     }
 
     public function getRemoteMachine(): RemoteMachineInterface

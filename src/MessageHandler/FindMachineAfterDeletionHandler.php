@@ -7,9 +7,9 @@ namespace App\MessageHandler;
 use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Enum\MessageHandlingReadiness;
-use App\EvenDispatcher\MachineStateChangedEventDispatcher;
 use App\Event\MachineDeletedEvent;
 use App\Event\MachineTerminatedEvent;
+use App\EventDispatcher\MachineStateChangedEventDispatcher;
 use App\Exception\UnrecoverableExceptionInterface;
 use App\Message\FindMachineAfterDeletion;
 use App\Model\DigitalOcean\RemoteMachine;
@@ -59,11 +59,11 @@ final readonly class FindMachineAfterDeletionHandler
         }
 
         if (!$remoteMachine instanceof RemoteMachine) {
-            $this->eventDispatcher->dispatch(new MachineTerminatedEvent($machine));
+            $this->eventDispatcher->dispatch(new MachineTerminatedEvent($machine->getId()));
 
             return;
         }
 
-        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine));
+        $this->eventDispatcher->dispatch(new MachineDeletedEvent($machine->getId()));
     }
 }
