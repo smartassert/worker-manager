@@ -6,18 +6,14 @@ namespace App\Event;
 
 use App\Entity\Machine;
 use App\Model\RemoteMachineInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 
-class MachineRetrievedEvent extends Event implements RemoteMachineEventInterface
+class MachineRetrievedEvent extends AbstractMachineEvent implements RemoteMachineEventInterface
 {
     public function __construct(
-        private readonly Machine $machine,
+        Machine $machine,
         private readonly RemoteMachineInterface $remoteMachine,
-    ) {}
-
-    public function getMachine(): Machine
-    {
-        return $this->machine;
+    ) {
+        parent::__construct($machine);
     }
 
     public function getRemoteMachine(): RemoteMachineInterface

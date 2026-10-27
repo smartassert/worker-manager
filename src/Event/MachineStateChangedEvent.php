@@ -8,23 +8,19 @@ use App\Entity\Machine;
 use App\Enum\MachineState;
 use App\Model\Machine as MachineModel;
 use App\Model\SerializableMachineInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * @phpstan-import-type SerializedMachine from SerializableMachineInterface
  */
-class MachineStateChangedEvent extends Event implements MachineEventInterface, NotifiableEventInterface
+class MachineStateChangedEvent extends AbstractMachineEvent implements MachineEventInterface, NotifiableEventInterface
 {
     public const string REMOTE_EVENT_NAME = 'worker-manager.machine.state_changed';
 
     public function __construct(
-        private readonly Machine $machine,
+        Machine $machine,
         private readonly MachineState $newState,
-    ) {}
-
-    public function getMachine(): Machine
-    {
-        return $this->machine;
+    ) {
+        parent::__construct($machine);
     }
 
     public function getNewState(): MachineState
@@ -34,7 +30,7 @@ class MachineStateChangedEvent extends Event implements MachineEventInterface, N
 
     public function getNotifyUrl(): ?string
     {
-        $baseUrl = $this->machine->getNotifyUrl();
+        $baseUrl = $this->getMachine()->getNotifyUrl();
         if (null === $baseUrl) {
             return null;
         }
@@ -52,6 +48,6 @@ class MachineStateChangedEvent extends Event implements MachineEventInterface, N
      */
     public function getPayload(): array
     {
-        return new MachineModel($this->machine)->toArray();
+        return new MachineModel($this->getMachine())->toArray();
     }
 }
