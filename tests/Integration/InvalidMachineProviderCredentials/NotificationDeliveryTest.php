@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Application;
+namespace App\Tests\Integration\InvalidMachineProviderCredentials;
 
 use App\Entity\Machine;
 use App\Enum\MachineState;
