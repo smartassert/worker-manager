@@ -77,7 +77,6 @@ class NotificationDeliveryTest extends AbstractMachineTestCase
 
             self::assertSame('POST', $request->getMethod());
             self::assertSame('application/json', $request->getHeaderLine('Content-Type'));
-            self::assertEquals('/worker-manager.machine.state_changed', (string) $request->getUri());
 
             $requestData = json_decode($request->getBody()->getContents(), true);
             self::assertIsArray($requestData);

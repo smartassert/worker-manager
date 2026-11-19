@@ -29,7 +29,7 @@ class MachineStateNotificationEvent extends AbstractMachineEvent implements Mach
 
     public function getNotifyUrl(): string
     {
-        return rtrim($this->notifyUrl, '/') . '/' . $this->getRemoteEventName();
+        return $this->notifyUrl;
     }
 
     public function getRemoteEventName(): string
