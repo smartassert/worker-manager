@@ -50,7 +50,7 @@
         "symfony/maker-bundle": "^1.29",
         "symfony/phpunit-bridge": "^8.0",
         "symfony/process": "8.1.*",
-        "webignition/object-reflector": "^1.0",
+        "webignition/object-reflector": "^2.0",
         "webignition/wait-for": "^0.1.0"
     },
     "config": {
